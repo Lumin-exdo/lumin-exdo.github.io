@@ -5,8 +5,8 @@ baseurl:
 url: 
 date_format: "ordinal"
 title: Title
-subtitle: "公众号：闷骚的程序员"
-description: "马壮的个人博客，公众号：闷骚的程序员"
+subtitle: "Subtitle"
+description: "Description"
 keywords: 关键词
 timezone: 
 encoding: "utf-8"
