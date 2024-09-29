@@ -4,8 +4,8 @@
 baseurl:
 url: 
 date_format: "ordinal"
-title: Title
-subtitle: "Subtitle"
+title: lumin-exdo
+subtitle: "Lumin-exdo的个人博客"
 description: "Description"
 keywords: 关键词
 timezone: 

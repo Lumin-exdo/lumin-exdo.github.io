@@ -8,7 +8,8 @@ menu: 关于
 permalink: /about/
 ---
 
-
+## 致谢
+感谢 https://github.com/mzlogin/mzlogin.github.io 提供的网页模板，他的博客是 https://mazhuang.org/ ，欢迎大家访问。
 
 ## 联系
 
