@@ -212,3 +212,9 @@ google:
         sidebar-detail: false
         content_header: false
         content_footer: false
+
+# ---------------- #
+#      MathJax     #
+# ---------------- #
+math_engine: mathjax
+mathjax: true
