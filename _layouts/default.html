@@ -8,6 +8,16 @@ layout: compress
 {% endif %}
 {% assign assets_images_url = '<img src="' | append: site.url | append: "/images" %}
 <head>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            showMathMenu: false <!-- 禁用右键菜单 -->
+        });
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 {% include header.html %}
