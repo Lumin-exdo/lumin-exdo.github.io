@@ -27,4 +27,4 @@ python -m pip install -r requirements.txt --target vendor
 python build.py
 ```
 
-文章源稿位于 `完整稿/`，公开文章清单见 `public-pages.json`。构建结果生成在 `site/`，同时更新仓库根目录供 GitHub Pages 发布。
+文章源稿位于 `完整稿/`，公开文章清单见 `public-pages.json`。构建结果生成在 `site/`，同时整体输出到 `docs/`，GitHub Pages 从 `docs/` 发布。

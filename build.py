@@ -623,20 +623,12 @@ def clear_out():
         shutil.rmtree(OUT)
 
 def publish_public_site():
-    """Copy the independently built public site to the Pages branch root."""
-    manifest = HERE / '_published-files.json'
-    previous = set(json.loads(manifest.read_text(encoding='utf-8'))) if manifest.exists() else set()
-    current = {p.relative_to(OUT).as_posix() for p in OUT.rglob('*') if p.is_file()}
-    for name in previous - current:
-        target = (HERE / name).resolve()
-        if target.is_relative_to(HERE) and target.is_file():
-            target.unlink()
-    for name in sorted(current):
-        target = HERE / name
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(OUT / name, target)
-    manifest.write_text(json.dumps(sorted(current), ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    (HERE / '.nojekyll').touch()
+    """Replace docs/ (the GitHub Pages folder) with the independently built public site."""
+    target = HERE / 'docs'
+    if target.exists():
+        shutil.rmtree(target)
+    shutil.copytree(OUT, target)
+    (target / '.nojekyll').touch()
 
 def build_lock():
     """同一时间只允许一个构建：手动运行和后台自动构建撞在一起时，后来的等前一个跑完。"""
