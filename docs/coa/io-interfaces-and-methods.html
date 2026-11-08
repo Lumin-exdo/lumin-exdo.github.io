@@ -113,7 +113,7 @@ body.figview .right,body.figview #bar,body.figview .tabs,body.figview #figopen{d
 <li><strong>中断判优不在这个外设接口的三类寄存器里</strong>——接口发出“有情况”的 IRQ，再由中断控制器汇总、仲裁并通知<strong>同一个</strong> CPU。图中把中断控制器单独画出，是逻辑分工；现实实现可以是独立芯片，也可以集成在处理器或芯片组中。</li>
 </ol>
 <h3>完整走一遍：发送方向和接收方向，各自沿图上哪些边走</h3>
-<div class="ref" onclick="pick(1)">🖼 <span class="go">请对照左栏 ②</span>：地址、寄存器、IRQ 实际怎么走<a class="open" href="../OS/计组-IO接口-寄存器与信号-交互演示.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,1)">⧉ 单独打开</a></div>
+<div class="ref" onclick="pick(1)">🖼 <span class="go">请对照左栏 ②</span>：地址、寄存器、IRQ 实际怎么走<a class="open" href="../os/计组-IO接口-寄存器与信号-交互演示.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,1)">⧉ 单独打开</a></div>
 <p>图中蓝色数据线可双向传输，地址线、一次端口访问的读／写控制、选中与使能信号则有明确方向；设备侧的具体数据、状态和控制路径视接口实现而定。状态与控制画成不同的物理寄存器：两者在某些接口里<strong>共用端口地址</strong>，并非一个存储格在读写时变身。下面把两个数据方向各走一遍；逐步信号变化另见左栏②。</p>
 <p><strong>发送方向一：CPU把数据发给外设（比如往打印机发一个字符）</strong></p>
 <p>①CPU同时发三路信号——地址线给地址译码；控制线说明这次是“写”；数据线把字符送向接口（这条线双向，这次走“CPU→寄存器”方向）。②地址译码确认目标端口后，访问选择逻辑结合端口和写方向，使能数据缓冲寄存器。③字符锁存进缓冲寄存器。④设备侧控制逻辑按接口协议取出字符、转换成电缆信号，并与外设握手。⑤字符送达外设。图中的绿虚线表示<strong>寄存器使能</strong>，不是另有一条“把字符送到外设”的数据线。</p>
@@ -317,8 +317,8 @@ body.figview .right,body.figview #bar,body.figview .tabs,body.figview #figopen{d
 <blockquote>
 <p><strong>模型范围</strong>：下文先用老式键盘控制器＋8259A 的<strong>引脚式 IRQ／INTR</strong> 解释教材流程；不同主板可改用 APIC、MSI/MSI-X 或 USB 主机控制器，硬件位置、请求保持方式和类型号投递方式会变。图中的“独立线”与“控制器芯片”不可直接套到所有现代设备。第 11 节另画 PCIe 拓扑。</p>
 </blockquote>
-<div class="ref" onclick="pick(2)">🖼 <span class="go">请对照左栏 ③</span>：中断九步、嵌套与屏蔽字<a class="open" href="../OS/中断与异常-交互演示.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,2)">⧉ 单独打开</a></div>
-<p>👉 <strong><a href="../OS/%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8-%E4%BA%A4%E4%BA%92%E6%BC%94%E7%A4%BA.html">打开交互演示：中断与异常，一步一步走一遍</a></strong>（外中断、缺页、系统调用、违规与终止、多重中断与屏蔽字，五个场景，← / → 方向键逐步播放）</p>
+<div class="ref" onclick="pick(2)">🖼 <span class="go">请对照左栏 ③</span>：中断九步、嵌套与屏蔽字<a class="open" href="../os/中断与异常-交互演示.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,2)">⧉ 单独打开</a></div>
+<p>👉 <strong><a href="../os/%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8-%E4%BA%A4%E4%BA%92%E6%BC%94%E7%A4%BA.html">打开交互演示：中断与异常，一步一步走一遍</a></strong>（外中断、缺页、系统调用、违规与终止、多重中断与屏蔽字，五个场景，← / → 方向键逐步播放）</p>
 <p>下面把这个过程,拆成完整的一条时间线：</p>
 <h3>第一步：键盘接口芯片内部（设备接口/适配器）</h3>
 <ul>
@@ -537,7 +537,7 @@ body.figview .right,body.figview #bar,body.figview .tabs,body.figview #figopen{d
 <p>左栏⑥以 0xA1、0xB2、0xC3 三个字节把六步循环落实到寄存器、主存地址与剩余数；这只是程序查询实例，不把设备的数据搬运交给 DMA。</p>
 <p><strong>&quot;外设准备就绪&quot;具体指什么</strong>：外设完成了它自己那份物理动作，数据已真实摆在数据缓冲寄存器里（或已腾空可接收新数据），可以真正开始交换数据了。不同外设的&quot;就绪&quot;含义不同：键盘是按键触点确认完毕、扫描码生成好了；机械硬盘是磁头物理寻道+盘片旋转到位+数据读出存进缓冲区；打印机则可能有两种含义（缓冲区是否腾空 vs 整机是否可用如缺纸卡纸）。</p>
 <p><strong>两种查询策略</strong>：</p>
-<div class="ref" onclick="pick(6)">🖼 <span class="go">请对照左栏 ⑦</span>：程序查询与中断：CPU 时间线<a class="open" href="../OS/计组-程序查询与中断-时间线.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,6)">⧉ 单独打开</a></div>
+<div class="ref" onclick="pick(6)">🖼 <span class="go">请对照左栏 ⑦</span>：程序查询与中断：CPU 时间线<a class="open" href="../os/计组-程序查询与中断-时间线.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,6)">⧉ 单独打开</a></div>
 <ol>
 <li><strong>独占查询</strong>：一旦启动外设，CPU连续不断查询，直至操作完成，无法执行其他任务，处于忙等待，CPU与外设完全串行工作。</li>
 <li><strong>定时查询</strong>：CPU以固定时间间隔周期性查询，每次若就绪就传送一个数据单元，随后返回用户程序继续执行。查询间隔需根据外设传输速率合理设置，避免数据丢失。</li>
@@ -630,7 +630,7 @@ body.figview .right,body.figview #bar,body.figview .tabs,body.figview #figopen{d
 <p><strong>DMA 对大数据量、高频率的设备通常更划算</strong>（磁盘、显卡、声卡、网卡）：传得越多，省掉 CPU 逐次搬运的收益越大。但不能由此断言“键盘鼠标从来不用 DMA”。在本节经典的独立 DMA 控制器模型里，为几字节的按键单独启动一笔 DMA 往往不合算；现代 USB 键盘、鼠标的数据则可由 USB 主机控制器按其传输环机制写入主存，驱动再接收完成事件或中断。<strong>是否使用 DMA，取决于主机控制器的实现和整条 I/O 路径，不单取决于外设的一次数据量。</strong></p>
 <p>DMA是完全由硬件控制的数据传输方法，兼具程序中断方式的优点（数据准备阶段CPU与外设可并行工作），但硬件实现开销较高（DMA控制器本身是一整块相对复杂的专用电路）。<strong>中断在DMA方式里的作用仅限于处理故障和正常传输完成的通知</strong>——绝大多数中间搬运过程完全不需要中断，只在任务开始（软件预处理）和结束（一次通知）两端才涉及CPU。</p>
 <h3>10.2 逐步走一遍完整流程，把每个模块摆到它该在的位置（对应图7.8）</h3>
-<div class="ref" onclick="pick(7)">🖼 <span class="go">请对照左栏 ⑧</span>：DMA 控制器：配置到完成<a class="open" href="../OS/计组-DMA控制器-配置搬运完成.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,7)">⧉ 单独打开</a></div>
+<div class="ref" onclick="pick(7)">🖼 <span class="go">请对照左栏 ⑧</span>：DMA 控制器：配置到完成<a class="open" href="../os/计组-DMA控制器-配置搬运完成.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,7)">⧉ 单独打开</a></div>
 <p>图7.8里的每一个方框，都是在下面这个具体流程里，各自负责一件事。这里把它们出现的先后顺序、彼此之间信号具体传给谁，完整讲一遍，以“从设备读1024字节到内存地址0x00020000”为<strong>教材模型中的示例</strong>；现代 SATA／NVMe 控制器的内部实现和配置路径不必与图 7.8 相同。</p>
 <p><strong>第一步：CPU把任务交代给DMA控制器（软件预处理）</strong></p>
 <p>CPU 通过该平台提供的配置寄存器或描述符给 DMAC 交代任务；在旧式 x86 独立编址示例里，这一步可由 <code>OUT</code> 写控制器端口，在 MMIO 控制器上则使用相应访存操作。下面按图 7.8 的简化控制器列出四组参数：</p>
@@ -708,7 +708,7 @@ body.figview .right,body.figview #bar,body.figview .tabs,body.figview #figopen{d
 </tbody>
 </table>
 <h3>10.4 DMA的三种传送方式（DMA控制器占用总线期间，怎么和CPU分享内存访问权）</h3>
-<div class="ref" onclick="pick(9)">🖼 <span class="go">请对照左栏 ⑩</span>：DMA 三种访存：同一时间轴<a class="open" href="../OS/计组-DMA三种访存-时间线.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,9)">⧉ 单独打开</a></div>
+<div class="ref" onclick="pick(9)">🖼 <span class="go">请对照左栏 ⑩</span>：DMA 三种访存：同一时间轴<a class="open" href="../os/计组-DMA三种访存-时间线.html" target="_blank" onclick="event.stopPropagation();return openFigLink(event,9)">⧉ 单独打开</a></div>
 <p><strong>（1）停止CPU访存（图7.9）</strong>：DMA控制器发起请求后，CPU放弃总线控制权并<strong>完全暂停访存</strong>，直至DMA完成整块数据传送才恢复。</p>
 <ul>
 <li>优点：控制逻辑简单，适用于数据传输速率很高的设备成组传送。</li>
@@ -896,7 +896,7 @@ body.figview .right,body.figview #bar,body.figview .tabs,body.figview #figopen{d
 <p>这个专题问答的核心价值，不在于把课本这两页的知识点&quot;背下来&quot;，而是把&quot;课本一句话带过的抽象概念&quot;，逐一还原成&quot;具体是哪块电路、物理上在哪、具体传的是什么数据、为什么必须这样设计、如果不这样设计会出什么具体的灾难场景&quot;——这种刨根问底建立起来的因果链条，比死记硬背扎实得多，很多东西一旦真正理解了原理，不需要再重新学一遍。</p>
 </div>
 </div>
-<script>var NAMES=["① I/O 接口的实际结构与信号线", "② 地址、寄存器、IRQ 实际怎么走", "③ 中断九步、嵌套与屏蔽字", "④ I/O 接口的四种分类轴", "⑤ I/O 端口：独立编址与 MMIO", "⑥ 程序查询：六步循环与三字节实例", "⑦ 程序查询与中断：CPU 时间线", "⑧ DMA 控制器：配置到完成", "⑨ DMA：许可、计数与循环", "⑩ DMA 三种访存：同一时间轴", "⑪ 共享总线与 PCIe：线路和交换芯片", "⑫ 现代主板：设备、插槽与连线", "⑬ USB 硬盘盒：SATA 数据与供电两条路"];var SRCS=["../images/io_interface.svg", "../OS/计组-IO接口-寄存器与信号-交互演示.html", "../OS/中断与异常-交互演示.html", "../images/io_interface_types.svg", "../images/io_address_spaces.svg", "../images/io_polling_loop.svg", "../OS/计组-程序查询与中断-时间线.html", "../OS/计组-DMA控制器-配置搬运完成.html", "../images/dma_permission_loop.svg", "../OS/计组-DMA三种访存-时间线.html", "../images/bus_shared_vs_pcie.svg", "../images/board_physical.svg", "../images/sata_usb_enclosure.svg"];var FITS=["", "", "", "", "", "", "", "", "", "", "", "width", ""];var NFIG=13;
+<script>var NAMES=["① I/O 接口的实际结构与信号线", "② 地址、寄存器、IRQ 实际怎么走", "③ 中断九步、嵌套与屏蔽字", "④ I/O 接口的四种分类轴", "⑤ I/O 端口：独立编址与 MMIO", "⑥ 程序查询：六步循环与三字节实例", "⑦ 程序查询与中断：CPU 时间线", "⑧ DMA 控制器：配置到完成", "⑨ DMA：许可、计数与循环", "⑩ DMA 三种访存：同一时间轴", "⑪ 共享总线与 PCIe：线路和交换芯片", "⑫ 现代主板：设备、插槽与连线", "⑬ USB 硬盘盒：SATA 数据与供电两条路"];var SRCS=["../images/io_interface.svg", "../os/计组-IO接口-寄存器与信号-交互演示.html", "../os/中断与异常-交互演示.html", "../images/io_interface_types.svg", "../images/io_address_spaces.svg", "../images/io_polling_loop.svg", "../os/计组-程序查询与中断-时间线.html", "../os/计组-DMA控制器-配置搬运完成.html", "../images/dma_permission_loop.svg", "../os/计组-DMA三种访存-时间线.html", "../images/bus_shared_vs_pcie.svg", "../images/board_physical.svg", "../images/sata_usb_enclosure.svg"];var FITS=["", "", "", "", "", "", "", "", "", "", "", "width", ""];var NFIG=13;
 var CUR=0,IMG_MODE='area',IMG_SCALE=1,PICKED=false;
 var IMG_STATES=Array.from({length:NFIG},function(_,i){return {mode:FITS[i]||document.body.dataset.figureDefault||'area',scale:1,x:0,y:0};});
 function isImg(i){return !/\.html?$/i.test(SRCS[i].split('#')[0]);}

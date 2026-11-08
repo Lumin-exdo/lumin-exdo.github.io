@@ -622,6 +622,15 @@ def clear_out():
     if OUT.exists():
         shutil.rmtree(OUT)
 
+def normalize_os_paths():
+    """Pages link to the OS folder as ../OS/ but the site folder is os/; hosts that are case-sensitive need the same spelling."""
+    pattern = re.compile(r'((?:\.\./)+)OS/')
+    for page in OUT.rglob('*.html'):
+        text = page.read_text(encoding='utf-8')
+        fixed = pattern.sub(r'\1os/', text)
+        if fixed != text:
+            page.write_text(fixed, encoding='utf-8')
+
 def publish_public_site():
     """Replace docs/ (the GitHub Pages folder) with the independently built public site."""
     target = HERE / 'docs'
@@ -817,6 +826,7 @@ def _main():
     DATE_TABLE.write_text(json.dumps({'schema': 1, 'next_number': next_number, 'files': next_date_table}, ensure_ascii=False, indent=2), encoding='utf-8')
     from tools.sync_learning_pages import sync
     sync()
+    normalize_os_paths()
     # Readers reload on a new version. Publish it only after every page and asset exists.
     version_pending = OUT / '.version.txt.tmp'
     version_pending.write_text(str(time.time_ns()), encoding='utf-8')
