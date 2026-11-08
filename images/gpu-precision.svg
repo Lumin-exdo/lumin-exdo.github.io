@@ -1,0 +1,288 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 960" width="1240" height="960" font-family="system-ui,'Microsoft YaHei','PingFang SC',sans-serif">
+<rect class="bg" width="1240" height="960" fill="#f7f8f3"/>
+<defs><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b968e"/></marker><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b42318"/></marker><marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker><marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c26a12"/></marker><marker id="an" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f7d2b"/></marker><marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6b4c9a"/></marker></defs>
+<text x="24" y="34" font-size="18.5" fill="#1f2a24" text-anchor="start" font-weight="700">低精度：同一个数 3.14159 存进不同格式，占几位、变成多少；Tensor Core 怎么混合精度；一组数怎么共用缩放因子</text>
+<text x="36" y="70" font-size="14.5" fill="#5e6b63" text-anchor="start" font-weight="700">格式</text>
+<text x="170" y="70" font-size="14.5" fill="#5e6b63" text-anchor="start" font-weight="700">符号 | 阶码 | 尾数（每格 1 位）</text>
+<text x="905" y="70" font-size="14.5" fill="#5e6b63" text-anchor="start" font-weight="700">存进去后</text>
+<text x="1010" y="70" font-size="14.5" fill="#5e6b63" text-anchor="start" font-weight="700">说明</text>
+<text x="36" y="108" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">FP32</text>
+<rect x="170.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#fbe4e1" stroke="#b42318" stroke-width="0.8"/>
+<text x="180.0" y="108" font-size="13" fill="#b42318" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="198.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="208.0" y="108" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="220.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="230.0" y="108" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="242.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="252.0" y="108" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="264.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="274.0" y="108" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="286.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="296.0" y="108" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="308.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="318.0" y="108" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="330.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="340.0" y="108" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="352.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="362.0" y="108" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="380.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="390.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="402.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="412.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="424.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="434.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="446.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="456.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="468.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="478.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="490.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="500.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="512.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="522.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="534.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="544.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="556.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="566.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="578.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="588.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="600.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="610.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="622.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="632.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="644.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="654.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="666.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="676.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="688.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="698.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="710.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="720.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="732.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="742.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="754.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="764.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="776.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="786.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="798.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="808.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="820.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="830.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="842.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="852.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="864.0" y="90.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="874.0" y="108" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<text x="905" y="108" font-size="15" fill="#c26a12" text-anchor="start" font-weight="700" font-family="ui-monospace,Consolas,monospace">3.1415901</text>
+<text x="1010" y="108" font-size="13" fill="#1f2a24" text-anchor="start">4 字节；普通 FP32 通道</text>
+<text x="36" y="148" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">BF16</text>
+<rect x="170.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#fbe4e1" stroke="#b42318" stroke-width="0.8"/>
+<text x="180.0" y="148" font-size="13" fill="#b42318" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="198.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="208.0" y="148" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="220.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="230.0" y="148" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="242.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="252.0" y="148" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="264.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="274.0" y="148" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="286.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="296.0" y="148" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="308.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="318.0" y="148" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="330.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="340.0" y="148" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="352.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="362.0" y="148" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="380.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="390.0" y="148" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="402.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="412.0" y="148" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="424.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="434.0" y="148" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="446.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="456.0" y="148" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="468.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="478.0" y="148" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="490.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="500.0" y="148" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="512.0" y="130.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="522.0" y="148" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<text x="905" y="148" font-size="15" fill="#c26a12" text-anchor="start" font-weight="700" font-family="ui-monospace,Consolas,monospace">3.140625</text>
+<text x="1010" y="148" font-size="13" fill="#1f2a24" text-anchor="start">2 字节；范围同 FP32</text>
+<text x="36" y="188" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">FP16</text>
+<rect x="170.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#fbe4e1" stroke="#b42318" stroke-width="0.8"/>
+<text x="180.0" y="188" font-size="13" fill="#b42318" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="198.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="208.0" y="188" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="220.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="230.0" y="188" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="242.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="252.0" y="188" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="264.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="274.0" y="188" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="286.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="296.0" y="188" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="314.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="324.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="336.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="346.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="358.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="368.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="380.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="390.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="402.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="412.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="424.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="434.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="446.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="456.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="468.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="478.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="490.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="500.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="512.0" y="170.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="522.0" y="188" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<text x="905" y="188" font-size="15" fill="#c26a12" text-anchor="start" font-weight="700" font-family="ui-monospace,Consolas,monospace">3.140625</text>
+<text x="1010" y="188" font-size="13" fill="#1f2a24" text-anchor="start">2 字节；最大 65504</text>
+<text x="36" y="228" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">FP8 E4M3</text>
+<rect x="170.0" y="210.0" width="20.0" height="26.0" rx="2" fill="#fbe4e1" stroke="#b42318" stroke-width="0.8"/>
+<text x="180.0" y="228" font-size="13" fill="#b42318" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="198.0" y="210.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="208.0" y="228" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="220.0" y="210.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="230.0" y="228" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="242.0" y="210.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="252.0" y="228" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="264.0" y="210.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="274.0" y="228" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="292.0" y="210.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="302.0" y="228" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="314.0" y="210.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="324.0" y="228" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="336.0" y="210.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="346.0" y="228" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<text x="905" y="228" font-size="15" fill="#c26a12" text-anchor="start" font-weight="700" font-family="ui-monospace,Consolas,monospace">3.25</text>
+<text x="1010" y="228" font-size="13" fill="#1f2a24" text-anchor="start">1 字节；最大 448</text>
+<text x="36" y="268" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">FP8 E5M2</text>
+<rect x="170.0" y="250.0" width="20.0" height="26.0" rx="2" fill="#fbe4e1" stroke="#b42318" stroke-width="0.8"/>
+<text x="180.0" y="268" font-size="13" fill="#b42318" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="198.0" y="250.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="208.0" y="268" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="220.0" y="250.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="230.0" y="268" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="242.0" y="250.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="252.0" y="268" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="264.0" y="250.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="274.0" y="268" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="286.0" y="250.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="296.0" y="268" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="314.0" y="250.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="324.0" y="268" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="336.0" y="250.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="346.0" y="268" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<text x="905" y="268" font-size="15" fill="#c26a12" text-anchor="start" font-weight="700" font-family="ui-monospace,Consolas,monospace">3.0</text>
+<text x="1010" y="268" font-size="13" fill="#1f2a24" text-anchor="start">1 字节；范围大、更粗</text>
+<text x="36" y="308" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">FP4 E2M1</text>
+<rect x="170.0" y="290.0" width="20.0" height="26.0" rx="2" fill="#fbe4e1" stroke="#b42318" stroke-width="0.8"/>
+<text x="180.0" y="308" font-size="13" fill="#b42318" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="198.0" y="290.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="208.0" y="308" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<rect x="220.0" y="290.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="230.0" y="308" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">0</text>
+<rect x="248.0" y="290.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="258.0" y="308" font-size="13" fill="#4f7d2b" text-anchor="middle" font-weight="700" font-family="ui-monospace,Consolas,monospace">1</text>
+<text x="905" y="308" font-size="15" fill="#c26a12" text-anchor="start" font-weight="700" font-family="ui-monospace,Consolas,monospace">3.0</text>
+<text x="1010" y="308" font-size="13" fill="#1f2a24" text-anchor="start">半字节；一共只有 15 个值</text>
+<text x="36" y="340" font-size="14" fill="#1f2a24" text-anchor="start">红 = 符号，蓝 = 阶码（管范围），绿 = 尾数（管精度）。位数越少，要从 HBM 搬的字节越少：ReLU 从 float32 换成 bf16，每个元素读写从 8 字节变 4 字节。</text>
+<rect x="20.0" y="366.0" width="600.0" height="300.0" rx="12" fill="#ffffff" stroke="#c9d2cb" stroke-width="1.3"/>
+<text x="36" y="394" font-size="15.5" fill="#1f2a24" text-anchor="start" font-weight="700">Tensor Core 里的一次乘加（混合精度）</text>
+<rect x="40.0" y="426.0" width="120.0" height="40.0" rx="7" fill="#e3ecfd" stroke="#2563eb" stroke-width="1.3"/>
+<text x="100" y="452" font-size="14" fill="#2563eb" text-anchor="middle" font-weight="700">a：bf16</text>
+<rect x="40.0" y="486.0" width="120.0" height="40.0" rx="7" fill="#e3ecfd" stroke="#2563eb" stroke-width="1.3"/>
+<text x="100" y="512" font-size="14" fill="#2563eb" text-anchor="middle" font-weight="700">b：bf16</text>
+<circle cx="250" cy="476" r="26" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="1.6"/>
+<text x="250" y="483" font-size="20" fill="#4f7d2b" text-anchor="middle" font-weight="700">×</text>
+<path d="M160,446 L226,466" stroke="#8b968e" stroke-width="1.6" fill="none" marker-end="url(#ag)"/>
+<path d="M160,506 L226,486" stroke="#8b968e" stroke-width="1.6" fill="none" marker-end="url(#ag)"/>
+<text x="250" y="532" font-size="13.5" fill="#5e6b63" text-anchor="middle">乘积不舍入</text>
+<circle cx="400" cy="476" r="26" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="1.6"/>
+<text x="400" y="483" font-size="20" fill="#4f7d2b" text-anchor="middle" font-weight="700">+</text>
+<path d="M276,476 L374,476" stroke="#8b968e" stroke-width="1.6" fill="none" marker-end="url(#ag)"/>
+<rect x="340.0" y="566.0" width="120.0" height="40.0" rx="7" fill="#fbeedd" stroke="#c26a12" stroke-width="1.3"/>
+<text x="400" y="592" font-size="14" fill="#c26a12" text-anchor="middle" font-weight="700">累加器 FP32</text>
+<path d="M400,566 L400,502" stroke="#8b968e" stroke-width="1.6" fill="none" marker-end="url(#ag)" marker-start="url(#ag)"/>
+<path d="M426,476 L560,476" stroke="#8b968e" stroke-width="1.6" fill="none" marker-end="url(#ag)"/>
+<text x="500" y="466" font-size="13.5" fill="#5e6b63" text-anchor="middle">FP32 结果</text>
+<text x="36" y="642" font-size="13.5" fill="#1f2a24" text-anchor="start">输入 16 位（搬得少），乘积和累加用 32 位（4096 个乘积相加不丢精度）。</text>
+<rect x="640.0" y="366.0" width="580.0" height="300.0" rx="12" fill="#ffffff" stroke="#c9d2cb" stroke-width="1.3"/>
+<text x="656" y="394" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">哪些运算能用 16 位，哪些不能（CS336 引 NVIDIA 混合精度教程）</text>
+<text x="656" y="428" font-size="14" fill="#4f7d2b" text-anchor="start" font-weight="700">可以用 16 位存：</text>
+<text x="676" y="455" font-size="14" fill="#1f2a24" text-anchor="start">矩阵乘；多数逐元素运算（relu、tanh、加减乘）</text>
+<text x="656" y="482" font-size="14" fill="#c26a12" text-anchor="start" font-weight="700">要 FP32 的精度：</text>
+<text x="676" y="509" font-size="14" fill="#1f2a24" text-anchor="start">把小数加进大和里（会被舍掉）；</text>
+<text x="676" y="536" font-size="14" fill="#1f2a24" text-anchor="start">求和类：sum、softmax 的分母、归一化</text>
+<text x="656" y="563" font-size="14" fill="#b42318" text-anchor="start" font-weight="700">要 FP32 的范围：</text>
+<text x="676" y="590" font-size="14" fill="#1f2a24" text-anchor="start">输出远大于输入的逐元素运算：exp、log、pow；</text>
+<text x="676" y="617" font-size="14" fill="#1f2a24" text-anchor="start">损失函数</text>
+<rect x="20.0" y="686.0" width="1200.0" height="220.0" rx="12" fill="#ffffff" stroke="#c9d2cb" stroke-width="1.3"/>
+<text x="36" y="714" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">MXFP8：每 32 个 E4M3 数共用一个缩放因子（E8M0：只有 8 位阶码，表示一个 2 的幂次）——数值 = 缩放因子 × 元素</text>
+<rect x="40.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="62.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="84.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="106.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="128.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="150.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="172.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="194.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="216.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="238.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="260.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="282.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="304.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="326.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="348.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<rect x="370.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e3ecfd" stroke="#2563eb" stroke-width="0.8"/>
+<text x="216" y="784" font-size="13" fill="#5e6b63" text-anchor="middle">第 0 组（画了 16 个，实际 32 个）</text>
+<rect x="160.0" y="796.0" width="112.0" height="30.0" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="216" y="816" font-size="14" fill="#2563eb" text-anchor="middle" font-weight="700">×2⁻³</text>
+<rect x="430.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="452.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="474.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="496.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="518.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="540.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="562.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="584.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="606.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="628.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="650.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="672.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="694.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="716.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="738.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<rect x="760.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="0.8"/>
+<text x="606" y="784" font-size="13" fill="#5e6b63" text-anchor="middle">第 1 组（画了 16 个，实际 32 个）</text>
+<rect x="550.0" y="796.0" width="112.0" height="30.0" rx="4" fill="#ffffff" stroke="#4f7d2b" stroke-width="1.3"/>
+<text x="606" y="816" font-size="14" fill="#4f7d2b" text-anchor="middle" font-weight="700">×2⁵</text>
+<rect x="820.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="842.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="864.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="886.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="908.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="930.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="952.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="974.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="996.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="1018.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="1040.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="1062.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="1084.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="1106.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="1128.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<rect x="1150.0" y="736.0" width="20.0" height="26.0" rx="2" fill="#ece6f5" stroke="#6b4c9a" stroke-width="0.8"/>
+<text x="996" y="784" font-size="13" fill="#5e6b63" text-anchor="middle">第 2 组（画了 16 个，实际 32 个）</text>
+<rect x="940.0" y="796.0" width="112.0" height="30.0" rx="4" fill="#ffffff" stroke="#6b4c9a" stroke-width="1.3"/>
+<text x="996" y="816" font-size="14" fill="#6b4c9a" text-anchor="middle" font-weight="700">×2⁰</text>
+<text x="36" y="858" font-size="14" fill="#1f2a24" text-anchor="start">一组里数的大小差不多，共用一个 2 的幂次就够；不同组可以差很远。代价：矩阵转置后“同一组”的方向变了，反向传播要另外量化一份转置。</text>
+<text x="36" y="884" font-size="14" fill="#1f2a24" text-anchor="start">FP4 再往下：NVIDIA 的 NVFP4 每 16 个 E2M1 数配一个 E4M3 缩放因子。E2M1 的全部值：0、±0.5、±1、±1.5、±2、±3、±4、±6（+0 和 −0 各一个码，共 16 个码）。</text>
+<text x="24" y="936" font-size="13" fill="#5e6b63" text-anchor="start">来源：CS336 第 5 讲（低精度一节，引 NVIDIA ECCV 2020 混合精度教程、MXFP8 训练论文 arXiv 2506.08027）；编码由脚本按“就近舍入”算出。</text>
+</svg>

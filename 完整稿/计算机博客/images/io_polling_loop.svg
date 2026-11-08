@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="720" viewBox="0 0 1000 720" role="img" aria-labelledby="title desc">
+<title id="title">程序查询方式：CPU 怎样重复读取状态并搬完三个字节</title>
+<desc id="desc">CPU 预置内存指针和剩余数，启动设备，反复读 READY。未就绪则重查；就绪后从接口数据缓冲读一个字节并写入主存，指针加一、剩余数减一；未传完则再次查询，传完才结束。</desc>
+<defs>
+<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#456676"/></marker>
+<marker id="arrb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#24719f"/></marker>
+<style>
+text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#263d4c}
+.h{font-size:22px;font-weight:700}.t{font-size:18px;font-weight:700}.s{font-size:15px}.mono{font-family:Consolas,monospace;font-size:16px;font-weight:700}
+.cpu{fill:#e6f1fa;stroke:#3a82ab;stroke-width:2}.device{fill:#fff0dd;stroke:#c48131;stroke-width:2}.ram{fill:#eef4e8;stroke:#72935d;stroke-width:2}
+.line{fill:none;stroke:#456676;stroke-width:2.8;marker-end:url(#arr)}.blue{fill:none;stroke:#24719f;stroke-width:2.8;marker-end:url(#arrb)}
+</style>
+</defs>
+<rect width="1000" height="720" fill="#fbfaf7"/>
+<text x="24" y="38" class="h">程序查询：等一个字节，搬一个字节，直到计数归零</text>
+<text x="25" y="67" class="s">例：接口依次收到 0xA1、0xB2、0xC3；CPU 将它们写入 RAM 的 0x2000～0x2002。</text>
+
+<rect x="25" y="112" width="195" height="85" rx="11" class="cpu"/>
+<text x="43" y="144" class="t">① 预置参数</text>
+<text x="43" y="169" class="mono">指针=0x2000</text>
+<text x="43" y="188" class="mono">剩余=3</text>
+<rect x="264" y="112" width="187" height="85" rx="11" class="device"/>
+<text x="282" y="146" class="t">② 启动外设</text>
+<text x="282" y="176" class="s">写命令字，设备开始准备</text>
+<path d="M222 153H261" class="line"/>
+<path d="M453 153H478" class="line"/>
+
+<path d="M563 103L648 153L563 203L478 153Z" fill="#e7f3f8" stroke="#3a82ab" stroke-width="2.5"/>
+<text x="563" y="148" text-anchor="middle" class="t">③ 读状态</text>
+<text x="563" y="174" text-anchor="middle" class="mono">READY?</text>
+<path d="M648 153H699V93H563V101" class="line"/>
+<text x="710" y="133" class="s">0：未就绪，重查</text>
+<path d="M563 205V266" class="line"/>
+<text x="576" y="244" class="s">1：就绪</text>
+
+<rect x="465" y="269" width="196" height="96" rx="11" class="cpu"/>
+<text x="482" y="299" class="t">④ 传一次数据</text>
+<text x="482" y="327" class="s">读接口缓冲 → 写 RAM</text>
+<text x="482" y="352" class="s">一次只搬 1 字节</text>
+<path d="M563 367V400" class="line"/>
+<rect x="465" y="403" width="196" height="77" rx="11" class="cpu"/>
+<text x="482" y="433" class="t">⑤ 修改参数</text>
+<text x="482" y="460" class="mono">指针+1；剩余-1</text>
+<path d="M563 482V515" class="line"/>
+<path d="M563 505L686 565L563 625L440 565Z" fill="#e7f3f8" stroke="#3a82ab" stroke-width="2.5"/>
+<text x="563" y="557" text-anchor="middle" class="t">⑥ 传完了吗？</text>
+<text x="563" y="584" text-anchor="middle" class="mono">剩余=0?</text>
+<path d="M437 575H285V236H478V155" class="line"/>
+<text x="296" y="545" class="s">否：回到③，等下一字节</text>
+<path d="M563 627V646" class="line"/>
+<rect x="424" y="649" width="280" height="49" rx="10" class="ram"/>
+<text x="563" y="680" text-anchor="middle" class="t">是：结束，CPU 离开循环</text>
+
+<rect x="736" y="220" width="238" height="330" rx="12" fill="#fff" stroke="#9bb2b8" stroke-width="2"/>
+<text x="754" y="252" class="t">一次查询用到的东西</text>
+<rect x="752" y="271" width="205" height="65" rx="8" class="device"/>
+<text x="766" y="297" class="s">接口状态寄存器</text>
+<text x="766" y="322" class="mono">READY: 0 → 1</text>
+<rect x="752" y="350" width="205" height="65" rx="8" class="device"/>
+<text x="766" y="376" class="s">接口数据缓冲寄存器</text>
+<text x="766" y="401" class="mono">0xA1 → 0xB2 → 0xC3</text>
+<rect x="752" y="429" width="205" height="108" rx="8" class="ram"/>
+<text x="766" y="452" class="s">RAM：三次写入后的结果</text>
+<text x="766" y="475" class="mono">0x2000  0xA1</text>
+<text x="766" y="501" class="mono">0x2001  0xB2</text>
+<text x="766" y="527" class="mono">0x2002  0xC3</text>
+<path d="M750 385H718V315H665" class="blue"/>
+
+<rect x="24" y="625" width="390" height="72" rx="10" fill="#fff8ea" stroke="#d4ad6f" stroke-width="1.5"/>
+<text x="42" y="654" class="t">CPU 忙在哪里？</text>
+<text x="42" y="682" class="s">READY=0 时反复执行③；设备不会替 CPU 写 RAM。</text>
+</svg>

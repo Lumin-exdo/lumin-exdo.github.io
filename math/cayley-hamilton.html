@@ -1,0 +1,111 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>凯莱哈密顿定理 · 知识合集</title><link rel="stylesheet" href="../style.css?v=9eb6969b4b2b"><script>window.MathJax={loader:{load:["[tex]/colorv2"]},tex:{inlineMath:[["$","$"],["\\(","\\)"]],packages:{"[-]":["textmacros"],"[+]":["colorv2"]},autoload:{color:[]}}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/github-dark.min.css"><script defer src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script><script>addEventListener("DOMContentLoaded",function(){if(window.hljs){hljs.configure({cssSelector:"pre code[class*=language-]"});hljs.highlightAll();}});</script></head><body><main class="article-shell"><header class="article-head"><a class="crumb" href="../index.html">← 知识合集</a><h1>凯莱哈密顿定理</h1><p style="margin:12px 0 0;color:#8a908b;font:12px IBM Plex Mono,monospace;letter-spacing:.04em">发布于 2026-08-25 06:12:58</p></header><article class="article"><h1>凯莱-哈密顿定理：内涵与对称性</h1>
+<p>凯莱-哈密顿定理最表层的表述是&quot;矩阵满足它自己的特征多项式&quot;，即若 <span class="math inline">\(P(\lambda) = \det(\lambda I - A)\)</span>，则 <span class="math inline">\(P(A) = O\)</span>。</p>
+<p>初学者第一次看到这个定理时，几乎都会有一种&quot;这是不是耍了个把戏&quot;的感觉——它太像是把变量 <span class="math inline">\(\lambda\)</span> 硬生生换成矩阵 <span class="math inline">\(A\)</span> 的文字游戏了。这种直觉甚至会让人想直接代入：把 <span class="math inline">\(\lambda = A\)</span> 代进 <span class="math inline">\(\det(\lambda I - A)\)</span>，得到 <span class="math inline">\(\det(O) = 0\)</span>，然后就此收工。但这一步在数学上是严厉禁止的：<span class="math inline">\(\det(\cdot)\)</span> 算出来的是一个<strong>标量</strong>，而 <span class="math inline">\(P(A)\)</span> 算出来的是一个<strong>矩阵</strong>，两者根本不是同一类东西，这样代入偷换了运算的含义。根本上在于，<strong>数乘和矩阵乘法的规则不同</strong>，<span class="math inline">\(\lambda\)</span> 乘一个矩阵，是把它的每个元素乘以 <span class="math inline">\(\lambda\)</span> ，等价于 <span class="math inline">\(\lambda I\)</span> 左乘这个矩阵；而 <span class="math inline">\(A\)</span> 左乘这个矩阵，用的是矩阵乘法的运算规则，所以不能直接把 <span class="math inline">\(\lambda\)</span> 替换为 <span class="math inline">\(A\)</span> 。正确的特征多项式代换规则诸如 <span class="math inline">\(\lambda^2\)</span> 替换为 <span class="math inline">\(A^2\)</span> ，是把数的自乘替换成矩阵自乘。</p>
+<p>那么，在正确的展开后的特征多项式中，为什么把 <span class="math inline">\(\lambda\)</span> 换成 <span class="math inline">\(A\)</span> 之后，式子依然精准地等于零矩阵？答案在于：特征多项式不只是编码了矩阵的&quot;特征值&quot;这几个标量信息，它更封装了矩阵在整个空间上的&quot;算子退化规律&quot;。接下来从三个角度拆解这种&quot;对称性&quot;从何而来。</p>
+<h2>一、代数内涵：有限维空间的&quot;压制&quot;</h2>
+<p>矩阵 <span class="math inline">\(A\)</span> 作用在一个向量上可以不断迭代：<span class="math inline">\(x, Ax, A^2x, \dots, A^kx\)</span>。在 <span class="math inline">\(n\)</span> 维空间里，<span class="math inline">\(A^0, A^1, \dots, A^n\)</span> 这 <span class="math inline">\(n+1\)</span> 个矩阵必然线性相关——因为只看 <span class="math inline">\(A\)</span> 的幂次生成的子空间，维数至多是 <span class="math inline">\(n\)</span>，塞进 <span class="math inline">\(n+1\)</span> 个矩阵必然挤出线性相关性。于是一定存在一组不全为零的系数，使得</p>
+<div class="math block">
+\[c_nA^n + c_{n-1}A^{n-1} + \dots + c_1A + c_0I = O\]
+</div>
+<p>凯莱-哈密顿定理的深刻之处在于：它不光告诉你&quot;一定存在某个多项式能让 <span class="math inline">\(A\)</span> 归零&quot;，而且<strong>直接把这组系数点名道姓地指出来</strong>——它们恰好就是特征多项式的系数。如果没有后面几节的推导，这一点单独拎出来看会让人觉得非常神奇，像是一种莫名其妙的巧合：为什么偏偏是特征多项式这组特定系数，而不是随便哪组能凑效的系数？</p>
+<h2>二、几何内涵：对角化视角下的&quot;逐一击破&quot;</h2>
+<p>放到可对角化的矩阵上看，这种&quot;巧合&quot;就会显得极其自然。设 <span class="math inline">\(A\)</span> 可对角化，特征值为 <span class="math inline">\(\lambda_1, \dots, \lambda_n\)</span>，特征向量为 <span class="math inline">\(v_1, \dots, v_n\)</span>。特征多项式可以拆成一次因子的乘积：</p>
+<div class="math block">
+\[P(\lambda) = (\lambda - \lambda_1)(\lambda - \lambda_2)\cdots(\lambda - \lambda_n)\]
+</div>
+<p>把矩阵 <span class="math inline">\(A\)</span> 代入，让 <span class="math inline">\(P(A)\)</span> 作用在任意一个特征向量 <span class="math inline">\(v_i\)</span> 上：</p>
+<div class="math block">
+\[P(A)v_i = (A-\lambda_1I)(A-\lambda_2I)\cdots(A-\lambda_iI)\cdots(A-\lambda_nI)v_i\]
+</div>
+<p>这里有个关键的合法性问题：一般矩阵乘法不满足交换律，那能不能随便调换这些因子的顺序？能——因为这些因子全都是<strong>同一个矩阵 <span class="math inline">\(A\)</span> 的多项式</strong>（也就是 <span class="math inline">\(A\)</span> 的不同次幂加减单位矩阵的组合），而 <span class="math inline">\(A\)</span> 的任意两个幂次之间是天然可交换的（<span class="math inline">\(A^iA^j = A^jA^i = A^{i+j}\)</span>）。正是这一点允许我们把 <span class="math inline">\((A - \lambda_iI)\)</span> 挪到最右边，让它第一个作用在 <span class="math inline">\(v_i\)</span> 上：</p>
+<div class="math block">
+\[P(A)v_i = [\text{剩下一堆矩阵}]\cdot\underbrace{(A-\lambda_iI)v_i}_{=0} = 0\]
+</div>
+<p>也就是说，<span class="math inline">\(P(A)\)</span> 这个算子，把空间里的<strong>每一个</strong>特征向量都&quot;吞掉&quot;、消灭成了零向量。既然特征向量张成了整个 <span class="math inline">\(n\)</span> 维空间，<span class="math inline">\(P(A)\)</span> 作用在空间任何一个向量上都必然是零向量，所以 <span class="math inline">\(P(A)\)</span> 只能是零矩阵本身。</p>
+<p>这也就解答了第一节留下的悬念——为什么系数偏偏是特征多项式的系数：因为特征多项式的每一个一次因子 <span class="math inline">\((\lambda - \lambda_i)\)</span>，对应到算子层面就精确地&quot;瞄准并抹平&quot;一个特征方向。特征多项式的根，在标量层面是&quot;逐一让每个特征值归零&quot;；换成矩阵后，<span class="math inline">\(P(A)\)</span> 就是在几何层面沿着每一个主轴方向依次把空间压塌为零。标量域的&quot;根&quot;与空间维度的&quot;消亡&quot;，说的是同一件事的两种语言，这才是&quot;对称性&quot;真正的来源。</p>
+<h2>三、结构内涵：伴随矩阵给出的一般性证明</h2>
+<p>上面的推导有个前提——矩阵必须可对角化。但凯莱-哈密顿定理对<strong>任意</strong>方阵都成立，包括那些有重特征值、缺特征向量的&quot;病态&quot;矩阵。要覆盖这种一般情形，需要绕开特征向量，直接从行列式的伴随矩阵（adjugate matrix）公式入手，这也是教材里最常见、最严谨的证明路径。</p>
+<p>先回忆一个对任意方阵 <span class="math inline">\(M\)</span> 都成立的恒等式：<span class="math inline">\(M \cdot \mathrm{adj}(M) = \det(M)I\)</span>。这个式子的意思是，一个矩阵乘上它自己的伴随矩阵，一定能得到&quot;行列式乘单位矩阵&quot;这样一个规规矩矩的对角形式——这本身是伴随矩阵定义（用代数余子式构造）直接推出的性质，不依赖矩阵是否可对角化。</p>
+<p>这个式子有一个特别诱人的形状——它把&quot;行列式&quot;这个标量，包裹在了&quot;矩阵乘矩阵&quot;的外壳里。左边是纯矩阵运算，右边虽然是标量 <span class="math inline">\(\det(M)\)</span>，但配上了单位矩阵 <span class="math inline">\(I\)</span>，所以两边在&quot;矩阵世界&quot;里是同一类对象，可以做矩阵层面的比较。这正好是开头提到的那个&quot;代入偷换&quot;问题所需要的桥梁：只要把 <span class="math inline">\(M\)</span> 换成含有 <span class="math inline">\(A\)</span> 与 <span class="math inline">\(\lambda\)</span> 的表达式，左边就出现了一个还没被&quot;过早求值&quot;的、含有矩阵 <span class="math inline">\(A\)</span> 的乘积；右边则精确地是 <span class="math inline">\(P(\lambda)I\)</span>。式子两边都还没有把 <span class="math inline">\(\lambda\)</span> 消耗掉，<span class="math inline">\(\lambda\)</span> 依然是自由变量，<span class="math inline">\(A\)</span> 依然作为矩阵存在于两边——这就避开了开头那个把 <span class="math inline">\(\lambda=A\)</span> 直接代进 <span class="math inline">\(\det(\lambda I-A)\)</span> 的陷阱。</p>
+<p>为了让接下来逐项比对 <span class="math inline">\(\lambda\)</span> 的系数时更加干净利落，与 <span class="math inline">\(P(\lambda)=\lambda^n+a_{n-1}\lambda^{n-1}+\dots+a_0\)</span>（首项系数为 1）对应得最清楚，这里直接取 <span class="math inline">\(M=\lambda I-A\)</span>（而非 <span class="math inline">\(A-\lambda I\)</span>）代入，得到</p>
+<div class="math block">
+\[(\lambda I-A)\cdot\mathrm{adj}(\lambda I-A)=\det(\lambda I-A)\,I=P(\lambda)\,I \tag{$\ast$}\]
+</div>
+<p>现在关键的一步是观察 <span class="math inline">\(\mathrm{adj}(\lambda I-A)\)</span> 这个东西的结构：它的每个元素都是 <span class="math inline">\(\lambda I-A\)</span> 的某个 <span class="math inline">\((n-1)\times(n-1)\)</span> 子行列式（代数余子式）。<span class="math inline">\(\lambda I-A\)</span> 的每个元素都只是 <span class="math inline">\(\lambda\)</span> 的一次多项式（对角元是 <span class="math inline">\(\lambda-a_{ii}\)</span>，非对角元是常数 <span class="math inline">\(-a_{ij}\)</span>），而任何一个 <span class="math inline">\((n-1)\times(n-1)\)</span> 子式，是 <span class="math inline">\(n-1\)</span> 个这种一次元素之积的和，所以次数自然不会超过 <span class="math inline">\(n-1\)</span>。</p>
+<p>这一步的洞察其实很朴素：伴随矩阵的每个格子里装的是一个次数有界的 <span class="math inline">\(\lambda\)</span> 多项式，所以整个矩阵可以按 <span class="math inline">\(\lambda\)</span> 的幂次拆开，系数是矩阵——这一步把&quot;矩阵&quot;和&quot;多项式&quot;这两个原本分属不同代数结构的东西，统一成了同一个对象（矩阵多项式环 <span class="math inline">\(M_n(\mathbb{F})[\lambda]\)</span> 里的元素）。因此可以写成</p>
+<div class="math block">
+\[\mathrm{adj}(\lambda I-A)=\sum_{k=0}^{n-1}\lambda^k C_k\]
+</div>
+<p>其中 <span class="math inline">\(C_0,\dots,C_{n-1}\)</span> 都是与 <span class="math inline">\(\lambda\)</span> 无关的具体 <span class="math inline">\(n\times n\)</span> 矩阵，由 <span class="math inline">\(A\)</span> 的元素决定，但不含 <span class="math inline">\(\lambda\)</span>。</p>
+<p>把这个展开式代回 <span class="math inline">\((\ast)\)</span> 式左边：</p>
+<div class="math block">
+\[(\lambda I-A)\sum_{k=0}^{n-1}\lambda^k C_k=\sum_{k=0}^{n-1}\lambda^{k+1}C_k-\sum_{k=0}^{n-1}\lambda^k AC_k=\sum_{k=1}^{n}\lambda^k C_{k-1}-\sum_{k=0}^{n-1}\lambda^k AC_k\]
+</div>
+<p>按 <span class="math inline">\(\lambda^k\)</span> 的次数整理系数：<span class="math inline">\(k=0\)</span> 对应 <span class="math inline">\(-AC_0\)</span>；<span class="math inline">\(k=1,\dots,n-1\)</span> 对应 <span class="math inline">\(C_{k-1}-AC_k\)</span>；<span class="math inline">\(k=n\)</span> 对应 <span class="math inline">\(C_{n-1}\)</span>。右边则是 <span class="math inline">\(P(\lambda)I=\sum_{k=0}^n a_k\lambda^k I\)</span>（记 <span class="math inline">\(a_n=1\)</span>）。</p>
+<p>一旦想到这一层，整个证明的骨架就基本定型了：两个矩阵系数多项式相等，当且仅当逐次幂系数相等——这跟普通标量多项式的比较系数法是完全平行的操作，只是把标量换成了矩阵（矩阵乘法虽不交换，但这里 <span class="math inline">\(A\)</span> 和这些 <span class="math inline">\(C_k\)</span> 之间的运算顺序是被恒等式本身固定好的，不会引发麻烦）。由于 <span class="math inline">\((\ast)\)</span> 式对<strong>所有</strong> <span class="math inline">\(\lambda\)</span> 都成立，两边 <span class="math inline">\(\lambda\)</span> 同次幂前的矩阵系数必须逐一相等，于是得到一串矩阵方程：</p>
+<div class="math block">
+\[\begin{aligned}
+k=0:&amp;\quad -AC_0 = a_0 I\\
+k=1:&amp;\quad C_0-AC_1 = a_1 I\\
+k=2:&amp;\quad C_1-AC_2 = a_2 I\\
+&amp;\ \ \vdots\\
+k=n-1:&amp;\quad C_{n-2}-AC_{n-1} = a_{n-1} I\\
+k=n:&amp;\quad C_{n-1} = I
+\end{aligned}\]
+</div>
+<p>这些方程各自都不是我们要的结论，孤立看没什么用。但注意到，如果在第 <span class="math inline">\(k\)</span> 个方程两边左乘 <span class="math inline">\(A^k\)</span>，会得到 <span class="math inline">\(A^kC_{k-1}-A^{k+1}C_k = a_kA^k\)</span>，这样一来，前一个方程里出现的 <span class="math inline">\(A^{k}C_{k-1}\)</span>，恰好会和下一个方程构造出的 <span class="math inline">\(A^{k}C_{k-1}\)</span> 严格重合（只差一个符号）。这个&quot;错位相消&quot;的设计并非凭空而来，而是<strong>目标倒推</strong>出来的：我们想要的最终等式右边是 <span class="math inline">\(\sum a_k A^k\)</span>，也就是每一层方程右边 <span class="math inline">\(a_k I\)</span> 恰好需要被乘上 <span class="math inline">\(A^k\)</span> 才能拼出目标；既然目标决定了每层要乘 <span class="math inline">\(A^k\)</span>，那么左边自动就会因为 <span class="math inline">\(C_k\)</span> 前后相邻两层符号相反、次数差一，而呈现出错位相消的形式——这更像是&quot;知道要去哪儿&quot;之后自然浮现的构造，而不是灵光一现的巧合。</p>
+<p>把第 <span class="math inline">\(k\)</span> 条等式两边同时左乘 <span class="math inline">\(A^k\)</span>：</p>
+<div class="math block">
+\[\begin{aligned}
+k=0:&amp;\quad -AC_0 = a_0 I\\
+k=1:&amp;\quad A C_0-A^2C_1 = a_1 A\\
+k=2:&amp;\quad A^2C_1-A^3C_2 = a_2 A^2\\
+&amp;\ \ \vdots\\
+k=n-1:&amp;\quad A^{n-1}C_{n-2}-A^{n}C_{n-1} = a_{n-1} A^{n-1}\\
+k=n:&amp;\quad A^{n}C_{n-1} = A^n
+\end{aligned}\]
+</div>
+<p>接下来是整个证明里最巧妙的一步：把所有层的等式<strong>加总</strong>起来。左边求和：</p>
+<div class="math block">
+\[-AC_0+(AC_0-A^2C_1)+(A^2C_1-A^3C_2)+\dots+(A^{n-1}C_{n-2}-A^nC_{n-1})+A^nC_{n-1}\]
+</div>
+<p>你会发现，几乎每一项都以 <span class="math inline">\(A^kC_{k-1}\)</span> 这样的形式出现两次、符号相反，像拉手风琴一样一层一层地连锁抵消：<span class="math inline">\(-AC_0\)</span> 与 <span class="math inline">\(+AC_0\)</span> 抵消，<span class="math inline">\(-A^2C_1\)</span> 与 <span class="math inline">\(+A^2C_1\)</span> 抵消……一直到 <span class="math inline">\(-A^nC_{n-1}\)</span> 与最后一条的 <span class="math inline">\(+A^nC_{n-1}\)</span> 抵消。所有 <span class="math inline">\(C_k\)</span> 项两两相消，左边最终整体抵消为零矩阵：</p>
+<div class="math block">
+\[O\ (\text{零矩阵})\]
+</div>
+<p>而右边因为每一层原本就是 <span class="math inline">\(P(\lambda)\)</span> 按 <span class="math inline">\(\lambda^k\)</span> 展开后对应的系数乘上 <span class="math inline">\(A^k\)</span>，加总起来恰好精确地拼出</p>
+<div class="math block">
+\[a_0I+a_1A+a_2A^2+\dots+a_{n-1}A^{n-1}+A^n=P(A)\]
+</div>
+<p>于是两边相等：</p>
+<div class="math block">
+\[O=P(A)=A^n+a_{n-1}A^{n-1}+\dots+a_1A+a_0I\]
+</div>
+<p>证毕。</p>
+<p>整个推导中唯一用到的性质是：其一，<span class="math inline">\(M\cdot\mathrm{adj}(M)=\det(M)I\)</span> 对<strong>任意</strong>方阵恒成立，是伴随矩阵的定义性质；其二，<span class="math inline">\(\mathrm{adj}(\lambda I-A)\)</span> 的每个元素是 <span class="math inline">\(\lambda\)</span> 的多项式、次数 <span class="math inline">\(\le n-1\)</span>，这只是&quot;子式是元素乘积之和&quot;的组合事实，与 <span class="math inline">\(A\)</span> 的特征结构（是否有重根、是否可对角化）完全无关。整个证明没有出现&quot;设 <span class="math inline">\(v\)</span> 是特征向量&quot;&quot;设 <span class="math inline">\(A=PDP^{-1}\)</span>&quot;这类只对可对角化矩阵有效的操作，比较的只是矩阵系数多项式的恒等式，所以对所有方阵——包括有若尔当块、亏损特征向量的病态矩阵——都成立。这也解释了第二节几何证明留下的漏洞：可对角化证明本质上只是这个一般证明在 <span class="math inline">\(A\)</span> 恰好可对角化这一特殊情形下的简化版本。</p>
+<p>这个证明的本质在于：特征多项式和伴随矩阵其实是同一个行列式恒等式 <span class="math inline">\(M\cdot\mathrm{adj}(M) = \det(M)I\)</span> 在不同维度上的两种呈现，凯莱-哈密顿定理只是把这层内嵌的代数结构，用矩阵幂次的加权求和&quot;翻译&quot;了出来。它完全不依赖对角化，因此对任意方阵普遍成立，这也是为什么教材更偏爱这个证明而不是几何证明。</p>
+<p>若回头看整条思路是怎么被想出来的，会发现它其实遵循了一个很常见的数学思维模式——遇到&quot;不能直接做的操作&quot;（把矩阵代入标量多项式），就去找一个&quot;结构上等价、但形式上允许这样做&quot;的恒等式（伴随矩阵公式），然后利用这个恒等式两边天然共享的代数结构（都是关于 <span class="math inline">\(\lambda\)</span> 的矩阵系数多项式），把问题转化成一个可以逐层对比、机械操作的形式（比较系数 + 加权求和消元）。换句话说，凯莱-哈密顿定理在这个视角下，甚至算不上一个需要&quot;洞察&quot;矩阵几何意义的定理，而更像是伴随矩阵恒等式在多项式语言下的一个自动推论。</p>
+<h2>四、这个定理到底有什么用</h2>
+<p>凯莱-哈密顿定理并不只是一个数学上好看的对称性，它在实际计算里能带来实打实的化简。</p>
+<p><strong>降阶高次矩阵幂。</strong> 如果要算 <span class="math inline">\(A^{100}\)</span>，硬乘 99 次代价很高。但既然 <span class="math inline">\(P(A) = O\)</span>，<span class="math inline">\(A^n\)</span> 就可以用 <span class="math inline">\(A\)</span> 的更低次幂表示出来（把 <span class="math inline">\(A^n = -(a_{n-1}A^{n-1}+\dots+a_0I)\)</span> 移项即得）。于是可以做多项式的带余除法：用 <span class="math inline">\(P(x)\)</span> 去除 <span class="math inline">\(x^{100}\)</span>，得到商式和一个次数不超过 <span class="math inline">\(n-1\)</span> 的余式 <span class="math inline">\(R(x)\)</span>，即 <span class="math inline">\(x^{100} = Q(x)P(x) + R(x)\)</span>。把 <span class="math inline">\(x\)</span> 换成 <span class="math inline">\(A\)</span>，由于 <span class="math inline">\(P(A) = O\)</span>，右边第一项直接消失，只剩下 <span class="math inline">\(A^{100} = R(A)\)</span>。这样就把一个 100 次幂的计算，缩减成了只需要知道 <span class="math inline">\(I, A, A^2, \dots, A^{n-1}\)</span> 这 <span class="math inline">\(n\)</span> 项系数组合，计算量和矩阵阶数无关，只取决于 <span class="math inline">\(n\)</span>。</p>
+<p><strong>求逆矩阵，完全绕开伴随矩阵法。</strong> 设 <span class="math inline">\(P(\lambda) = \lambda^n + a_{n-1}\lambda^{n-1} + \dots + a_1\lambda + a_0\)</span>，只要 <span class="math inline">\(a_0 \ne 0\)</span>（这等价于 <span class="math inline">\(A\)</span> 可逆，因为 <span class="math inline">\(a_0 = (-1)^n\det(A)\)</span>），由 <span class="math inline">\(P(A) = O\)</span> 展开：</p>
+<div class="math block">
+\[A^n + a_{n-1}A^{n-1} + \dots + a_1A + a_0I = O\]
+</div>
+<p>把常数项之外的所有项挪到一边，再提出一个公因子 <span class="math inline">\(A\)</span>：</p>
+<div class="math block">
+\[A\left(A^{n-1} + a_{n-1}A^{n-2} + \dots + a_1I\right) = -a_0I\]
+</div>
+<p>两边同除 <span class="math inline">\(-a_0\)</span>，就直接读出了逆矩阵的显式表达式：</p>
+<div class="math block">
+\[A^{-1} = -\frac{1}{a_0}\left(A^{n-1} + a_{n-1}A^{n-2} + \dots + a_1I\right)\]
+</div>
+<p>这意味着求逆矩阵根本不需要走&quot;求所有代数余子式、拼伴随矩阵、再除以行列式&quot;这条又长又容易算错的路，只要知道特征多项式的系数，逆矩阵就是 <span class="math inline">\(A\)</span> 的一个具体多项式组合，直接算出来。</p>
+<p><strong>矩阵指数的有限化，这是控制理论和微分方程里最重要的应用之一。</strong> 常系数线性微分方程组 <span class="math inline">\(\dot{x} = Ax\)</span> 的解由矩阵指数 <span class="math inline">\(e^{At} = \sum_{k=0}^{\infty}\frac{t^k}{k!}A^k\)</span> 给出，这本身是一个无穷级数，直接算无从下手。但凯莱-哈密顿定理保证了 <span class="math inline">\(A^n\)</span> 以及之后所有更高的幂次，都能用 <span class="math inline">\(I, A, \dots, A^{n-1}\)</span> 的线性组合表示出来——所以整个无穷级数里，凡是次数达到 <span class="math inline">\(n\)</span> 或以上的项，都可以逐一&quot;折叠&quot;回前 <span class="math inline">\(n-1\)</span> 项里去，累加出一组新的、依赖 <span class="math inline">\(t\)</span> 的系数函数 <span class="math inline">\(\alpha_0(t), \alpha_1(t), \dots, \alpha_{n-1}(t)\)</span>，使得</p>
+<div class="math block">
+\[e^{At} = \alpha_{n-1}(t)A^{n-1} + \dots + \alpha_1(t)A + \alpha_0(t)I\]
+</div>
+<p>这样一来，原本无穷维的计算问题，就被压缩成了只需求出 <span class="math inline">\(n\)</span> 个标量函数 <span class="math inline">\(\alpha_i(t)\)</span>（通常通过特征值代入 <span class="math inline">\(P(\lambda)\)</span> 的思路反解出来），再配上矩阵的前 <span class="math inline">\(n-1\)</span> 次幂就能拼出精确解。这正是现代控制理论里状态转移矩阵能够被有效计算的根本原因。</p>
+<hr />
+<p>这三节合起来讲的其实是同一件事的三重身份：<strong>代数上</strong>，它保证了某组特定系数（不多不少刚好是特征多项式系数）能让矩阵的幂级数归零；<strong>几何上</strong>，这组系数之所以有效，是因为特征多项式的每个因子恰好瞄准并抹平了一个特征方向；<strong>结构上</strong>，即便没有特征向量可用，行列式与伴随矩阵之间的恒等式依然能不依赖对角化地把这件事重新证明一遍。而它的价值正来自于这种&quot;归零&quot;性质——只要矩阵能让自己的特征多项式归零，无穷次幂、逆矩阵、矩阵指数，这些原本看似需要无限信息的对象，就都能被压缩进前 <span class="math inline">\(n-1\)</span> 次幂张成的有限空间里。</p>
+</article></main><footer class="wrap foot">除非另有说明，本站内容采用 <a style="color:#80582d;font-weight:600;text-decoration-color:#b89a75;text-underline-offset:3px" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" rel="license">CC BY-NC-SA 4.0</a> 协议发布。</footer><button id="search-open" style="position:fixed;right:24px;bottom:24px;z-index:5;border:1px solid #dcded6;border-radius:999px;background:#fffefa;color:#405047;padding:9px 14px;font:13px 'IBM Plex Mono',monospace;cursor:pointer;box-shadow:0 3px 14px #20272418">⌕ 搜索</button><div id="search-panel" hidden style="position:fixed;inset:0;z-index:10;background:#20272466;padding:12vh 20px"><div style="max-width:660px;margin:auto;background:#fffefa;border:1px solid #dcded6;border-radius:7px;padding:18px;box-shadow:0 18px 50px #20272440"><div style="display:flex;gap:10px;align-items:center"><input id="search-input" type="search" placeholder="输入关键词，搜索标题与正文" style="width:100%;border:0;outline:0;background:transparent;color:#202724;font:17px 'Source Han Sans SC',sans-serif;padding:8px"><button id="search-close" style="border:0;background:transparent;color:#69716c;font-size:18px;cursor:pointer">×</button></div><div id="search-results" style="border-top:1px solid #dcded6;margin-top:10px;max-height:52vh;overflow:auto"></div></div></div><script>(async()=>{let v='';setInterval(async()=>{try{const n=await fetch('../version.txt?'+Date.now(),{cache:'no-store'}).then(r=>r.text());if(v&&n!==v)location.reload();v=n}catch(e){}},2000)})()</script><script>(()=>{const open=document.getElementById('search-open'),panel=document.getElementById('search-panel'),input=document.getElementById('search-input'),close=document.getElementById('search-close'),results=document.getElementById('search-results');let entries=[];const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));async function show(){panel.hidden=false;input.focus();if(!entries.length)entries=await fetch('../search-index.json').then(r=>r.json())}function render(){const q=input.value.trim().toLowerCase();if(!q){results.innerHTML='<p style="color:#69716c;font-size:14px;padding:8px 0">搜索文章标题或正文内容</p>';return}const found=entries.filter(x=>(x.title+' '+x.text).toLowerCase().includes(q)).slice(0,30);results.innerHTML=found.length?found.map(x=>'<a href="../'+'../'+encodeURI(x.url)+'?q='+encodeURIComponent(input.value.trim())+'" style="display:block;padding:14px 4px;border-bottom:1px solid #e7e8e2;text-decoration:none;color:#202724"><strong style="font-family:Noto Serif SC,serif">'+esc(x.title)+'</strong><span style="display:block;color:#69716c;font-size:13px;line-height:1.6;margin-top:3px">'+esc(x.text.slice(Math.max(0,x.text.toLowerCase().indexOf(q)-38),Math.max(0,x.text.toLowerCase().indexOf(q)-38)+120))+'</span></a>').join(''):'<p style="color:#69716c;font-size:14px;padding:8px 0">没有找到匹配文章</p>'}open.onclick=show;close.onclick=()=>panel.hidden=true;panel.onclick=e=>{if(e.target===panel)panel.hidden=true};input.oninput=render;addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();show()}if(e.key==='Escape')panel.hidden=true});const q=new URLSearchParams(location.search).get('q');if(q)setTimeout(()=>{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>/^(SCRIPT|STYLE)$/i.test(n.parentElement.tagName)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});let n;while(n=w.nextNode()){const i=n.nodeValue.toLowerCase().indexOf(q.toLowerCase());if(i>=0){const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+q.length);const m=document.createElement('mark');m.style.cssText='background:#ead8b8;color:inherit;padding:0 2px;border-radius:2px';r.surroundContents(m);m.scrollIntoView({block:'center',behavior:'smooth'});break}}},500)})()</script></body></html>

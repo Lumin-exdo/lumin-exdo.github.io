@@ -1,0 +1,193 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>传输方式：串行与并行</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>传输方式：串行与并行，同一个字节 0x41 怎样送</h1><small>并行：8 根线同一拍送完；串行：1 根线分 8 拍。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 392" role="img" aria-label="传输方式：串行与并行"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>串行与并行：同一个字节占几根线、几拍</h2><span class="tag">8 根线 1 拍 ／ 1 根线 8 拍</span></summary><div class="body">
+<table><tr><th>方式</th><th>字节 0x41 怎样送</th><th>适用</th><th>原因</th></tr>
+<tr><td><b>并行传输</b></td><td>8 个比特各占一根线（b7～b0），同一拍一起到对方</td><td>短距离，常用于计算机内部，如 CPU 与主存之间</td><td>一拍送 8 位，速度快；但要 8 根线（还要时钟等控制线），线越长越难保证 8 个比特同一时刻到，成本也高</td></tr>
+<tr><td><b>串行传输</b></td><td>1 根线，8 个比特按序一个接一个，共 8 拍</td><td>长距离，如计算机网络</td><td>只要一根线（或一个信道），远距离铺线便宜，也没有“各线信号到得有早有晚”的问题</td></tr></table>
+<p>“拍”就是一个比特占的时间，图中的拍号只是为了数清顺序。8 位一起走、一拍完成的“8 根线”其实是 8 个信道同时用，所以并行传输的定义是：若干比特通过多个通信信道同时传输。</p>
+<p><b>线越长越难对齐的数字</b>：信号在铜线里每秒约走 $2\times10^8$ m；每根线每秒送 $10^9$ 个比特时一拍只有 1 ns，两根线长度差 20 cm，信号就相差 $0.2\div(2\times10^8)=1$ ns，正好一拍，比特错位。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 392
+const ST = [
+ { b: '① 并行', t: '8 根线，同一拍送 8 位', n: '字节 0x41 的 8 个比特各占一根线（b7～b0），同一拍一起到达 B：若干比特通过多个信道同时传输。' },
+ { b: '② 线越长越难对齐', t: 'b0 的线长 20 cm，晚到一拍', n: '一拍 1 ns，信号在铜线里 1 ns 走约 20 cm；b0 的线多 20 cm，B 在这一拍读不到它，比特错位。' },
+ { b: '③ 串行', t: '1 根线，8 拍，一拍一位', n: '先发高位 b7，拍 1 的比特最靠近 B，拍 8 的 b0 最后发出；只铺一根线，没有各线先后不齐的问题。' },
+ { b: '④ 各用在哪', t: '并行用于短距离，串行用于长距离', n: '并行：线多、一拍送完，常用于计算机内部，如 CPU 与主存之间；串行：一根线、8 拍，适用于计算机网络。' }
+];
+const BITS = '01000001', bc = b => b === '1' ? P.A : P.B;
+const WY = i => 40 + i * 20.5;
+function draw(a0, K) {
+  const at = a0 + 1;
+  G(at === 1 || at === 2 ? 2 : 1, () => {   // 并行
+    K.rect(0, 0, 700, 214, { f: C.BOX, s: C.BORD, rx: 10, sw: 1.4 });
+    T(K, 12, 24, '并行传输：8 根线，同一拍', { size: 18, c: 'b' });
+    H.box(K, 8, 36, 46, 168, 'A', [C.YLb, C.YL, C.INK], { size: 22 }); H.box(K, 646, 36, 46, 168, 'B', [C.YLb, C.YL, C.INK], { size: 22 });
+    for (let i = 0; i < 8; i++) {
+      const y = WY(i) + 8, last = i === 7 && at === 2;
+      if (last) K.line(`M54 ${y}H170Q190 ${y + 12} 210 ${y + 12}H330Q350 ${y + 12} 370 ${y}H646`, { c: C.RD, w: 2.6 });
+      else K.line(`M54 ${y}H646`, { c: C.MUT, w: 2 });
+      T(K, 62, y - 3, 'b' + (7 - i), { size: 15, c: 'mono', fill: C.MUT });
+      if (last) { N21.cell(K, 548, y - 9, 36, 18, BITS[i], bc(BITS[i]), { rx: 3, size: 15, dy: 6, hot: 1 }); N21.cell(K, 604, y - 9, 36, 18, '?', [C.RDb, C.RD, C.RD], { rx: 3, size: 15, dy: 6, sw: 3 }); }
+      else N21.cell(K, 604, y - 9, 36, 18, BITS[i], bc(BITS[i]), { rx: 3, size: 15, dy: 6 });
+    }
+    if (at === 1) { K.rect(150, 70, 300, 64, { f: C.BOX, s: C.RD, rx: 8, sw: 2 }); T(K, 300, 96, '同一拍：8 个比特', { a: 'middle', size: 17, c: 'b', fill: C.RD }); T(K, 300, 122, '各占一根线，一起到达 B', { a: 'middle', size: 17, c: 'b', fill: C.RD }); }
+    if (at === 2) {
+      const y7 = WY(7) + 8;
+      K.rect(120, 52, 340, 84, { f: C.BOX, s: C.RD, rx: 8, sw: 2 });
+      T(K, 290, 76, '一拍＝1 ns＝信号走约 20 cm', { a: 'middle', size: 16, c: 'b', fill: C.RD });
+      T(K, 290, 100, 'b0 的线多 20 cm：信号晚 1 ns', { a: 'middle', size: 16, c: 'b', fill: C.RD });
+      T(K, 290, 124, 'B 这一拍读 b0 时它还没到', { a: 'middle', size: 16, c: 'b', fill: C.RD });
+      HT(K, 540, y7 + 5, '还差 20 cm →', { a: 'end', size: 15, c: 'b', fill: C.RD });
+    }
+  });
+  G(at < 3 ? 0 : (at === 3 ? 2 : 1), () => {   // 串行
+    K.rect(0, 222, 700, 84, { f: '#fbf5e8', s: C.BORD, rx: 10, sw: 1.4 });
+    T(K, 12, 246, '串行传输：1 根线，8 拍；靠近 B 的比特先到', { size: 18, c: 'b' });
+    H.box(K, 8, 254, 46, 44, 'A', [C.YLb, C.YL, C.INK], { size: 22 }); H.box(K, 646, 254, 46, 44, 'B', [C.YLb, C.YL, C.INK], { size: 22 });
+    K.arrow('M56 272H644', { c: C.MUT, w: 2 });
+    for (let i = 0; i < 8; i++) { const x = 600 - (i + 1) * 62 + 14; N21.cell(K, x, 258, 40, 28, BITS[i], bc(BITS[i]), { size: 16 }); T(K, x + 20, 302, '拍 ' + (i + 1), { a: 'middle', size: 15, fill: C.MUT }); }
+  });
+  G(at === 4 ? 2 : 0, () => {
+    [['并行传输', '8 根线 · 一拍送完 8 位', '短距离：计算机内部，如 CPU 与主存', P.A, 0], ['串行传输', '1 根线 · 8 拍送完 8 位', '长距离：计算机网络', P.B, 354]].forEach(([n, a, b, pal, x]) => {
+      K.rect(x, 312, 346, 80, { f: pal[0], s: pal[1], rx: 10, sw: 2.4 });
+      T(K, x + 14, 336, n, { size: 18, c: 'b', fill: pal[2] }); T(K, x + 14, 360, a, { size: 16, fill: pal[2] }); T(K, x + 14, 382, b, { size: 15, fill: pal[2] });
+    });
+  });
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

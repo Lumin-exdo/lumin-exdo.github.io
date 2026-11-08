@@ -1,0 +1,42 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>程序查询与程序中断：CPU 时间线</title></head><body data-figure-fit-static>
+<header><h1>同一次外设工作，CPU 的时间花在哪里</h1><small>两行使用相同的横向时间刻度。外设都在 t₀ 接到命令，直到 t₁ 才准备好数据。</small></header>
+<div class="scroll"><svg viewBox="0 0 1060 660" role="img" aria-label="程序查询中 CPU 多次读取 READY 状态，程序中断中 CPU 先执行别的指令，外设就绪后发 IRQ，CPU 执行服务程序并恢复原程序"><g id="draw"></g></svg></div>
+<footer id="note"><b>差别在等待期间：</b>程序查询让 CPU 反复读状态寄存器；程序中断让 CPU 继续执行别的工作，设备就绪时再请求 CPU 处理。两种方式都需要 CPU 亲自读写接口的数据寄存器。</footer>
+<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+SvgStep.still(K=>{
+ const T=(x,y,s,c='')=>K.text(x,y,s,typeof c==='string'?{c}:c);
+ const R=(x,y,w,h,f,s='#9daab0')=>K.rect(x,y,w,h,{f,s,sw:1.5,rx:7});
+ const L=(d,c='#9baab1',w=2)=>K.line(d,{c,w});
+ const A=(d,c='#286b9b',w=2.5)=>K.arrow(d,{c,w});
+ const BLUE='#3274a5',ORANGE='#db8125',INK='#314655';
+ T(25,52,'同一时间轴',{c:'b'});L('M185 49H1000',INK,2);A('M1000 49H1023',INK,2);T(984,34,'时间',{c:'sm'});
+ L('M267 94V563','#d2d2cb',1.5);L('M754 94V563','#d2d2cb',1.5);
+ T(254,82,'t₀',{c:'b'});T(743,82,'t₁',{c:'b'});
+ T(24,129,'① 程序查询',{c:'lg'});T(24,160,'CPU',{c:'b'});T(24,282,'外设',{c:'b'});
+ R(185,180,817,66,'#fbf8f1','#b6a384');
+ R(274,184,88,58,'#dcecf7',BLUE);R(370,184,88,58,'#dcecf7',BLUE);R(466,184,88,58,'#dcecf7',BLUE);R(562,184,88,58,'#dcecf7',BLUE);R(758,184,96,58,'#ffe4be',ORANGE);
+ T(284,211,'读状态',{c:'sm b'});T(380,211,'读状态',{c:'sm b'});T(476,211,'读状态',{c:'sm b'});T(572,211,'读状态',{c:'sm b'});T(768,211,'读状态',{c:'sm b'});
+ T(304,234,'0',{c:'mono'});T(400,234,'0',{c:'mono'});T(496,234,'0',{c:'mono'});T(592,234,'0',{c:'mono'});T(798,234,'1',{c:'mono b'});
+ L('M662 213H746','#768e9a',2);T(665,204,'还在等…',{c:'sm mut'});
+ R(274,269,480,33,'#f8e6d0',ORANGE);T(448,292,'设备工作中',{c:'b'});
+ R(758,269,96,33,'#e6f3df','#6b9a62');T(777,292,'已就绪',{c:'sm b'});
+ L('M267 142V179','#8a9aa3',2);T(273,143,'下达命令',{c:'sm'});
+ A('M758 267V248',ORANGE,2.5);
+ T(865,202,'读数据',{c:'sm b'});A('M855 217H942',ORANGE,2.5);T(950,222,'0xA1',{c:'mono b'});
+
+ T(24,366,'② 程序中断',{c:'lg'});T(24,397,'CPU',{c:'b'});T(24,525,'外设',{c:'b'});
+ R(185,415,817,66,'#fbf8f1','#b6a384');
+ R(274,419,480,58,'#e2f0fb',BLUE);T(410,453,'继续执行别的指令 / 进程',{c:'b'});
+ R(759,419,113,58,'#ffe4be',ORANGE);T(779,453,'中断服务',{c:'b'});
+ R(877,419,119,58,'#e2f0fb',BLUE);T(898,453,'恢复执行',{c:'b'});
+ R(274,512,480,33,'#f8e6d0',ORANGE);T(448,535,'设备工作中',{c:'b'});
+ R(759,512,113,33,'#e6f3df','#6b9a62');T(784,535,'已就绪',{c:'sm b'});
+ L('M267 380V414','#8a9aa3',2);T(273,382,'下达命令',{c:'sm'});
+ A('M754 511V482',ORANGE,3);T(773,505,'IRQ',{c:'sm b'});
+ L('M870 484V512','#b6a384',1.5);T(878,505,'读 0xA1',{c:'sm b'});
+ R(186,564,644,88,'#f5f9fc','#8ca9bb');T(202,583,'两种方式共用同一个 I/O 接口（示例：外设 0 送来 0xA1）',{c:'sm b'});
+ R(205,595,280,47,'#e8f2fa',BLUE);T(218,613,'状态寄存器',{c:'sm b'});T(218,633,'READY：0 → 1（到 t₁ 时）',{c:'sm'});
+ R(515,595,296,47,'#fff0d9',ORANGE);T(528,613,'数据缓冲寄存器',{c:'sm b'});T(528,633,'0xA1（外设已送入）',{c:'sm'});
+ A('M812 621H853',ORANGE,2.5);R(856,595,146,47,'#e8f2fa',BLUE);T(869,613,'CPU 读取',{c:'sm b'});T(869,633,'得到 0xA1',{c:'sm'});
+});
+</script></body></html>

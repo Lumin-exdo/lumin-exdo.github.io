@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="820" viewBox="0 0 1000 820" role="img" aria-labelledby="title desc">
+<title id="title">同一个 I/O 接口可同时按传线、控制、配置和设备用途分类</title>
+<desc id="desc">四条互不排斥的分类轴：并行有多根数据线同时传位，串行沿一条数据通路依次传位；程序查询由 CPU 反复读状态，中断由设备就绪后通知 CPU，DMA 由控制器在设备与主存间搬数据；可编程接口能写配置寄存器改变参数，不可编程接口工作方式固定；操作系统另按字符、块、网络设备提供不同抽象。</desc>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#286f9d"/></marker>
+<style>
+text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#243449}
+.h{font-size:23px;font-weight:700}.sub{font-size:16px}.t{font-size:18px;font-weight:700}.s{font-size:15px}.small{font-size:13px}
+.card{fill:#fffefb;stroke:#c9d4dd;stroke-width:2}
+.wire{stroke:#2878a8;stroke-width:3;fill:none;marker-end:url(#ar)}
+</style>
+</defs>
+<rect width="1000" height="820" fill="#faf9f6"/>
+<text x="24" y="38" class="h">同一个 I/O 接口，可以同时有四种分类标签</text>
+<text x="25" y="66" class="sub">每一行问的是不同问题：怎么传位？谁控制搬运？参数能改吗？OS 把它当什么设备？</text>
+
+<!-- Physical data shape -->
+<rect x="19" y="87" width="962" height="190" rx="13" class="card"/>
+<rect x="19" y="87" width="9" height="190" rx="4" fill="#2a79a6"/>
+<text x="44" y="118" class="t">① 数据怎样在线路上传？</text>
+<text x="44" y="144" class="s">两端仍可各有缓冲寄存器；这里比较的是链路上的位怎样排列。</text>
+<rect x="45" y="161" width="435" height="96" rx="9" fill="#eaf4fb" stroke="#9cc6dc"/>
+<text x="61" y="186" class="t">并行：多位同时到达</text>
+<text x="61" y="219" class="s">接口</text><text x="416" y="219" class="s">设备</text>
+<g stroke="#2d7eaf" stroke-width="3">
+<path d="M112 204H385"/><path d="M112 212H385"/><path d="M112 220H385"/><path d="M112 228H385"/><path d="M112 236H385"/>
+</g>
+<rect x="511" y="161" width="441" height="96" rx="9" fill="#fff2e3" stroke="#d9ac78"/>
+<text x="528" y="186" class="t">串行：位按先后排队</text>
+<text x="527" y="225" class="s">接口</text><text x="892" y="225" class="s">设备</text>
+<path d="M588 220H875" stroke="#c9782d" stroke-width="4"/>
+<g fill="#d17f36"><circle cx="636" cy="220" r="8"/><circle cx="690" cy="220" r="8"/><circle cx="744" cy="220" r="8"/><circle cx="798" cy="220" r="8"/></g>
+<text x="633" y="246" class="small">位 1</text><text x="687" y="246" class="small">位 2</text><text x="741" y="246" class="small">位 3</text><text x="795" y="246" class="small">位 4</text>
+
+<!-- Control modes -->
+<rect x="19" y="292" width="962" height="211" rx="13" class="card"/>
+<rect x="19" y="292" width="9" height="211" rx="4" fill="#c87829"/>
+<text x="44" y="324" class="t">② 数据搬运由谁反复发起？</text>
+<text x="44" y="350" class="s">三种方式可以服务不同场景；这里比较 CPU 在一次传送中的工作。</text>
+<rect x="44" y="366" width="287" height="117" rx="10" fill="#fff4e7" stroke="#d4a16a"/>
+<text x="60" y="392" class="t">程序查询</text>
+<text x="63" y="425" class="s">CPU</text><text x="259" y="425" class="s">接口</text>
+<path d="M120 418H238M238 428H120M120 438H238" stroke="#c87829" stroke-width="3"/>
+<text x="59" y="466" class="small">反复读状态；就绪后 CPU 搬一次</text>
+<rect x="357" y="366" width="287" height="117" rx="10" fill="#edf4fb" stroke="#91b4cf"/>
+<text x="374" y="392" class="t">程序中断</text>
+<text x="377" y="425" class="s">CPU</text><text x="562" y="425" class="s">接口</text>
+<path d="M420 423H535" stroke="#2878a8" stroke-width="3"/>
+<path d="M535 440H420" stroke="#2878a8" stroke-width="3" marker-end="url(#ar)"/>
+<text x="418" y="411" class="small">先去做别的</text><text x="448" y="459" class="small">就绪 → IRQ</text>
+<rect x="670" y="366" width="287" height="117" rx="10" fill="#f0f2fa" stroke="#a3afd1"/>
+<text x="687" y="392" class="t">DMA</text>
+<text x="690" y="423" class="s">设备</text><text x="792" y="423" class="s">DMAC</text><text x="902" y="423" class="s">RAM</text>
+<path d="M737 435H786M844 435H893" class="wire"/>
+<text x="689" y="464" class="small">CPU 配置一批；硬件搬，完成再通知</text>
+
+<!-- Programmability -->
+<rect x="19" y="518" width="962" height="144" rx="13" class="card"/>
+<rect x="19" y="518" width="9" height="144" rx="4" fill="#7f6fac"/>
+<text x="44" y="549" class="t">③ 工作参数能不能由程序改？</text>
+<rect x="44" y="563" width="437" height="79" rx="9" fill="#f3f0fa" stroke="#b4a4d4"/>
+<text x="60" y="588" class="t">可编程接口</text>
+<text x="60" y="615" class="s">CPU 写配置寄存器 → 波特率等参数改变</text>
+<rect x="512" y="563" width="445" height="79" rx="9" fill="#f5f5f2" stroke="#bac4c5"/>
+<text x="528" y="588" class="t">不可编程接口</text>
+<text x="528" y="615" class="s">相关功能由固定电路决定，运行时不能改</text>
+
+<!-- OS viewpoint -->
+<rect x="19" y="677" width="962" height="121" rx="13" class="card"/>
+<rect x="19" y="677" width="9" height="121" rx="4" fill="#308c83"/>
+<text x="44" y="708" class="t">④ OS 还会按设备用途分类：这是另一条轴</text>
+<rect x="44" y="725" width="273" height="54" rx="9" fill="#e8f5f0" stroke="#7cb7a1"/>
+<text x="181" y="748" text-anchor="middle" class="t">字符设备</text><text x="181" y="769" text-anchor="middle" class="small">键盘等：按字符／字节流使用</text>
+<rect x="363" y="725" width="273" height="54" rx="9" fill="#e8f1f8" stroke="#8ab5ce"/>
+<text x="500" y="748" text-anchor="middle" class="t">块设备</text><text x="500" y="769" text-anchor="middle" class="small">磁盘等：按块寻址</text>
+<rect x="682" y="725" width="275" height="54" rx="9" fill="#fff1e6" stroke="#d7ae7d"/>
+<text x="819" y="748" text-anchor="middle" class="t">网络设备</text><text x="819" y="769" text-anchor="middle" class="small">网卡等：经网络协议栈收发</text>
+</svg>

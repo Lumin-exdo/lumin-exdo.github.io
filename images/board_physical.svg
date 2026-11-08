@@ -1,0 +1,237 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 935 1560" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif" font-size="12">
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#888"/></marker>
+<style>.n{font-size:9.5px;fill:#7a5200}.t{font-size:11px}</style>
+</defs>
+<rect width="935" height="1560" fill="#fff"/>
+
+<!-- ================= 主板 ================= -->
+<rect x="20" y="20" width="560" height="640" rx="10" fill="#e6f2e6" stroke="#2e7d32" stroke-width="2"/>
+<text x="30" y="42" font-weight="bold" font-size="14" fill="#2e7d32">主板</text>
+
+<!-- CPU -->
+<rect x="150" y="70" width="150" height="140" rx="6" fill="#dbe7fb" stroke="#3b6fd8" stroke-width="2"/>
+<text x="225" y="108" text-anchor="middle" font-weight="bold" font-size="18" fill="#3b6fd8">CPU</text>
+<text x="225" y="140" text-anchor="middle" class="t">内存控制器</text>
+<text x="225" y="165" text-anchor="middle" class="t">PCIe 根端口</text>
+
+<!-- 内存插槽 -->
+<rect x="400" y="60" width="14" height="190" fill="#333"/>
+<rect x="424" y="60" width="14" height="190" fill="#333"/>
+<text x="419" y="52" text-anchor="middle" class="t">内存插槽</text>
+
+<!-- DDR -->
+<g stroke="#3b6fd8" stroke-width="2">
+<line x1="300" y1="96" x2="400" y2="96"/><line x1="300" y1="104" x2="400" y2="104"/>
+<line x1="300" y1="112" x2="400" y2="112"/><line x1="300" y1="120" x2="400" y2="120"/>
+</g>
+<text x="350" y="88" text-anchor="middle" class="t" fill="#3b6fd8" font-weight="bold">DDR</text>
+<text x="350" y="138" text-anchor="middle" class="n">DDR＝双倍数据率</text>
+<text x="350" y="151" text-anchor="middle" class="n">内存：时钟上下沿</text>
+<text x="350" y="164" text-anchor="middle" class="n">各传一次</text>
+
+<!-- PCIe x16 -->
+<rect x="150" y="300" width="260" height="14" fill="#333"/>
+<g stroke="#3b6fd8" stroke-width="2.5">
+<line x1="225" y1="210" x2="225" y2="300"/><line x1="233" y1="210" x2="233" y2="300"/><line x1="241" y1="210" x2="241" y2="300"/>
+</g>
+<text x="248" y="262" class="t" fill="#3b6fd8" font-weight="bold">PCIe</text>
+<text x="280" y="332" text-anchor="middle" class="t">PCIe x16 插槽</text>
+<text x="280" y="346" text-anchor="middle" class="n">PCIe：CPU 连高速设备的专用路，一设备一条；x16＝并排 16 条通道</text>
+
+<!-- M.2 -->
+<rect x="110" y="380" width="120" height="12" fill="#333"/>
+<g stroke="#3b6fd8" stroke-width="2" fill="none">
+<polyline points="150,178 116,178 116,380"/><polyline points="150,188 123,188 123,380"/>
+</g>
+<text x="128" y="290" class="t" fill="#3b6fd8" font-weight="bold">PCIe</text>
+<text x="170" y="410" text-anchor="middle" class="t">M.2 插槽</text>
+<text x="170" y="423" text-anchor="middle" class="n">M.2：只是插槽的形状，不决定走哪条路</text>
+
+<!-- DMI -->
+<polyline points="290,210 290,275 450,275 450,460" fill="none" stroke="#777" stroke-width="5"/>
+<text x="444" y="405" text-anchor="end" class="t" fill="#555" font-weight="bold">DMI</text>
+<text x="444" y="419" text-anchor="end" class="n">CPU↔PCH 的主干道，</text>
+<text x="444" y="431" text-anchor="end" class="n">PCH 下的设备共用</text>
+
+<!-- PCH -->
+<rect x="340" y="460" width="120" height="78" rx="6" fill="#d9f0e1" stroke="#2e8b57" stroke-width="2"/>
+<text x="400" y="489" text-anchor="middle" font-weight="bold" font-size="15" fill="#2e8b57">PCH</text>
+<text x="400" y="508" text-anchor="middle" class="n">主板上的“前台秘书”</text>
+<text x="400" y="521" text-anchor="middle" class="n">芯片，管低速设备，</text>
+<text x="400" y="534" text-anchor="middle" class="n">相当于新一代南桥</text>
+
+<!-- SATA 口 -->
+<rect x="532" y="470" width="42" height="16" fill="#444"/>
+<rect x="532" y="500" width="42" height="16" fill="#444"/>
+<g stroke="#2e8b57" stroke-width="2">
+<line x1="460" y1="478" x2="532" y2="478"/><line x1="460" y1="508" x2="532" y2="508"/>
+</g>
+<text x="496" y="472" text-anchor="middle" class="t" fill="#2e8b57">SATA</text>
+<text x="574" y="532" text-anchor="end" class="t">SATA 口</text>
+<text x="574" y="545" text-anchor="end" class="n">SATA：连硬盘的串行接口</text>
+
+<!-- USB 口 -->
+<rect x="22" y="330" width="26" height="14" fill="#fff" stroke="#333"/>
+<rect x="22" y="360" width="26" height="14" fill="#fff" stroke="#333"/>
+<text x="47" y="322" text-anchor="middle" class="t">USB 口</text>
+<g stroke="#2e8b57" stroke-width="2" fill="none">
+<polyline points="340,522 75,522 75,337 48,337"/><line x1="75" y1="367" x2="48" y2="367"/>
+</g>
+<text x="84" y="515" class="t" fill="#2e8b57">USB</text>
+
+<!-- 监控芯片 + I2C -->
+<rect x="90" y="560" width="80" height="36" rx="3" fill="#333"/>
+<text x="130" y="583" text-anchor="middle" fill="#fff" class="t">监控芯片</text>
+<text x="130" y="610" text-anchor="middle" class="n">测温度、管风扇转速</text>
+<g stroke="#e08a00" stroke-width="2" stroke-dasharray="6 4" fill="none">
+<polyline points="360,538 360,578 170,578"/>
+<polyline points="460,466 475,466 475,165 438,165"/>
+</g>
+<text x="190" y="571" class="t" fill="#b36b00" font-weight="bold">I²C / SMBus</text>
+<text x="190" y="594" class="n">只有两根细线的慢速“管理线”</text>
+<text x="481" y="220" class="t" fill="#b36b00" font-weight="bold">I²C</text>
+<text x="481" y="234" class="n">开机时读</text>
+<text x="481" y="246" class="n">内存条 SPD</text>
+
+<!-- BIOS + SPI -->
+<rect x="430" y="568" width="90" height="34" rx="3" fill="#333"/>
+<text x="475" y="590" text-anchor="middle" fill="#fff" class="t">BIOS 芯片</text>
+<polyline points="410,538 410,585 430,585" fill="none" stroke="#8e44ad" stroke-width="2"/>
+<text x="390" y="560" class="t" fill="#8e44ad" font-weight="bold">SPI</text>
+<text x="475" y="617" text-anchor="middle" class="n">BIOS：存开机程序，开机后 CPU 最先运行它</text>
+<text x="475" y="630" text-anchor="middle" class="n">SPI（紫线）：PCH 读 BIOS 芯片用的几根线</text>
+
+<!-- ================= 外设 ================= -->
+<g transform="translate(35,0)">
+<!-- 内存条 -->
+<rect x="610" y="40" width="270" height="112" rx="4" fill="#f3f3f3" stroke="#555"/>
+<text x="620" y="57" font-weight="bold">内存条</text>
+<g fill="#222">
+<rect x="620" y="66" width="32" height="28"/><rect x="658" y="66" width="32" height="28"/>
+<rect x="696" y="66" width="32" height="28"/><rect x="734" y="66" width="32" height="28"/>
+</g>
+<text x="693" y="110" text-anchor="middle" class="t">内存颗粒</text>
+<text x="693" y="123" text-anchor="middle" class="n">真正存数据的芯片</text>
+<rect x="806" y="70" width="26" height="18" fill="#f4a300"/>
+<text x="819" y="104" text-anchor="middle" class="t" fill="#b36b00" font-weight="bold">SPD</text>
+<text x="819" y="117" text-anchor="middle" class="n">内存条的“身份证”</text>
+<text x="819" y="129" text-anchor="middle" class="n">芯片：容量、速度</text>
+<rect x="615" y="142" width="260" height="5" fill="#d4a017"/>
+<line x1="610" y1="80" x2="407" y2="80" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<text x="577" y="74" text-anchor="middle" font-size="10" fill="#666">插入</text>
+
+<!-- 显卡 -->
+<rect x="610" y="170" width="270" height="130" rx="4" fill="#f3f3f3" stroke="#555"/>
+<text x="620" y="187" font-weight="bold">显卡</text>
+<rect x="625" y="196" width="62" height="50" fill="#222"/>
+<text x="656" y="226" text-anchor="middle" fill="#fff" font-weight="bold">GPU</text>
+<text x="656" y="260" text-anchor="middle" class="n">GPU＝图形处理器：</text>
+<text x="656" y="272" text-anchor="middle" class="n">专门算画面的芯片</text>
+<g fill="#555">
+<rect x="710" y="196" width="32" height="20"/><rect x="750" y="196" width="32" height="20"/>
+<rect x="710" y="226" width="32" height="20"/><rect x="750" y="226" width="32" height="20"/>
+</g>
+<text x="795" y="214" class="t">显存</text>
+<text x="795" y="228" class="n">显卡自己的内存</text>
+<text x="795" y="240" class="n">（GDDR＝给图形</text>
+<text x="795" y="252" class="n">用的 DDR）</text>
+<rect x="615" y="290" width="260" height="5" fill="#d4a017"/>
+<text x="745" y="286" text-anchor="middle" class="n">↓ 金手指：板边金色触点，插进插槽就接通</text>
+<line x1="610" y1="280" x2="379" y2="306" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<text x="577" y="277" text-anchor="middle" font-size="10" fill="#666">插入</text>
+
+<!-- NVMe -->
+<rect x="610" y="320" width="270" height="86" rx="4" fill="#f3f3f3" stroke="#555"/>
+<text x="620" y="337" font-weight="bold" class="t">NVMe 固态硬盘</text>
+<text x="620" y="350" class="n">NVMe：固态硬盘走 PCIe 时用的“说话规矩”</text>
+<rect x="625" y="358" width="42" height="24" fill="#222"/>
+<text x="646" y="374" text-anchor="middle" fill="#fff" font-size="10">主控</text>
+<g fill="#555"><rect x="677" y="358" width="42" height="24"/><rect x="725" y="358" width="42" height="24"/><rect x="773" y="358" width="42" height="24"/></g>
+<g fill="#fff" font-size="10" text-anchor="middle"><text x="698" y="374">闪存</text><text x="746" y="374">闪存</text><text x="794" y="374">闪存</text></g>
+<text x="720" y="397" text-anchor="middle" class="n">闪存：断电后数据不丢的存储芯片</text>
+<rect x="610" y="360" width="5" height="22" fill="#d4a017"/>
+<line x1="608" y1="372" x2="199" y2="387" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<text x="577" y="366" text-anchor="middle" font-size="10" fill="#666">插入</text>
+
+<!-- SATA 硬盘 -->
+<rect x="610" y="425" width="270" height="125" rx="4" fill="#f3f3f3" stroke="#555"/>
+<text x="620" y="442" font-weight="bold" class="t">SATA 机械硬盘</text>
+<circle cx="672" cy="490" r="36" fill="#ddd" stroke="#999"/>
+<circle cx="672" cy="490" r="5" fill="#999"/>
+<line x1="716" y1="514" x2="682" y2="480" stroke="#555" stroke-width="3"/>
+<text x="672" y="540" text-anchor="middle" class="n">转动的磁盘存数据</text>
+<rect x="760" y="452" width="60" height="28" fill="#222"/>
+<text x="790" y="470" text-anchor="middle" fill="#fff" font-size="10">主控</text>
+<text x="790" y="495" text-anchor="middle" class="n">主控：外设里的“管家”</text>
+<text x="790" y="507" text-anchor="middle" class="n">芯片，把电脑说的“读第</text>
+<text x="790" y="519" text-anchor="middle" class="n">几块”变成对磁盘/闪存</text>
+<text x="790" y="531" text-anchor="middle" class="n">的实际操作</text>
+<rect x="608" y="500" width="10" height="16" fill="#444"/>
+<path d="M608,508 L539,508" fill="none" stroke="#c62828" stroke-width="4"/>
+<text x="577" y="496" text-anchor="middle" font-size="10" fill="#c62828">SATA 线</text>
+</g>
+
+<!-- U盘 -->
+<rect x="40" y="700" width="30" height="26" fill="#bbb" stroke="#777"/>
+<rect x="70" y="690" width="140" height="46" rx="6" fill="#f3f3f3" stroke="#555"/>
+<text x="80" y="684" font-weight="bold" class="t">U 盘（也是主控 + 闪存）</text>
+<rect x="82" y="702" width="36" height="22" fill="#222"/>
+<text x="100" y="717" text-anchor="middle" fill="#fff" font-size="9">主控</text>
+<rect x="128" y="702" width="70" height="22" fill="#555"/>
+<text x="163" y="717" text-anchor="middle" fill="#fff" font-size="9">闪存</text>
+<line x1="55" y1="698" x2="36" y2="378" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+
+<!-- 图例 -->
+<g font-size="11">
+<line x1="280" y1="690" x2="310" y2="690" stroke="#3b6fd8" stroke-width="3"/><text x="316" y="694">CPU 直连的高速线</text>
+<line x1="460" y1="690" x2="490" y2="690" stroke="#2e8b57" stroke-width="2"/><text x="496" y="694">经 PCH 的线</text>
+<line x1="620" y1="690" x2="650" y2="690" stroke="#777" stroke-width="5"/><text x="656" y="694">DMI 主干道</text>
+<line x1="280" y1="716" x2="310" y2="716" stroke="#e08a00" stroke-width="2" stroke-dasharray="6 4"/><text x="316" y="720">I²C 慢速管理线</text>
+<line x1="460" y1="716" x2="490" y2="716" stroke="#8e44ad" stroke-width="2"/><text x="496" y="720">SPI</text>
+<line x1="620" y1="716" x2="650" y2="716" stroke="#888" stroke-width="1.5" stroke-dasharray="4 3"/><text x="656" y="720">插进去 / 接上</text>
+<text x="280" y="744" fill="#7a5200" font-size="10">棕色小字＝紧挨着的那个缩写或元件是什么</text>
+</g>
+
+<!-- ================= 图下说明 ================= -->
+<line x1="20" y1="765" x2="880" y2="765" stroke="#ccc"/>
+<g font-size="12" fill="#222">
+<text x="20" y="792" font-weight="bold" font-size="14" fill="#2e7d32">一、三种硬盘：走哪条路、说什么话、插在哪</text>
+<text x="20" y="814">硬盘和电脑交流要定两件事：① 走哪条“路”（物理线路）；② 说什么“话”（“读第几块”这类命令的格式）。</text>
+<text x="20" y="836">• SATA 机械硬盘：路＝SATA，话＝AHCI，用 SATA 线接主板的 SATA 口。受磁盘转速限制，每秒约 200MB。</text>
+<text x="20" y="856">• SATA 固态硬盘：路＝SATA，话＝AHCI，接 SATA 口，也有做成 M.2 形状的。受 SATA 限制，最快每秒约 550MB。</text>
+<text x="20" y="876">• NVMe 固态硬盘：路＝PCIe，话＝NVMe，常见 M.2 外形；插槽可接 CPU 或芯片组。本图画直连 CPU 示例。</text>
+<text x="20" y="896">• AHCI：给机械硬盘设计的“话”。只有 1 条排队通道，最多排 32 个命令，像超市只开 1 个收银台。</text>
+<text x="20" y="916">• NVMe：给固态硬盘设计的“话”。可以开上万条排队通道，CPU 每个核心都能有自己专用的一条。</text>
+<text x="20" y="936">• 所以“SATA 对 NVMe”并不严格：SATA 对应的是 PCIe（都是路），AHCI 对应的是 NVMe（都是话）。</text>
+<text x="20" y="956">• M.2 只是插槽形状：外形一样的 M.2 硬盘，有的走 SATA，有的走 PCIe + NVMe，买时看标注。</text>
+
+<text x="20" y="992" font-weight="bold" font-size="14" fill="#3b6fd8">二、哪些线有时钟、为什么</text>
+<text x="20" y="1014">时钟线的作用：给接收方打拍子，告诉它“现在该读了”，还让双方数着拍子知道一次读写进行到第几步。</text>
+<text x="20" y="1036">• DDR：有时钟线（CK），由 CPU 的内存控制器发给内存条，内存按这个拍子接收命令和地址。</text>
+<text x="20" y="1056">   数据线旁边另有选通线（DQS）跟着数据一起走，接收方按它读数据。线很短、要求极快响应，所以保留了时钟。</text>
+<text x="20" y="1076">• I²C / SMBus：有时钟线（SCL），由 PCH 发出。SCL 低时数据线 SDA 可以变，SCL 高时 SDA 必须稳住、对方来读。</text>
+<text x="20" y="1096">   每个 SCL 周期传 1 位，每秒 10 万～40 万位，很慢，但只要两根线，适合读温度、读 SPD 这种小数据。</text>
+<text x="20" y="1116">• PCIe、DMI、SATA、USB：没有单独的时钟线。接收方从数据的 0→1、1→0 跳变里自己推算节拍（时钟数据恢复）。</text>
+<text x="20" y="1136">   为保证数据里经常有跳变，发送前要先编码或打乱，避免出现一长串全 0 或全 1。</text>
+<text x="20" y="1156">• 为什么高速线不带时钟线：频率极高时，时钟线和数据线只要长短差一点，到达时间就对不上，干脆让数据自己带节拍。</text>
+<text x="20" y="1176">• 没有时钟线 ≠ 没有时钟：两端芯片内部各有时钟，主板给它们一个 100MHz 参考时钟，双方频率偏差须在百万分之三百内。</text>
+
+<text x="20" y="1212" font-weight="bold" font-size="14" fill="#b36b00">三、开机时这些线怎么配合</text>
+<text x="20" y="1234">① 按下电源 → CPU 经 DMI → PCH → SPI 线，从 BIOS 芯片读出开机程序开始运行。</text>
+<text x="20" y="1254">② 开机程序让 PCH 在 I²C 线上发地址 0x50，第一根内存条的 SPD 回应；再发 0x51、0x52…… 依次读其他插槽。</text>
+<text x="20" y="1274">   例：读到 SPD 第 2 号字节是 0x12，含义是“这是 DDR5 内存”。</text>
+<text x="20" y="1294">③ 按读到的容量、速度、延迟，设置 CPU 里的内存控制器。</text>
+<text x="20" y="1314">④ 之后读写内存全走 DDR 线（每秒几十 GB），SPD 那两根细线不再参与。</text>
+
+<text x="20" y="1350" font-weight="bold" font-size="14" fill="#555">四、其他要点</text>
+<text x="20" y="1372">• 此图画直连示例；显卡与 SSD 也可能经 PCIe 交换芯片连接。支持时可做设备间 DMA，路径取决于拓扑与平台配置。</text>
+<text x="20" y="1392">• PCIe 根端口连接相邻设备或交换芯片；交换芯片下可接多个端点，共用上行链路。根复合体管理这些端口。</text>
+<text x="20" y="1412">• PCIe 每条通道收、发各一对线，可以同时双向传（全双工）。x16 是 16 条这样的通道并排，每条内部仍是串行。</text>
+<text x="20" y="1432">• 本图的 USB 与 SATA 经 PCH，共用 PCH 到 CPU 的上行链路；网卡的连接位置因主板而异。</text>
+<text x="20" y="1452">• I²C / SMBus 是真正的“共享总线”：所有小芯片挂在同两根线上，靠 7 位地址区分，地址对上的才回应。</text>
+<text x="20" y="1472">• 内存条上有两条线接两种芯片：DDR 线接内存颗粒（传数据），I²C 线接 SPD（读身份证），互不相干。</text>
+<text x="20" y="1492">• 金手指：电路板边缘一排金色触点，插进插槽后就和主板上的铜线接通。内存条、显卡、M.2 硬盘都有。</text>
+<text x="20" y="1512">• 内存控制器：CPU 里专门负责读写内存的电路，以前在北桥芯片里，后来搬进了 CPU。</text>
+</g>
+</svg>

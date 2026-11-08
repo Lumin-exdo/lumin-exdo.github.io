@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>注意力的一行：中间矩阵要不要写进 HBM</title>
+<script>window.MathJax={tex:{inlineMath:[["$","$"]]},startup:{typeset:false}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" onload="MathJax.startup.promise.then(function(){if(window.attentionRender)window.attentionRender();MathJax.typesetPromise([document.querySelector('#ie-demo .sub')])})"></script>
+</head>
+<body style="margin:0;padding:24px 12px;background:#e6eee6">
+<div id="ie-demo" tabindex="0">
+<style>
+#ie-demo{
+  --bg:#ffffff; --fg:#1a1d21; --muted:#6b7280; --line:#bcc3cc;
+  --frame:#aab1bb; --fill:#f3f4f6; --accent:#2563eb; --accent-soft:#dbeafe;
+  --hot:#1d5e78; --hot-soft:#e8eff4; --panel:#f8f9fb; --border:#e3e6ea;
+  --warn:#fff7ed; --warnbd:#fdba74; --ok:#15803d;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--fg); background:var(--bg); outline:none;
+  max-width:2400px; margin:0 auto; padding:20px 18px 26px;
+  border:1px solid var(--border); border-radius:14px; line-height:1.72; font-size:15px; box-sizing:border-box;
+}
+#ie-demo *,#ie-demo *::before,#ie-demo *::after{box-sizing:border-box;}
+#ie-demo h2{margin:0 0 4px; font-size:21px;}
+#ie-demo .sub{margin:0 0 14px; color:var(--muted); font-size:14px;}
+#ie-demo code{font-family:var(--mono); background:var(--fill); padding:1px 5px; border-radius:4px; font-size:13.5px;}
+#ie-demo .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 12px;}
+#ie-demo .tab{border:1px solid var(--border); background:var(--panel); color:var(--fg); padding:7px 14px; border-radius:999px; cursor:pointer; font:inherit; font-size:14px;}
+#ie-demo .tab:hover{border-color:var(--accent);}
+#ie-demo .tab.cur{background:var(--accent); border-color:var(--accent); color:#fff;}
+#ie-demo .intro{font-size:14.5px; color:var(--muted); margin:0 0 10px;}
+#ie-demo svg{width:100%; height:auto; display:block; background:var(--bg); border:1px solid var(--border); border-radius:10px;}
+#ie-demo svg text{fill:var(--fg); font-size:12.5px;}
+#ie-demo svg .t{font-weight:600; font-size:13.5px;}
+#ie-demo svg .s{fill:var(--muted); font-size:11.5px;}
+#ie-demo svg .v{font-family:var(--mono); font-size:12px; fill:var(--accent);}
+#ie-demo svg .box{fill:var(--panel); stroke:var(--frame); stroke-width:1.2;}
+#ie-demo svg .cell{fill:var(--bg); stroke:var(--frame); stroke-width:1;}
+#ie-demo svg .wire{fill:none; stroke:var(--line); stroke-width:1.6;}
+#ie-demo svg .zone{fill:none; stroke:var(--frame); stroke-width:1.4; stroke-dasharray:7 5;}
+#ie-demo svg .cell.on,#ie-demo svg .box.on{fill:var(--accent-soft); stroke:var(--accent); stroke-width:2.2;}
+#ie-demo svg .cell.hot{fill:var(--hot-soft); stroke:var(--hot); stroke-width:2.2;}
+#ie-demo svg .wire.on{stroke:var(--hot); stroke-width:3; stroke-dasharray:8 5; animation:ie-flow .7s linear infinite;}
+@keyframes ie-flow{to{stroke-dashoffset:-13;}}
+#ie-demo .ctl{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:12px 0 8px;}
+#ie-demo .btn{border:1px solid var(--border); background:var(--panel); color:var(--fg); padding:6px 14px; border-radius:8px; cursor:pointer; font:inherit; font-size:14px;}
+#ie-demo .btn:hover{border-color:var(--accent); color:var(--accent);}
+#ie-demo .cnt{font-family:var(--mono); color:var(--muted); font-size:13.5px;}
+#ie-demo .bar{flex:1; min-width:120px; height:6px; background:var(--fill); border-radius:3px; overflow:hidden;}
+#ie-demo .bar i{display:block; height:100%; background:var(--accent); width:0;}
+#ie-demo .step{border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:9px; background:var(--panel); padding:12px 16px; min-height:120px;}
+#ie-demo .steprow{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:12px; align-items:stretch;}
+@media (max-width:820px){#ie-demo .steprow{grid-template-columns:1fr;}}
+#ie-demo .tl{border:1px solid var(--border); border-radius:9px; background:var(--panel); padding:10px 14px; font-size:14px;}
+#ie-demo .tl.on{border-color:var(--accent); background:var(--accent-soft);}
+#ie-demo .tl .tlh{font-weight:600; margin-bottom:4px;}
+#ie-demo .why{border:1px solid var(--border); border-radius:10px; background:var(--panel); padding:12px 16px; margin:14px 0 0;}
+#ie-demo .why h3{margin:0 0 6px; font-size:16px;}
+#ie-demo .why p{margin:0 0 8px;}
+#ie-demo .step h3{margin:0 0 6px; font-size:16.5px;}
+#ie-demo .step p{margin:0 0 6px;}
+#ie-demo .step .who{display:inline-block; font-size:12px; padding:1px 8px; border-radius:999px; margin-right:6px; vertical-align:2px; border:1px solid var(--border);}
+#ie-demo .who.hw{color:#b45309; border-color:#f59e0b;}
+#ie-demo .who.sw{color:var(--ok); border-color:var(--ok);}
+#ie-demo .who.dev{color:var(--accent); border-color:var(--accent);}
+#ie-demo .hint{color:var(--muted); font-size:13px; margin-top:8px;}
+#ie-demo details{border:1px solid var(--border); border-radius:10px; background:var(--panel); margin:14px 0 0; padding:0 15px;}
+#ie-demo details[open]{padding-bottom:12px;}
+#ie-demo summary{cursor:pointer; padding:11px 0; font-weight:600; list-style:none;}
+#ie-demo summary::-webkit-details-marker{display:none;}
+#ie-demo summary::before{content:"▸ "; color:var(--accent);}
+#ie-demo details[open] summary::before{content:"▾ ";}
+#ie-demo table{width:100%; border-collapse:collapse; font-size:13.5px; margin:6px 0 10px;}
+#ie-demo th,#ie-demo td{border:1px solid var(--border); padding:6px 9px; text-align:left; vertical-align:top;}
+#ie-demo th{background:var(--fill);}
+#ie-demo .chain{display:flex;flex-wrap:wrap;gap:6px 30px;margin:4px 0 10px;}
+#ie-demo .chip{position:relative;border:1px solid var(--border);background:var(--panel);border-radius:8px;padding:4px 12px;font-size:14px;}
+#ie-demo .chip:empty{display:none;}
+#ie-demo .chip+.chip::before{content:"→";position:absolute;left:-22px;color:var(--muted);}
+#ie-demo .chip.on{background:var(--hot-soft);border-color:var(--hot);font-weight:600;}
+#ie-demo .tl table{margin:0;font-size:13.5px;}
+#ie-demo .tl td:first-child{color:var(--muted);white-space:nowrap;width:5.5em;}
+#ie-demo .who.fw{color:#7c3aed;border-color:#a78bfa;}
+#ie-demo svg .pt{font-family:var(--mono);font-size:12px;}
+#ie-demo .mainrow{display:grid; grid-template-columns:minmax(0,1fr) 440px; gap:16px; align-items:start;}
+#ie-demo .side{position:sticky; top:8px;}
+#ie-demo .side .ctl{margin-top:0;}
+#ie-demo .side .steprow{grid-template-columns:1fr;}
+@media (max-width:1300px){#ie-demo .mainrow{grid-template-columns:1fr;} #ie-demo .side{position:static;}}
+#ie-demo .side .step{font-size:14px; line-height:1.65;}
+#ie-demo .side .step h3{font-size:15.5px;}
+#ie-demo .side .tl table{font-size:13.5px;}
+#ie-demo details{font-size:16px;}
+#ie-demo details table{font-size:15.5px;}
+#ie-demo .notes{margin-top:14px; display:flex; flex-direction:column; gap:12px; font-size:15.5px;}
+#ie-demo .note-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+@media (max-width:1000px){#ie-demo .note-row{grid-template-columns:1fr;}}
+#ie-demo .note{border:1px solid var(--border); border-radius:10px; background:var(--panel); padding:10px 16px;}
+#ie-demo .note.on{border-color:var(--accent); background:var(--accent-soft);}
+#ie-demo .note h4{margin:0 0 6px; font-size:16.5px;}
+#ie-demo .note ul{margin:0; padding-left:1.2em;} #ie-demo .note li{margin:3px 0;}
+#ie-demo .note p{margin:6px 0;}
+#ie-demo .note .cap{color:var(--muted); margin:10px 0 4px;}
+#ie-demo .strip{display:flex; border:1px solid var(--frame); border-radius:6px; overflow:hidden; background:var(--bg);}
+#ie-demo .strip span{border-right:1px solid var(--frame); padding:6px 10px; text-align:center; white-space:nowrap; font-family:var(--mono); font-size:14px;}
+#ie-demo .strip span[style]{font-family:inherit; font-size:15px;}
+#ie-demo .strip span:last-child{border-right:0;}
+#ie-demo .strip .grow{flex:1; color:var(--muted); font-family:inherit;}
+#ie-demo .strip small{display:block; color:var(--muted); font-size:13px;}
+#ie-demo .zoom{display:grid; grid-template-columns:220px 1fr; gap:12px;}
+#ie-demo .zoom>div{border:1px solid var(--frame); border-radius:6px; background:var(--bg); padding:10px 14px;}
+#ie-demo .zoom .mut{color:var(--muted); font-size:14px;}
+#ie-demo .files{width:100%; margin:8px 0; font-size:15px;}
+#ie-demo .files td{border:0; padding:3px 14px 3px 0;}
+#ie-demo .strip span.pbr{background:#fff3e0; font-weight:600;}
+#ie-demo .strip .grp{display:flex; flex-direction:column; border-right:1px solid var(--frame);}
+#ie-demo .strip .grp:last-child{border-right:0;}
+#ie-demo .strip .grp .in{display:flex; flex:1;}
+#ie-demo .strip .grp .in span:last-child{border-right:0;}
+#ie-demo .strip .glab{border-top:2px solid var(--accent); background:var(--accent-soft); text-align:center; font-weight:600; padding:3px; font-size:14.5px;}
+#ie-demo #note-why table td{border:1px solid var(--border); padding:5px 10px; background:var(--bg);}
+#ie-demo #note-why table tr:first-child td{background:var(--fill);}
+</style>
+<style>#ie-demo .scn{color:var(--muted);font-size:13px;margin-left:6px}
+#ie-demo svg text{font-size:15px} #ie-demo svg .t{font-size:16px} #ie-demo svg .s{font-size:13.5px}
+#ie-demo .who.fw{color:#7c3aed;border-color:#a78bfa;}#ie-demo{--bg:#f7faf6;--panel:#e9f1ea;--border:#cfdccf;--fill:#e3ece3;--frame:#7f9a86;--line:#a9b9ac;--hot:#b45309;--hot-soft:#fdf0e1;--muted:#5d6b61;background:#eef4ee}</style>
+<h2>注意力的一行：中间矩阵要不要写进 HBM</h2>
+<p class="sub">左边 HBM 里放着 $q$、4 个键 $k_0\ldots k_3$、4 个值 $v_0\ldots v_3$（值只看一维）。中间是 SM 的共享内存，右边是负责这一行的线程的寄存器。分数 $s=q\cdot k/\sqrt d$ 已经算好写在键旁边：$2,1,3,0$。　<b>← / →</b> 前进后退；这个演示可以<b>单独在新页面打开</b>（两栏页左上「⧉ 单独打开这张」）。</p>
+<div class="tabs" id="ieTabs"></div>
+<p class="intro" id="ieIntro"></p>
+<div class="mainrow">
+<div class="fig"><svg viewBox="0 0 1560 820" role="img" aria-label="注意力的一行：中间矩阵要不要写进 HBM"><defs><marker id="ieArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs><style>#ie-demo svg text{font-size:18px} #ie-demo svg .t{font-size:18.5px} #ie-demo svg .s{font-size:16px}</style><g id="g"><rect class="zone" x="20" y="60" width="560" height="740" rx="12"/><text x="34" y="86" class="t">HBM</text><rect id="q" class="cell" x="50" y="100" width="500" height="60" rx="8"/><text x="62" y="124" class="t" id="q-t">查询 q（这一行）</text><text x="62" y="150" id="q-v"></text><text x="62" y="174" class="s" id="q-w"></text><rect id="k0" class="cell" x="50" y="190" width="116" height="80" rx="8"/><text x="62" y="214" class="t" id="k0-t">k0</text><text x="62" y="240" id="k0-v">s = 2</text><text x="62" y="264" class="s" id="k0-w"></text><rect id="v0" class="cell" x="50" y="290" width="116" height="70" rx="8"/><text x="62" y="314" class="t" id="v0-t">v0 = 10</text><text x="62" y="340" id="v0-v"></text><text x="62" y="364" class="s" id="v0-w"></text><rect id="k1" class="cell" x="178" y="190" width="116" height="80" rx="8"/><text x="190" y="214" class="t" id="k1-t">k1</text><text x="190" y="240" id="k1-v">s = 1</text><text x="190" y="264" class="s" id="k1-w"></text><rect id="v1" class="cell" x="178" y="290" width="116" height="70" rx="8"/><text x="190" y="314" class="t" id="v1-t">v1 = 20</text><text x="190" y="340" id="v1-v"></text><text x="190" y="364" class="s" id="v1-w"></text><rect id="k2" class="cell" x="306" y="190" width="116" height="80" rx="8"/><text x="318" y="214" class="t" id="k2-t">k2</text><text x="318" y="240" id="k2-v">s = 3</text><text x="318" y="264" class="s" id="k2-w"></text><rect id="v2" class="cell" x="306" y="290" width="116" height="70" rx="8"/><text x="318" y="314" class="t" id="v2-t">v2 = 30</text><text x="318" y="340" id="v2-v"></text><text x="318" y="364" class="s" id="v2-w"></text><rect id="k3" class="cell" x="434" y="190" width="116" height="80" rx="8"/><text x="446" y="214" class="t" id="k3-t">k3</text><text x="446" y="240" id="k3-v">s = 0</text><text x="446" y="264" class="s" id="k3-w"></text><rect id="v3" class="cell" x="434" y="290" width="116" height="70" rx="8"/><text x="446" y="314" class="t" id="v3-t">v3 = 40</text><text x="446" y="340" id="v3-v"></text><text x="446" y="364" class="s" id="v3-w"></text><rect id="S" class="cell" x="50" y="400" width="500" height="120" rx="8"/><text x="62" y="424" class="t" id="S-t">分数矩阵 S（N×N）的这一行</text><text x="62" y="450" id="S-v">—</text><text x="62" y="474" class="s" id="S-w"></text><rect id="P" class="cell" x="50" y="540" width="500" height="120" rx="8"/><text x="62" y="564" class="t" id="P-t">概率矩阵 P = softmax(S) 的这一行</text><text x="62" y="590" id="P-v">—</text><text x="62" y="614" class="s" id="P-w"></text><rect id="o" class="cell" x="50" y="680" width="500" height="90" rx="8"/><text x="62" y="704" class="t" id="o-t">输出 o（这一行，这一维）</text><text x="62" y="730" id="o-v">—</text><text x="62" y="754" class="s" id="o-w"></text><rect class="zone" x="610" y="60" width="400" height="740" rx="12"/><text x="624" y="86" class="t">SM 的共享内存</text><rect id="kt" class="cell" x="640" y="110" width="340" height="110" rx="8"/><text x="652" y="134" class="t" id="kt-t">当前这块键（2 个）</text><text x="652" y="160" id="kt-v">—</text><text x="652" y="184" class="s" id="kt-w"></text><rect id="vt" class="cell" x="640" y="240" width="340" height="110" rx="8"/><text x="652" y="264" class="t" id="vt-t">当前这块值（2 个）</text><text x="652" y="290" id="vt-v">—</text><text x="652" y="314" class="s" id="vt-w"></text><text x="640" y="400" class="s" id="sm-a">标准做法用不到这里：</text><text x="640" y="424" class="s" id="sm-b">每个 kernel 都直接读写 HBM</text><rect id="cnt" class="cell" x="1040" y="70" width="500" height="110" rx="8"/><text x="1052" y="94" class="t" id="cnt-t">N×N 中间矩阵进出 HBM</text><text x="1052" y="120" id="cnt-v">0 MB</text><text x="1052" y="144" class="s" id="cnt-w"></text><rect class="zone" x="1040" y="200" width="500" height="600" rx="12"/><text x="1054" y="226" class="t">这一行的寄存器</text><rect id="rs" class="cell" x="1060" y="250" width="460" height="80" rx="8"/><text x="1072" y="274" class="t" id="rs-t">这块的分数 s</text><text x="1072" y="300" id="rs-v">—</text><text x="1072" y="324" class="s" id="rs-w"></text><rect id="rm" class="cell" x="1060" y="345" width="460" height="80" rx="8"/><text x="1072" y="369" class="t" id="rm-t">m：目前见过的最大分数</text><text x="1072" y="395" id="rm-v">—</text><text x="1072" y="419" class="s" id="rm-w"></text><rect id="rl" class="cell" x="1060" y="440" width="460" height="100" rx="8"/><text x="1072" y="464" class="t" id="rl-t">l：Σ exp(s − m)</text><text x="1072" y="490" id="rl-v">—</text><text x="1072" y="514" class="s" id="rl-w"></text><rect id="ra" class="cell" x="1060" y="555" width="460" height="100" rx="8"/><text x="1072" y="579" class="t" id="ra-t">acc：Σ exp(s − m) × v</text><text x="1072" y="605" id="ra-v">—</text><text x="1072" y="629" class="s" id="ra-w"></text><rect id="ro" class="cell" x="1060" y="670" width="460" height="100" rx="8"/><text x="1072" y="694" class="t" id="ro-t">输出 = acc ÷ l</text><text x="1072" y="720" id="ro-v">—</text><text x="1072" y="744" class="s" id="ro-w"></text></g></svg></div>
+<div class="side">
+<div class="ctl">
+  <button class="btn" id="iePrev">← 上一步</button>
+  <button class="btn" id="ieNext">下一步 →</button>
+  <button class="btn" id="iePlay">▶ 自动播放</button>
+  <span class="cnt" id="ieCnt">1 / 1</span><span class="scn" id="ieScn"></span>
+  <div class="bar"><i id="ieBar"></i></div>
+</div>
+<div class="steprow">
+<div class="step"><h3 id="ieTitle"></h3><div id="ieBody"></div></div>
+<div class="tl" id="tl"><div class="tlh">此刻</div><table><tr><td>做法</td><td id="st-0"></td></tr><tr><td>在做什么</td><td id="st-1"></td></tr><tr><td>中间矩阵的 HBM 流量</td><td id="st-2"></td></tr></table></div>
+</div>
+</div>
+</div>
+<p class="hint">图例：<span style="color:#b45309">硬件</span> = GPU 执行 kernel 里的指令。右上角数着“N×N 中间矩阵在 HBM 里进出了多少”，按 N = 4096、bf16、一个注意力头算。</p>
+</div>
+<script>
+(function(){
+var root=document.getElementById('ie-demo'),$=function(i){return document.getElementById(i);};
+var BASE={"st-0": "—", "st-1": "—", "st-2": "—", "q-t": "查询 q（这一行）", "q-v": "", "q-w": "", "k0-t": "k0", "k0-v": "s = 2", "k0-w": "", "v0-t": "v0 = 10", "v0-v": "", "v0-w": "", "k1-t": "k1", "k1-v": "s = 1", "k1-w": "", "v1-t": "v1 = 20", "v1-v": "", "v1-w": "", "k2-t": "k2", "k2-v": "s = 3", "k2-w": "", "v2-t": "v2 = 30", "v2-v": "", "v2-w": "", "k3-t": "k3", "k3-v": "s = 0", "k3-w": "", "v3-t": "v3 = 40", "v3-v": "", "v3-w": "", "S-t": "分数矩阵 S（N×N）的这一行", "S-v": "—", "S-w": "", "P-t": "概率矩阵 P = softmax(S) 的这一行", "P-v": "—", "P-w": "", "o-t": "输出 o（这一行，这一维）", "o-v": "—", "o-w": "", "kt-t": "当前这块键（2 个）", "kt-v": "—", "kt-w": "", "vt-t": "当前这块值（2 个）", "vt-v": "—", "vt-w": "", "sm-a": "标准做法用不到这里：", "sm-b": "每个 kernel 都直接读写 HBM", "cnt-t": "N×N 中间矩阵进出 HBM", "cnt-v": "0 MB", "cnt-w": "", "rs-t": "这块的分数 s", "rs-v": "—", "rs-w": "", "rm-t": "m：目前见过的最大分数", "rm-v": "—", "rm-w": "", "rl-t": "l：Σ exp(s − m)", "rl-v": "—", "rl-w": "", "ra-t": "acc：Σ exp(s − m) × v", "ra-v": "—", "ra-w": "", "ro-t": "输出 = acc ÷ l", "ro-v": "—", "ro-w": ""};
+var SCN=[{"name": "① 标准做法：3 个 kernel", "intro": "先算出整张分数矩阵写回 HBM，再做 softmax 写回，再乘 V。", "show": ["g"], "steps": [{"t": "kernel 1：算分数矩阵 S，写回 HBM", "on": ["q", "k0", "k1", "k2", "k3", "S", "cnt"], "set": {"S-v": "2   1   3   0", "S-w": "整张 S：4096×4096 个 bf16 = 32 MB", "cnt-v": "写 32 MB", "st-0": "标准", "st-1": "写 S", "st-2": "32 MB"}, "d": "<p><span class=\"who hw\">硬件</span>第一个 kernel 是一次矩阵乘 $S = QK^\\top$（再除以 $\\sqrt d$），每个查询对每个键一个分数。这一行是 2、1、3、0。</p><p>序列长 N = 4096 时，一个注意力头的 S 有 $4096^2 \\approx 1678$ 万个数，bf16 每个 2 字节，32 MB，全部写进 HBM。</p>"}, {"t": "kernel 2：softmax，读 S、写 P", "on": ["S", "P", "cnt"], "set": {"P-v": "0.2369  0.0871  0.6439  0.0321", "P-w": "m = 3，exp(s−3) = 0.3679 0.1353 1 0.0498，和 1.5530", "cnt-v": "写 32 + 读 32 + 写 32 = 96 MB", "st-1": "读 S 写 P", "st-2": "96 MB"}, "d": "<p><span class=\"who hw\">硬件</span>softmax 要先知道一整行的最大值 m（减掉它是为了 exp 不溢出），再算每个 $e^{s-m}$ 和它们的和，最后相除：</p><p>$m = 3$；$e^{-1}=0.3679,\\ e^{-2}=0.1353,\\ e^{0}=1,\\ e^{-3}=0.0498$；和 $=1.5530$；$P = 0.2369,\\ 0.0871,\\ 0.6439,\\ 0.0321$。</p><p>又从 HBM 读一遍 32 MB 的 S、写 32 MB 的 P。逐元素运算，典型的受内存带宽限制。</p>"}, {"t": "kernel 3：读 P 和 V，算输出", "on": ["P", "v0", "v1", "v2", "v3", "o", "cnt"], "set": {"o-v": "0.2369×10 + 0.0871×20 + 0.6439×30 + 0.0321×40", "o-w": "= 24.71", "cnt-v": "共 128 MB ≈ 38 µs", "cnt-w": "还要 64 MB 显存放 S 和 P", "st-1": "读 P 算 o", "st-2": "128 MB"}, "d": "<p><span class=\"who hw\">硬件</span>最后一个矩阵乘 $O = PV$：这一行的输出 = 0.2369×10 + 0.0871×20 + 0.6439×30 + 0.0321×40 = 24.71。</p><p>N×N 的中间矩阵一共在 HBM 进出 4 趟（写 S、读 S、写 P、读 P）= 128 MB，H100 上光搬这些就要约 38 µs，而且要占 64 MB 显存。每一层、每个头都来一遍；N 翻倍，这部分变 4 倍。</p>"}]}, {"name": "② FlashAttention：分块 + 在线 softmax", "intro": "同一行、同样的数。键和值每次只搬 2 个进共享内存，分数只在寄存器里待一下，S 和 P 从不写进 HBM。", "show": ["g"], "steps": [{"t": "搬第 1 块键和值，算出这块的分数", "on": ["k0", "k1", "v0", "v1", "kt", "vt", "rs", "q"], "set": {"sm-a": "", "sm-b": "", "kt-v": "k0, k1", "vt-v": "v0 = 10, v1 = 20", "rs-v": "s = 2, 1", "st-0": "FlashAttention", "st-1": "第 1 块", "st-2": "0 MB"}, "d": "<p><span class=\"who hw\">硬件</span>和分块矩阵乘一样，线程块把 k₀、k₁ 和 v₀、v₁ 搬进共享内存，算出这两个分数 2 和 1，放在寄存器里。整张 S 不存在于任何地方。</p>"}, {"t": "只看见前两个分数时的 m、l、acc", "on": ["rm", "rl", "ra", "rs"], "set": {"rm-v": "m = 2", "rl-v": "l = e⁰ + e⁻¹ = 1.3679", "ra-v": "acc = 1×10 + 0.3679×20 = 17.358"}, "d": "<p><span class=\"who hw\">硬件</span>目前见过的最大分数是 2，就先拿它当 m：$l = e^{2-2} + e^{1-2} = 1.3679$，$acc = e^{0}\\times10 + e^{-1}\\times20 = 17.358$。</p><p>如果后面再也没有更大的分数，输出就是 acc ÷ l。可惜后面有个 3。</p>"}, {"t": "搬第 2 块：出现更大的分数 3", "on": ["k2", "k3", "v2", "v3", "kt", "vt", "rs", "rm"], "set": {"kt-v": "k2, k3（覆盖旧块）", "vt-v": "v2 = 30, v3 = 40", "rs-v": "s = 3, 0", "rm-v": "m：2 → 3", "st-1": "第 2 块"}, "d": "<p><span class=\"who hw\">硬件</span>第 2 块的分数是 3 和 0。新的最大值 m = 3，比原来的 2 大——前面算的 l 和 acc 都是按“减 2”算的，现在要改成“减 3”。</p>"}, {"t": "旧的和乘上 e^(2−3)，换成新的基准", "on": ["rl", "ra", "rm"], "set": {"rl-v": "l = 1.3679 × 0.3679 = 0.5032", "ra-v": "acc = 17.358 × 0.3679 = 6.386"}, "d": "<p><span class=\"who hw\">硬件</span>不用回头重算：$e^{s-2} \\times e^{2-3} = e^{s-3}$，所以把旧的 l 和 acc 各乘一次 $e^{2-3} = 0.3679$ 就行。这一步就是“在线 softmax”的关键，每个旧的和只要一次乘法。</p>"}, {"t": "加上第 2 块", "on": ["rl", "ra", "rs"], "set": {"rl-v": "l = 0.5032 + e⁰ + e⁻³ = 1.5530", "ra-v": "acc = 6.386 + 1×30 + 0.0498×40 = 38.377"}, "d": "<p><span class=\"who hw\">硬件</span>第 2 块按新基准 3：$e^{3-3} = 1$，$e^{0-3} = 0.0498$。$l = 0.5032 + 1 + 0.0498 = 1.5530$——和标准做法里的分母一模一样。$acc = 6.386 + 30 + 1.991 = 38.377$。</p>"}, {"t": "除一次，写回输出：和标准做法相同", "on": ["ro", "o", "cnt"], "set": {"ro-v": "38.377 ÷ 1.5530 = 24.71", "o-v": "24.71（只写这一个数）", "o-w": "", "cnt-v": "0 MB", "cnt-w": "只读 Q、K、V，只写 O", "st-1": "写回 o", "st-2": "0 MB"}, "d": "<p><span class=\"who hw\">硬件</span>输出 = 38.377 ÷ 1.5530 = 24.71，和标准做法逐位相同。HBM 里只出现了输入 Q、K、V 和输出 O；N×N 的 S 和 P 一次也没写进去——标准做法那 128 MB、38 µs 全省了，64 MB 显存也省了。</p><p>整个过程是一个 kernel：矩阵乘、exp、求和、再乘 V 全部融合；对键值的分块和分块矩阵乘一样。反向传播时 FlashAttention 也不存 P，而是按块重算（就是重算那一节的思路）。</p>"}]}];
+// Formula labels live in SVG foreignObject nodes so MathJax can typeset real TeX.
+var mathIds=['q-t','S-t','S-v','S-w','P-t','P-v','P-w','o-t','o-v','o-w','kt-v','vt-v','cnt-t','cnt-v','rs-t','rs-v','rm-t','rm-v','rl-t','rl-v','ra-t','ra-v','ro-t','ro-v'];
+for(var mi=0;mi<4;mi++)mathIds.push('k'+mi+'-t','k'+mi+'-v','v'+mi+'-t');
+var mathValues={
+ 'q-t':{'查询 q（这一行）':'\\text{查询 }q\\text{（这一行）}'},
+ 'S-t':{'分数矩阵 S（N×N）的这一行':'\\text{分数矩阵 }S\\;(N\\times N)\\text{ 的这一行}'},
+ 'S-v':{'2   1   3   0':'2,\\;1,\\;3,\\;0'},
+ 'S-w':{'整张 S：4096×4096 个 bf16 = 32 MB':'S:\\;4096\\times4096\\times2\\text{ B}=32\\text{ MB}'},
+ 'P-t':{'概率矩阵 P = softmax(S) 的这一行':'\\text{概率矩阵 }P=\\operatorname{softmax}(S)\\text{ 的这一行}'},
+ 'P-v':{'0.2369  0.0871  0.6439  0.0321':'0.2369,\\;0.0871,\\;0.6439,\\;0.0321'},
+ 'P-w':{'m = 3，exp(s−3) = 0.3679 0.1353 1 0.0498，和 1.5530':'m=3,\\quad e^{s-m}=(0.3679,0.1353,1,0.0498),\\quad l=1.5530'},
+ 'o-t':{'输出 o（这一行，这一维）':'\\text{输出 }o\\text{（这一行，这一维）}'},
+ 'o-v':{'0.2369×10 + 0.0871×20 + 0.6439×30 + 0.0321×40':'0.2369\\cdot10+0.0871\\cdot20+0.6439\\cdot30+0.0321\\cdot40','24.71（只写这一个数）':'24.71\\text{（只写这一个数）}'},
+ 'o-w':{'= 24.71':'=24.71'},
+ 'kt-v':{'k0, k1':'k_0,k_1','k2, k3（覆盖旧块）':'k_2,k_3\\text{（覆盖旧块）}'},
+ 'vt-v':{'v0 = 10, v1 = 20':'v_0=10,\\;v_1=20','v2 = 30, v3 = 40':'v_2=30,\\;v_3=40'},
+ 'cnt-t':{'N×N 中间矩阵进出 HBM':'N\\times N\\text{ 中间矩阵进出 HBM}'},
+ 'cnt-v':{'写 32 MB':'\\text{写 }32\\text{ MB}','写 32 + 读 32 + 写 32 = 96 MB':'\\text{写 }32+\\text{读 }32+\\text{写 }32=96\\text{ MB}','共 128 MB ≈ 38 µs':'128\\text{ MB}\\approx38\\,\\mu\\text{s}'},
+ 'rs-t':{'这块的分数 s':'\\text{这块的分数 }s'},
+ 'rs-v':{'s = 2, 1':'s=(2,1)','s = 3, 0':'s=(3,0)'},
+ 'rm-t':{'m：目前见过的最大分数':'m:\\text{目前见过的最大分数}'},
+ 'rm-v':{'m = 2':'m=2','m：2 → 3':'m:2\\rightarrow3'},
+ 'rl-t':{'l：Σ exp(s − m)':'l=\\sum_j e^{s_j-m}'},
+ 'rl-v':{'l = e⁰ + e⁻¹ = 1.3679':'l=e^0+e^{-1}=1.3679','l = 1.3679 × 0.3679 = 0.5032':'l=1.3679\\cdot0.3679=0.5032','l = 0.5032 + e⁰ + e⁻³ = 1.5530':'l=0.5032+e^0+e^{-3}=1.5530'},
+ 'ra-t':{'acc：Σ exp(s − m) × v':'acc=\\sum_j e^{s_j-m}v_j'},
+ 'ra-v':{'acc = 1×10 + 0.3679×20 = 17.358':'acc=1\\cdot10+0.3679\\cdot20=17.358','acc = 17.358 × 0.3679 = 6.386':'acc=17.358\\cdot0.3679=6.386','acc = 6.386 + 1×30 + 0.0498×40 = 38.377':'acc=6.386+1\\cdot30+0.0498\\cdot40=38.377'},
+ 'ro-t':{'输出 = acc ÷ l':'\\text{输出}=acc/l'},
+ 'ro-v':{'38.377 ÷ 1.5530 = 24.71':'38.377/1.5530=24.71'}
+};
+for(var mi=0;mi<4;mi++){
+ mathValues['k'+mi+'-t']={};mathValues['k'+mi+'-t']['k'+mi]='k_{'+mi+'}';
+ mathValues['k'+mi+'-v']={};mathValues['k'+mi+'-v']['s = '+[2,1,3,0][mi]]='s_{'+mi+'}='+[2,1,3,0][mi];
+ mathValues['v'+mi+'-t']={};mathValues['v'+mi+'-t']['v'+mi+' = '+[10,20,30,40][mi]]='v_{'+mi+'}='+[10,20,30,40][mi];
+}
+mathIds.forEach(function(id){
+ var old=$(id);if(!old)return;
+ var parent=$(id.replace(/-(t|v|w)$/,'')),x=+old.getAttribute('x'),y=+old.getAttribute('y');
+ var right=parent?+parent.getAttribute('x')+ +parent.getAttribute('width'):x+470;
+ var fo=document.createElementNS('http://www.w3.org/2000/svg','foreignObject');
+ fo.id=id;fo.setAttribute('x',x);fo.setAttribute('y',y-20);fo.setAttribute('width',Math.max(60,right-x-7));fo.setAttribute('height',id==='P-w'||id==='o-v'?52:40);
+ var div=document.createElement('div');div.style.cssText='font-size:'+(old.classList.contains('s')?'16':'19')+'px;line-height:1.15;color:#17212b;white-space:nowrap;padding-top:8px;';
+ if(id==='P-w')div.style.fontSize='15px';
+ if(id==='o-v'||id==='ra-v'||id==='cnt-v')div.style.fontSize='16px';
+ fo.appendChild(div);old.replaceWith(fo);
+});
+var TOGGLE=["g"];
+var cur=0,idx=0,timer=null,IDS=[],HID=[];
+root.querySelectorAll('svg .cell,svg .box,svg .wire').forEach(function(e){if(e.id)IDS.push(e.id);});
+function setText(m){for(var k in m){var e=$(k);if(!e)continue;if(e.tagName.toLowerCase()==='foreignobject'){
+ var tex=mathValues[k]&&mathValues[k][m[k]];e.firstChild.innerHTML=tex&&window.MathJax&&MathJax.typesetPromise?'$'+tex+'$':m[k];
+}else e.textContent=m[k];}}
+function render(){
+ var s=SCN[cur],st=s.steps[idx];
+ IDS.forEach(function(id){$(id).classList.remove('on');});
+ TOGGLE.forEach(function(id){$(id).style.display=s.show.indexOf(id)>=0?'':'none';});
+ setText(BASE);
+ HID.forEach(function(id){var e=$(id);if(e)e.style.display='';});HID=[];
+ for(var i=0;i<=idx;i++){if(s.steps[i].set)setText(s.steps[i].set);}
+ (st.hide||[]).forEach(function(id){[id,id+'-t',id+'-v',id+'-w'].forEach(function(j){var e=$(j);if(e){e.style.display='none';HID.push(j);}});});
+ st.on.forEach(function(id){var e=$(id);if(e)e.classList.add('on');});
+ $('ieTitle').textContent=(idx+1)+'. '+st.t;
+ $('ieBody').innerHTML=st.d;
+ if(window.MathJax&&MathJax.typesetPromise){var mathNodes=Array.from(root.querySelectorAll('svg foreignObject > div')).concat([$('ieBody')]);MathJax.typesetClear(mathNodes);MathJax.typesetPromise(mathNodes).catch(function(){});}
+ $('ieCnt').textContent=(idx+1)+' / '+s.steps.length;
+ $('ieScn').textContent=SCN.length>1?('第 '+(cur+1)+' 幕，共 '+SCN.length+' 幕'):'';
+ $('ieBar').style.width=((idx+1)/s.steps.length*100)+'%';
+ $('ieIntro').textContent=s.intro;
+ root.querySelectorAll('.tab').forEach(function(b,i){b.classList.toggle('cur',i===cur);});
+}
+function go(n){var m=SCN[cur].steps.length;idx=Math.max(0,Math.min(m-1,n));render();}
+function stop(){if(timer){clearInterval(timer);timer=null;}$('iePlay').textContent='▶ 自动播放';}
+SCN.forEach(function(s,i){var b=document.createElement('button');b.className='tab';b.textContent=s.name;
+ b.onclick=function(){stop();cur=i;idx=0;render();};$('ieTabs').appendChild(b);});
+$('iePrev').onclick=function(){stop();go(idx-1);};
+$('ieNext').onclick=function(){stop();go(idx+1);};
+$('iePlay').onclick=function(){if(timer){stop();return;}$('iePlay').textContent='⏸ 暂停';
+ timer=setInterval(function(){if(idx>=SCN[cur].steps.length-1){stop();return;}go(idx+1);},4500);};
+document.addEventListener('keydown',function(e){if(e.target.closest&&e.target.closest('input,textarea'))return;
+ if(e.key==='ArrowRight'){stop();go(idx+1);e.preventDefault();}
+ else if(e.key==='ArrowLeft'){stop();go(idx-1);e.preventDefault();}});
+function fromHash(){var m=/^#s(\d+)$/.exec(location.hash);if(m){var n=+m[1]-1;if(n>=0&&n<SCN.length){stop();cur=n;idx=0;}}}
+fromHash();window.addEventListener('hashchange',function(){fromHash();render();});
+window.attentionRender=render;
+render();
+})();
+</script>
+<script src="images/course-figure-palette.js"></script>
+<script src="../OS/figure-fit.js"></script>
+</body>
+</html>

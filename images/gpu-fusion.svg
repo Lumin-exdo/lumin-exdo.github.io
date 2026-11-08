@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 930" width="1240" height="930" font-family="system-ui,'Microsoft YaHei','PingFang SC',sans-serif">
+<rect class="bg" width="1240" height="930" fill="#f7f8f3"/>
+<defs><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b968e"/></marker><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b42318"/></marker><marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker><marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c26a12"/></marker><marker id="an" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f7d2b"/></marker><marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6b4c9a"/></marker></defs>
+<text x="24" y="34" font-size="18.5" fill="#1f2a24" text-anchor="start" font-weight="700">算子融合与重算：时间几乎全花在搬数据上，所以少搬一次就快一截（x 为 4096×4096 float32，每个张量 64 MB）</text>
+<rect x="20.0" y="52.0" width="1200.0" height="470.0" rx="12" fill="#ffffff" stroke="#c9d2cb" stroke-width="1.3"/>
+<text x="36" y="80" font-size="15.5" fill="#1f2a24" text-anchor="start" font-weight="700">y = sin(x)² + cos(x)²：不融合时 PyTorch 依次启动 5 个 kernel，每个都把结果写回 HBM，下一个再读回来</text>
+<text x="36" y="132" font-size="15" fill="#6b4c9a" text-anchor="start" font-weight="700">不融合</text>
+<text x="36" y="154" font-size="14" fill="#5e6b63" text-anchor="start">5 个 kernel</text>
+<rect x="212.0" y="112.0" width="152.8" height="40.0" rx="4" fill="#ece6f5" stroke="#6b4c9a" stroke-width="1.3"/>
+<text x="288.4179104477612" y="130" font-size="13.5" fill="#6b4c9a" text-anchor="middle" font-weight="700">sin</text>
+<text x="288.4179104477612" y="147" font-size="12.5" fill="#1f2a24" text-anchor="middle">读 x 写 a，128 MB</text>
+<rect x="376.8" y="112.0" width="152.8" height="40.0" rx="4" fill="#ece6f5" stroke="#6b4c9a" stroke-width="1.3"/>
+<text x="453.25373134328356" y="130" font-size="13.5" fill="#6b4c9a" text-anchor="middle" font-weight="700">cos</text>
+<text x="453.25373134328356" y="147" font-size="12.5" fill="#1f2a24" text-anchor="middle">读 x 写 b，128 MB</text>
+<rect x="541.7" y="112.0" width="152.8" height="40.0" rx="4" fill="#ece6f5" stroke="#6b4c9a" stroke-width="1.3"/>
+<text x="618.0895522388059" y="130" font-size="13.5" fill="#6b4c9a" text-anchor="middle" font-weight="700">a²</text>
+<text x="618.0895522388059" y="147" font-size="12.5" fill="#1f2a24" text-anchor="middle">读 a 写 c，128 MB</text>
+<rect x="706.5" y="112.0" width="152.8" height="40.0" rx="4" fill="#ece6f5" stroke="#6b4c9a" stroke-width="1.3"/>
+<text x="782.9253731343283" y="130" font-size="13.5" fill="#6b4c9a" text-anchor="middle" font-weight="700">b²</text>
+<text x="782.9253731343283" y="147" font-size="12.5" fill="#1f2a24" text-anchor="middle">读 b 写 d，128 MB</text>
+<rect x="871.3" y="112.0" width="229.3" height="40.0" rx="4" fill="#ece6f5" stroke="#6b4c9a" stroke-width="1.3"/>
+<text x="985.9701492537313" y="130" font-size="13.5" fill="#6b4c9a" text-anchor="middle" font-weight="700">c+d</text>
+<text x="985.9701492537313" y="147" font-size="12.5" fill="#1f2a24" text-anchor="middle">读 c,d 写 y，192 MB</text>
+<text x="1108.597014925373" y="138" font-size="15" fill="#6b4c9a" text-anchor="start" font-weight="700">≈ 225 µs</text>
+<text x="36" y="214" font-size="15" fill="#4f7d2b" text-anchor="start" font-weight="700">融合</text>
+<text x="36" y="236" font-size="14" fill="#5e6b63" text-anchor="start">1 个 kernel</text>
+<rect x="212.0" y="194.0" width="152.8" height="40.0" rx="4" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="1.3"/>
+<text x="288.4179104477612" y="212" font-size="13.5" fill="#4f7d2b" text-anchor="middle" font-weight="700">sin²+cos²</text>
+<text x="288.4179104477612" y="229" font-size="12.5" fill="#1f2a24" text-anchor="middle">读 x 写 y，128 MB</text>
+<text x="372.8358208955224" y="220" font-size="15" fill="#4f7d2b" text-anchor="start" font-weight="700">≈ 41 µs</text>
+<path d="M200.0,262 L200.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="200.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">0</text>
+<path d="M280.0,262 L280.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="280.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">20</text>
+<path d="M360.0,262 L360.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="360.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">40</text>
+<path d="M440.0,262 L440.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="440.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">60</text>
+<path d="M520.0,262 L520.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="520.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">80</text>
+<path d="M600.0,262 L600.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="600.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">100</text>
+<path d="M680.0,262 L680.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="680.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">120</text>
+<path d="M760.0,262 L760.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="760.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">140</text>
+<path d="M840.0,262 L840.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="840.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">160</text>
+<path d="M920.0,262 L920.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="920.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">180</text>
+<path d="M1000.0,262 L1000.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="1000.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">200</text>
+<path d="M1080.0,262 L1080.0,270" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="1080.0" y="290" font-size="13.5" fill="#1f2a24" text-anchor="middle">220</text>
+<path d="M200,262 L1120.0,262" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="1128.0" y="290" font-size="13.5" fill="#5e6b63" text-anchor="start">µs</text>
+<text x="36" y="326" font-size="14.5" fill="#1f2a24" text-anchor="start">每条前面的空隙是启动 kernel 的开销（约 3 µs）。条的长度 = 搬的字节 ÷ 3.35 TB/s：运算本身（每个元素几次乘加）快到可以忽略。</text>
+<text x="36" y="352" font-size="14.5" fill="#1f2a24" text-anchor="start">共读写 11 个 64 MB 张量 = 704 MB ≈ 210 µs，加 5 次启动 ≈ 225 µs；融合后读 x、写 y = 128 MB ≈ 38 µs，加 1 次启动 ≈ 41 µs，快 5 倍多。</text>
+<text x="36" y="378" font-size="14.5" fill="#1f2a24" text-anchor="start">融合后的 kernel 里，中间值 a、b、c、d 只在寄存器里待一下，从不进 HBM。torch.compile 会自动做这类逐元素融合。</text>
+<text x="36" y="404" font-size="14.5" fill="#1f2a24" text-anchor="start">同理，x.cos().cos() 不融合要读写 4 次，融合 2 次；gelu 和 relu 融合后耗时几乎一样——都是读一次写一次。</text>
+<text x="36" y="436" font-size="14.5" fill="#5e6b63" text-anchor="start">为什么融合不能无限做下去：矩阵乘法这种要跨很多元素的运算，自己就得用分块（见分块那一节）；</text>
+<text x="36" y="460" font-size="14.5" fill="#5e6b63" text-anchor="start">把逐元素运算塞进矩阵乘的收尾阶段（例如在 x@W 写回之前顺手做 relu），是常见的“尾部融合”。</text>
+<text x="36" y="494" font-size="13.5" fill="#5e6b63" text-anchor="start">数据：CS336 第 5 讲（sin²+cos² 启动 5 个 kernel）；Horace He《Making Deep Learning Go Brrrr》（cos().cos()）。</text>
+<rect x="20.0" y="536.0" width="1200.0" height="380.0" rx="12" fill="#ffffff" stroke="#c9d2cb" stroke-width="1.3"/>
+<text x="36" y="564" font-size="15.5" fill="#1f2a24" text-anchor="start" font-weight="700">重算：三个 sigmoid 叠在一起训练，反向传播要用前向的中间结果 s1、s2——存下来，还是到时候再算一遍？</text>
+<rect x="36.0" y="580.0" width="570.0" height="290.0" rx="10" fill="#ece6f5" stroke="#6b4c9a" stroke-width="1.3"/>
+<text x="52" y="606" font-size="15.5" fill="#6b4c9a" text-anchor="start" font-weight="700">存下来（旧做法）</text>
+<text x="52" y="636" font-size="14.5" fill="#1f2a24" text-anchor="start" font-weight="700">前向</text>
+<rect x="106.0" y="618.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="150" y="638" font-size="13.5" fill="#2563eb" text-anchor="middle" font-weight="700">读 x</text>
+<rect x="202.0" y="618.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#b42318" stroke-width="1.3"/>
+<text x="246" y="638" font-size="13.5" fill="#b42318" text-anchor="middle" font-weight="700">写 s2</text>
+<rect x="298.0" y="618.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#b42318" stroke-width="1.3"/>
+<text x="342" y="638" font-size="13.5" fill="#b42318" text-anchor="middle" font-weight="700">写 s1</text>
+<rect x="394.0" y="618.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#b42318" stroke-width="1.3"/>
+<text x="438" y="638" font-size="13.5" fill="#b42318" text-anchor="middle" font-weight="700">写 out</text>
+<text x="52" y="696" font-size="14.5" fill="#1f2a24" text-anchor="start" font-weight="700">反向</text>
+<rect x="106.0" y="678.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="150" y="698" font-size="13.5" fill="#2563eb" text-anchor="middle" font-weight="700">读 s2</text>
+<rect x="202.0" y="678.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="246" y="698" font-size="13.5" fill="#2563eb" text-anchor="middle" font-weight="700">读 s1</text>
+<rect x="298.0" y="678.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="342" y="698" font-size="13.5" fill="#2563eb" text-anchor="middle" font-weight="700">读 dout</text>
+<rect x="394.0" y="678.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#b42318" stroke-width="1.3"/>
+<text x="438" y="698" font-size="13.5" fill="#b42318" text-anchor="middle" font-weight="700">写 dx</text>
+<text x="52" y="744" font-size="15" fill="#6b4c9a" text-anchor="start" font-weight="700">共 8 次 HBM 读写</text>
+<rect x="626.0" y="580.0" width="570.0" height="290.0" rx="10" fill="#e8f1dc" stroke="#4f7d2b" stroke-width="1.3"/>
+<text x="642" y="606" font-size="15.5" fill="#4f7d2b" text-anchor="start" font-weight="700">扔掉，反向时重算（新做法）</text>
+<text x="642" y="636" font-size="14.5" fill="#1f2a24" text-anchor="start" font-weight="700">前向</text>
+<rect x="696.0" y="618.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="740" y="638" font-size="13.5" fill="#2563eb" text-anchor="middle" font-weight="700">读 x</text>
+<rect x="792.0" y="618.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#b42318" stroke-width="1.3"/>
+<text x="836" y="638" font-size="13.5" fill="#b42318" text-anchor="middle" font-weight="700">写 out</text>
+<text x="642" y="696" font-size="14.5" fill="#1f2a24" text-anchor="start" font-weight="700">反向</text>
+<rect x="696.0" y="678.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="740" y="698" font-size="13.5" fill="#2563eb" text-anchor="middle" font-weight="700">读 x</text>
+<rect x="792.0" y="678.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+<text x="836" y="698" font-size="13.5" fill="#2563eb" text-anchor="middle" font-weight="700">读 dout</text>
+<rect x="888.0" y="678.0" width="88.0" height="30.0" rx="4" fill="#ffffff" stroke="#b42318" stroke-width="1.3"/>
+<text x="932" y="698" font-size="13.5" fill="#b42318" text-anchor="middle" font-weight="700">写 dx</text>
+<text x="642" y="744" font-size="15" fill="#4f7d2b" text-anchor="start" font-weight="700">共 5 次 HBM 读写：多算了 3 次 sigmoid</text>
+<text x="52" y="776" font-size="14" fill="#1f2a24" text-anchor="start">按每个张量 64 MB 算：8 次 = 512 MB ≈ 153 µs。</text>
+<text x="52" y="800" font-size="14" fill="#5e6b63" text-anchor="start">蓝 = 从 HBM 读，红 = 写回 HBM</text>
+<text x="642" y="776" font-size="14" fill="#1f2a24" text-anchor="start">5 次 = 320 MB ≈ 96 µs，省下 3/8 的访存。</text>
+<text x="642" y="800" font-size="14" fill="#1f2a24" text-anchor="start">多出的 3 次 sigmoid 在寄存器里算，几乎不花时间。</text>
+<text x="36" y="898" font-size="13.5" fill="#5e6b63" text-anchor="start">数据：CS336 第 5 讲（引自 PyTorch dev-discuss）。激活检查点是同一思路，主要用来省显存。</text>
+</svg>

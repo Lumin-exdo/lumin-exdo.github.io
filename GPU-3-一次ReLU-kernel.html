@@ -1,0 +1,156 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一次 ReLU kernel</title><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body>
+<header><h1>y = torch.relu(x)：一行 Python 怎样变成 1678 万个线程</h1><small>x 是 4096×4096 的 float32（64 MB），已在 H100 的显存里。四幕：启动、一个 warp 怎样执行、分支发散、全部跑完。每个部件里画的是这一刻的实际内容；蓝色是这一步改变的值。</small><nav id="steps"></nav></header>
+<div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 690" role="img" aria-label="ReLU kernel 从 CPU 发出命令、GigaThread 分块到 132 个 SM，SM 分区里 warp 的执行、访存、分支掩码与总耗时"><g id="draw"></g></svg></div><footer id="note"></footer>
+<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+const B='#1667c4',R='#b8473a';
+const scenes=[
+ {b:'① 启动',h:690,steps:[
+  {t:'PyTorch 选中一个 kernel',n:'x 在 GPU 上，PyTorch 就挑出一个已经编译好的 GPU 程序来算 ReLU。在 GPU 上运行的函数叫 <b>kernel</b>。它的写法是“<b>一个线程</b>做什么”：线程算出自己的编号 i，读 x[i]，取 max(x[i], 0)，写 y[i]。要处理 16 777 216 个数，就开 16 777 216 个线程。'},
+  {t:'CPU 写一条命令，torch.relu 立刻返回',n:'CUDA 驱动（在 CPU 上运行）把“跑哪个 kernel、开多少线程、x 和 y 的地址”写成一条命令，放进命令队列，通知 GPU。Python 不等 GPU 算完就继续往下执行（<b>异步</b>）。这一套约 2–5 µs。'},
+  {t:'线程按 256 个一组打包成线程块',n:'线程每 256 个编成一个<b>线程块</b>（block），块 b 负责 x[256b] 到 x[256b+255]。16 777 216 ÷ 256 = 65 536 个块，全部块合起来叫一个 <b>grid</b>。一个块从头到尾只在一个 SM 上运行。'},
+  {t:'GigaThread 引擎把块分给 132 个 SM',n:'一个 SM 最多同时住 2048 个线程，也就是 8 个这样的块。132 个 SM 先各拿 8 个：SM 0 拿到块 0、132、264……，共 1056 个块上了 SM，其余 64 480 个排队。某个块跑完，SM 空出位置，队首的块补上。'}]},
+ {b:'② 一个 warp',h:690,steps:[
+  {t:'SM 0 里：每个块切成 8 个 warp，分到 4 个分区',n:'块里的线程按编号每 32 个切成一个 <b>warp</b>：线程 0–31 是 warp 0，32–63 是 warp 1……一个块 8 个 warp。分区 p 拿每个块的 warp p 和 warp p+4，8 个块共 16 个，下面叫 W0–W15。W0 是块 0 的线程 0–31，负责 x[0..31]。'},
+  {t:'t = 0：调度器给 W0 发“算下标”',n:'同一条指令 <code>i = 块号×256 + 线程号</code> 同时发给 32 条通道。32 个线程各用自己寄存器里的线程号，算出 0、1、2……31。一条指令、32 个线程、各算各的数据，这种执行方式叫 <b>SIMT</b>（单指令多线程）。'},
+  {t:'t ≈ 1 ns：W0 发“读 x[i]”，32 个地址合并成一次请求',n:'32 个线程要读的地址是 0x7000_0000、…_0004、…、…_007C，正好连续 128 字节。读写单元把它们<b>合并</b>成一次 128 字节的请求（第 6.5 节细讲）。L1 没有、L2 也没有，请求发往 HBM。W0 进入等待。'},
+  {t:'t ≈ 1–8 ns：每周期换一个 warp，16 个 warp 都在等',n:'下一个周期，调度器给 W1 发同样的指令，再下一个给 W2……约 8 ns 后，W0–W15 都发出了读请求，全在等。换 warp 不用保存任何东西，它们的寄存器一直在寄存器堆里。'},
+  {t:'t ≈ 350 ns：W0 的数据回来了',n:'HBM 送回 128 字节，32 个数分别落进 W0 的 32 个线程的 r1。W0 重新“就绪”。其余 warp 的数据随后陆续到达。'},
+  {t:'t ≈ 351 ns：一条 max 指令，32 个结果',n:'调度器给 W0 发 <code>r2 = max(r1, 0)</code>，32 条通道一个周期算完：−3、2、−1、5 → 0、2、0、5。'},
+  {t:'t ≈ 352 ns：写回 y，同样合并成一次',n:'32 个线程把 r2 写到 y[0..31]，地址 0x7400_0000 起连续 128 字节，合并成一次写。W0 的活干完了。'}]},
+ {b:'③ 分支发散',h:690,steps:[
+  {t:'如果 kernel 写成 if / else',n:'把 <code>y = max(x, 0)</code> 换成 <code>if (x &lt; 0) y = 0; else y = x;</code>。W0 的 32 个线程里，x 为负的（线程 0、2……）要走 if，其余走 else。可一个 warp 一次只能执行一条指令。'},
+  {t:'第一遍：只让 x < 0 的线程执行 y = 0',n:'硬件用一个 32 位的<b>活动掩码</b>：x &lt; 0 的线程对应位是 1，其余是 0。执行 <code>y = 0</code> 时，掩码为 0 的通道空转。'},
+  {t:'第二遍：掩码取反，只让其余线程执行 y = x',n:'再执行 else 分支，这回刚才空转的线程干活、刚才干活的空转。两条路的时间加在一起，这叫<b>分支发散</b>。它不会算错，只是更慢；能写成 max 这种不分支的形式更好。'}]},
+ {b:'④ 全部跑完',h:690,steps:[
+  {t:'块跑完一个补一个，约 62 轮',n:'SM 0 上某个块的 8 个 warp 都结束后，GigaThread 立刻把队首的块 1056 补上去。65 536 个块，每轮约 1056 个，大约 62 轮。'},
+  {t:'时间花在哪：38 µs 几乎全在搬数据',n:'读 x 64 MB、写 y 64 MB，共 128 MB；HBM 每秒最多搬 3.35 TB，所以至少要 38 µs。38 µs 里只做了 1678 万次比较，折合 0.44 TFLOP/s，而通道的峰值是 67 TFLOP/s：99% 以上的时间通道在等数据。反过来，张量很小时，2–5 µs 的启动开销反而成了大头。'},
+  {t:'占用率：每线程用的寄存器多，能住的 warp 就少',n:'每个线程最多能用 255 个寄存器。例：一个块 64 个线程、每线程用 160 个寄存器，一个 SM 的 65 536 个寄存器最多放 6 个块 = 384 个线程，不到满额 2048 的五分之一。等内存时可换的 warp 少了。若每个线程多处理几个元素，线程少一些也能把通道喂饱。'}]}
+];
+const P={host:['#eaf1fb','#3d6fae'],gpu:['#f2f7ef','#3e8c55'],q:['#fdeccf','#c4861e'],reg:['#ece5f8','#7a5bb0'],alu:['#fbe0dc','#b8473a'],mem:['#fde6cc','#c4861e'],wait:['#f1efea','#a9a49a'],ok:['#dff0e2','#3e8c55'],chg:['#dbe9fb','#1667c4']};
+const cell=(K,x,y,w,h,t,c,o={})=>{K.rect(x,y,w,h,{f:c[0],s:c[1],sw:o.sw||1.2,rx:3});if(t!=='')K.text(x+w/2,y+h/2+5,t,{a:'middle',c:o.c||'sm mono',size:o.size||13,fill:o.fill});};
+function launch(k,K){
+ // host
+ K.rect(14,14,300,662,{f:P.host[0],s:P.host[1],sw:2,rx:10});K.text(26,40,'主机：CPU ＋ 内存条',{c:'b'});
+ K.rect(26,54,276,62,{f:'#fff',s:'#9fb7d6',rx:6});K.text(36,78,'Python 程序',{c:'sm b'});K.text(36,102,'y = torch.relu(x)',{c:'sm mono',size:14});
+ if(k>=1){K.text(200,78,'已返回',{c:'sm b',fill:B});}
+ K.rect(26,130,276,226,{f:'#fff',s:'#9fb7d6',rx:6});K.text(36,154,'kernel 代码（每个线程执行）',{c:'sm b'});
+ ['i = blockIdx*256 + threadIdx','v = x[i]','y[i] = max(v, 0)'].forEach((l,j)=>K.text(36,186+j*26,l,{c:'sm mono',size:13}));
+ K.text(36,280,'blockIdx：所在块的编号',{c:'sm',size:13});K.text(36,302,'threadIdx：块内第几个线程',{c:'sm',size:13});K.text(36,324,'（0–255）',{c:'sm',size:13});
+ K.rect(26,370,276,296,{f:k>=1?'#fff':'#f7f7f5',s:k>=1?B:'#9fb7d6',sw:k===1?2.4:1.2,rx:6});K.text(36,394,'命令队列（CUDA 驱动写入）',{c:'sm b'});
+ if(k>=1){[['kernel','relu_kernel'],['块数','65 536'],['每块线程','256'],['参数 x','0x7000_0000'],['参数 y','0x7400_0000']].forEach(([a,b],j)=>{K.text(40,428+j*32,a,{c:'sm',size:13});cell(K,130,410+j*32,160,26,b,['#fff',k===1?B:'#9fb7d6'],{fill:k===1?B:null});});
+  K.text(36,602,'驱动约 2–5 µs 写好命令，',{c:'sm',size:13});K.text(36,624,'通知 GPU；Python 不等结果',{c:'sm',size:13});}
+ else K.text(36,430,'（空）',{c:'sm mut'});
+ K.line('M314 520H338',{c:'#6f6a60',w:3});K.text(316,546,'PCIe',{c:'sm mut',size:12});
+ // GPU
+ K.rect(338,14,648,662,{f:P.gpu[0],s:P.gpu[1],sw:2,rx:10});K.text(350,40,'GPU（H100）',{c:'b'});
+ K.rect(350,52,624,92,{f:P.q[0],s:P.q[1],sw:k>=2?2.2:1.2,rx:6});K.text(362,74,'GigaThread 引擎：待分配的线程块',{c:'sm b'});
+ if(k>=2){const first=k>=3?1056:0;for(let i=0;i<11;i++)cell(K,362+i*54,86,50,26,String(first+i),[k===2?'#dbe9fb':'#fff',k===2?B:'#d9b77c'],{size:12});K.text(962,104,'…',{a:'end',c:'b'});
+  K.text(362,134,k>=3?'还剩 64 480 个块排队（块 1056 起）':'共 65 536 块；块 b 负责 x[256b … 256b+255]',{c:'sm',size:13,fill:B});}
+ else K.text(362,110,'（还没收到命令）',{c:'sm mut'});
+ // SM grid 12x11
+ K.text(350,166,'132 个 SM（每个最多同时住 8 个这样的块）',{c:'sm b'});
+ for(let s=0;s<132;s++){const x=350+(s%12)*52,y=176+Math.floor(s/12)*28,on=k>=3;
+  K.rect(x,y,48,24,{f:on?(s===0?'#dbe9fb':'#e1f0e4'):'#fff',s:s===0&&on?B:'#9fbfa6',sw:s===0&&on?2:1,rx:3});
+  K.text(x+24,y+17,on?String(s):'SM'+s,{a:'middle',c:'sm mono',size:11});}
+ if(k>=3){K.rect(350,490,624,52,{f:'#fff',s:B,rx:6});K.text(362,512,'SM 0 拿到块 0、132、264、396、528、660、792、924（8 个，2048 个线程）',{c:'sm',size:13,fill:B});K.text(362,532,'SM s 拿到块 s、s+132、s+264……；方格里的数是该 SM 拿到的第一个块号',{c:'sm',size:13});}
+ // HBM strip
+ K.rect(350,552,624,114,{f:P.mem[0],s:P.mem[1],rx:6});K.text(362,574,'HBM 显存',{c:'sm b'});
+ K.text(362,600,'x：0x7000_0000 起 64 MB',{c:'sm mono',size:13});
+ for(let i=0;i<6;i++){cell(K,560+i*66,584,62,24,i<5?'块 '+i:'…',[k>=2?'#fff7e6':'#fff','#d9b77c'],{size:12});}
+ K.text(362,636,'y：0x7400_0000 起 64 MB（空）',{c:'sm mono',size:13});K.text(362,658,'x[0..3] = −3  2  −1  5 ……',{c:'sm mono',size:13});
+}
+function warp(k,K){
+ const t=['','0','≈1 ns','≈1–8 ns','≈350 ns','≈351 ns','≈352 ns'][k];
+ K.rect(14,14,972,662,{f:P.gpu[0],s:P.gpu[1],sw:2,rx:10});K.text(26,40,'SM 0',{c:'b'});if(t)K.text(974,40,'t = '+t,{a:'end',c:'b',fill:B});
+ // blocks and warps
+ K.text(90,40,'住着 8 个块，每块 8 个 warp；颜色＝分到哪个分区',{c:'sm',size:13});
+ const pc=['#f6c96b','#9cc8ef','#b6dfb0','#e4b5e0'];
+ [0,132,264,396,528,660,792,924].forEach((b,i)=>{const x=26+i*120;K.text(x,66,'块 '+b,{c:'sm b',size:12});for(let w=0;w<8;w++)K.rect(x+w*13,72,11,20,{f:pc[w%4],s:'#8f8a80',sw:.8,rx:1});});
+ K.text(26,112,'warp 0 和 4 → 分区 0（黄）；1 和 5 → 分区 1；2 和 6 → 分区 2；3 和 7 → 分区 3',{c:'sm',size:13});
+ // partition 0
+ K.rect(26,122,624,544,{f:'#fffdf6',s:'#3e8c55',sw:1.8,rx:8});K.text(38,144,'分区 0',{c:'sm b'});
+ K.text(100,144,'warp 槽：W0＝块 0 的 warp 0，W1＝块 0 的 warp 4，W2＝块 132 的 warp 0…',{c:'sm',size:12});
+ for(let w=0;w<16;w++){let st='就绪',c=P.ok;
+  if(k===1&&w===0){st='发';c=['#f6c96b','#b98a10'];}
+  if(k===2){if(w===0){st='等';c=P.wait;}if(w===1){st='发';c=['#f6c96b','#b98a10'];}}
+  if(k===3){st='等';c=P.wait;}
+  if(k>=4){st=w===0?(k===4?'就绪':'发'):'等';c=w===0?(k===4?P.ok:['#f6c96b','#b98a10']):P.wait;}
+  cell(K,38+w*38,152,34,26,'W'+w,c,{size:11,c:'sm b'});K.text(55+w*38,196,st,{a:'middle',c:'sm',size:12});}
+ // registers W0
+ K.rect(38,206,600,176,{f:P.reg[0],s:P.reg[1],rx:6});K.text(48,226,'寄存器堆里 W0 的 32 个线程（只画 7 列）',{c:'sm b',size:13});
+ const cols=['线程 0','1','2','3','4','…','31'];cols.forEach((c,i)=>K.text(130+i*72+33,246,c,{a:'middle',c:'sm',size:12}));
+ const X=[-3,2,-1,5,4,'…',1.1],Y=[0,2,0,5,4,'…',1.1],I=[0,1,2,3,4,'…',31];
+ const rows=[['r0：i',I,k>=1,k===1],['r1：x[i]',X,k>=4,k===4],['r2：y[i]',Y,k>=5,k===5]];
+ rows.forEach(([n,v,show,now],j)=>{const y=256+j*40;K.text(48,y+22,n,{c:'sm mono',size:12});v.forEach((val,i)=>cell(K,130+i*72,y,66,32,show?String(val).replace('-','−'):'',[now?'#dbe9fb':'#fff',now?B:'#b8a6dc'],{size:13,c:'sm b mono',fill:now?B:null}));});
+ // lanes
+ K.rect(38,392,600,70,{f:P.alu[0],s:P.alu[1],rx:6});K.text(48,412,'32 条运算通道',{c:'sm b',size:13});
+ const busy=k===1||k===5;for(let i=0;i<32;i++)K.rect(48+i*18.4,422,15,28,{f:busy?'#f7b6ab':'#fff',s:R,sw:1,rx:2});
+ K.text(640-10,412,busy?(k===1?'算 i：32 个线程同时':'算 max：同时'):'空闲',{a:'end',c:'sm',size:13,fill:busy?R:'#8f8a80'});
+ // LD/ST
+ K.rect(38,472,600,90,{f:'#fff',s:'#6f6a60',rx:6});K.text(48,494,'读写单元：把一个 warp 的 32 个地址合并成请求',{c:'sm b',size:13});
+ if(k===2||k===6){const base=k===2?'0x7000_00':'0x7400_00';['00','04','08','0C','…','7C'].forEach((a,i)=>cell(K,48+i*96,506,90,24,base+a,['#dbe9fb',B],{size:12,fill:B}));K.text(48,552,(k===2?'读':'写')+'：32 个地址连续 128 字节 → 合并成 1 次请求',{c:'sm',size:13,fill:B});}
+ else if(k===3)K.text(48,526,'W1–W15 也各发了 1 次 128 字节的读请求，都在路上',{c:'sm',size:13});
+ else K.text(48,526,'（这一步没有访存）',{c:'sm mut',size:13});
+ K.text(38,590,['','','W0 等数据：约 700 个周期','16 个 warp 全在等；ReLU 没别的活可干','数据到了，W0 又能发指令','','W0 完成'][k],{c:'sm b'});
+ K.text(38,620,'一个周期 ≈ 0.5 ns；读 HBM 一次 ≈ 350 ns',{c:'sm mut',size:13});
+ // memory column
+ K.rect(664,122,310,90,{f:'#eaf4ec',s:'#3e8c55',rx:6});K.text(676,144,'L1 / 共享内存（本 SM）',{c:'sm b',size:13});K.text(676,170,k===2?'没有 x[0..31] → 往下找':'',{c:'sm',size:13,fill:R});K.text(676,196,'约 15 ns',{c:'sm mut',size:12});
+ K.rect(664,224,310,90,{f:'#efe9f8',s:'#7a5bb0',rx:6});K.text(676,246,'L2 缓存 50 MB（全芯片共用）',{c:'sm b',size:13});K.text(676,272,k===2?'也没有 → 去 HBM':'',{c:'sm',size:13,fill:R});K.text(676,298,'约 150–300 ns',{c:'sm mut',size:12});
+ K.rect(664,326,310,340,{f:P.mem[0],s:P.mem[1],rx:6});K.text(676,348,'HBM（芯片旁的显存）',{c:'sm b',size:13});
+ K.text(676,378,'x 段 0x7000_0000（128 B）：',{c:'sm mono',size:12});
+ [-3,2,-1,5,4,'…'].forEach((v,i)=>cell(K,676+i*48,388,44,26,String(v).replace('-','−'),[k===4?'#dbe9fb':'#fff',k===4?B:'#d9b77c'],{size:12}));
+ K.text(676,440,'y 段 0x7400_0000（128 B）：',{c:'sm mono',size:12});
+ [0,2,0,5,4,'…'].forEach((v,i)=>cell(K,676+i*48,450,44,26,k>=6?String(v):'',[k===6?'#dbe9fb':'#fff',k===6?B:'#d9b77c'],{size:12,fill:B}));
+ if(k===2)K.arrow('M640 517H660V400H672',{c:R,w:2.4});
+ if(k===4)K.arrow('M672 401H652V325H640',{c:B,w:2.4});
+ if(k===6)K.arrow('M640 517H656V463H672',{c:B,w:2.4});
+ K.text(676,520,'带宽 3.35 TB/s',{c:'sm',size:13});K.text(676,546,'读一次约 350 ns',{c:'sm',size:13});
+}
+function diverge(k,K){
+ K.rect(14,14,972,662,{f:P.gpu[0],s:P.gpu[1],sw:2,rx:10});K.text(26,40,'分区 0 的 W0：if (x < 0) y = 0; else y = x;',{c:'b'});
+ const X=[-3,2,-1,5,4,-7,0.5,-2];K.text(26,78,'只画前 8 个线程（另外 24 个同理）',{c:'sm',size:13});
+ const row=(y,label,vals,c)=>{K.text(26,y+22,label,{c:'sm b',size:13});vals.forEach((v,i)=>cell(K,190+i*90,y,84,32,v,c(i),{size:14,c:'sm b mono'}));};
+ row(96,'线程',[0,1,2,3,4,5,6,7].map(String),()=>['#fff','#c9c1b3']);
+ row(140,'x',X.map(v=>String(v).replace('-','−')),()=>['#fff','#b8a6dc']);
+ const neg=X.map(v=>v<0);
+ row(184,'掩码 x<0',neg.map(n=>n?'1':'0'),i=>[k>=1?(neg[i]?'#dbe9fb':'#fff'):'#fff',k>=1?B:'#c9c1b3']);
+ // passes
+ const pass=(y,title,active,res,on)=>{K.rect(26,y,948,150,{f:on?'#fffdf6':'#fbfaf7',s:on?R:'#c9c1b3',sw:on?2:1,rx:8});K.text(40,y+26,title,{c:'sm b'});
+  for(let i=0;i<8;i++){const a=active[i];K.rect(190+i*90,y+40,84,40,{f:on?(a?'#f7b6ab':'#eeeeea'):'#fff',s:a?R:'#c9c1b3',sw:1,rx:3});K.text(232+i*90,y+66,on?(a?'执行':'空转'):'',{a:'middle',c:'sm',size:13});
+   K.text(232+i*90,y+108,on&&a?res[i]:'',{a:'middle',c:'sm b mono',size:14,fill:B});}
+  K.text(40,y+66,'通道',{c:'sm',size:13});K.text(40,y+108,'写出 y',{c:'sm',size:13});};
+ pass(236,'第一遍：执行 y = 0（掩码为 1 的线程）',neg,X.map(()=> '0'),k>=1);
+ pass(400,'第二遍：执行 y = x（掩码取反）',neg.map(n=>!n),X.map(v=>String(v)),k>=2);
+ K.text(26,590,k>=2?'总时间 = 第一遍 ＋ 第二遍；写成 y = max(x, 0) 只要一遍。':'一个 warp 一次只能执行一条指令。',{c:'sm b'});
+ K.text(26,620,'更极端的例子：if (threadIdx < 4) { A; B; } else { X; Y; } Z; —— 线程 0–3 做 A、B 时其余 28 个空等，反之亦然，到 Z 才重新一起走。',{c:'sm',size:13});
+}
+function finish(k,K){
+ K.rect(14,14,972,662,{f:P.gpu[0],s:P.gpu[1],sw:2,rx:10});
+ if(k===0){K.text(26,40,'SM 0 的 8 个块位置：跑完一个补一个',{c:'b'});
+  const slots=[[0,1056],[132,null],[264,null],[396,null],[528,null],[660,null],[792,null],[924,null]];
+  slots.forEach(([a,b],i)=>{const y=60+i*44;K.text(26,y+22,'位置 '+i,{c:'sm',size:13});cell(K,100,y,180,32,'块 '+a+(b?'：跑完':'：运行中'),[b?'#eeeeea':'#e1f0e4',b?'#a9a49a':'#3e8c55'],{size:13});if(b){K.arrow(`M284 ${y+16}H330`,{c:B,w:2.2});cell(K,334,y,180,32,'块 '+b+'：补上',['#dbe9fb',B],{size:13,fill:B});}});
+  K.text(26,440,'GigaThread 队列：块 1057、1058、……、65 535',{c:'sm b'});
+  K.text(26,480,'65 536 块 ÷ 每轮约 1056 块 ≈ 62 轮',{c:'b'});
+  for(let r=0;r<62;r++)K.rect(26+r*15,500,12,40,{f:r===0?'#9cc8ef':'#e1f0e4',s:'#3e8c55',sw:.8,rx:1});K.text(26,560,'第 1 轮',{c:'sm',size:12});K.text(946,560,'第 62 轮',{a:'end',c:'sm',size:12});
+ }else if(k===1){K.text(26,40,'这 38 µs 花在哪',{c:'b'});
+  K.text(26,80,'搬数据：读 x 64 MB ＋ 写 y 64 MB = 128 MB',{c:'sm b'});
+  K.rect(26,94,900,40,{f:P.mem[0],s:P.mem[1]});K.text(36,120,'128 MB ÷ 3.35 TB/s ≈ 38 µs（HBM 一刻不停）',{c:'sm b'});
+  K.text(26,170,'运算：16 777 216 次比较；全部通道一起算只要约 0.25 µs',{c:'sm b'});
+  K.rect(26,184,6,40,{f:'#f7b6ab',s:R});K.text(40,210,'← 这么短',{c:'sm',fill:R});
+  K.text(26,270,'通道忙的比例 ≈ 0.44 ÷ 67 ≈ 0.7%',{c:'b'});
+  K.rect(26,286,900,40,{f:'#eeeeea',s:'#a9a49a'});K.rect(26,286,7,40,{f:'#f7b6ab',s:R});K.text(46,312,'红：通道在算　灰：在等数据',{c:'sm'});
+  K.text(26,380,'所以 ReLU 在 GPU 上的速度由 HBM 带宽决定，不由通道数决定。',{c:'sm b'});
+  K.text(26,420,'对照 CPU：内存带宽约 90 GB/s，同样 128 MB 要约 1.4 ms，慢约 37 倍——正好是两边带宽之比。',{c:'sm'});
+  K.text(26,470,'张量很小时：启动一次 kernel 约 2–5 µs，算本身不到 1 µs，时间主要花在启动上。',{c:'sm'});
+  K.text(26,510,'Python 只在真正用到 y 的值时（打印、.item()、搬回 CPU）才停下来等 GPU。',{c:'sm'});
+ }else{K.text(26,40,'一个 SM 的寄存器堆：65 536 个寄存器，按线程分',{c:'b'});
+  const cols=64,rows=32;for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const idx=r*cols+c,used=idx<6*64*160/32;K.rect(26+c*14.4,60+r*12,12,10,{f:used?'#c9b8ec':'#fff',s:'#d6cce9',sw:.6,rx:1});}
+  K.text(26,470,'每小格 = 32 个寄存器。紫色：6 个块 × 64 线程 × 160 个寄存器 = 61 440 个，再放第 7 个块就不够了',{c:'sm',size:13});
+  K.text(26,506,'这个 kernel：每个 SM 只能住 384 个线程（12 个 warp），满额是 2048（64 个 warp）',{c:'sm b'});
+  K.text(26,542,'若每线程只用 32 个寄存器：65 536 ÷ 32 = 2048 个线程，住满',{c:'sm'});
+  K.text(26,578,'住的 warp 少 → 等内存时可换的 warp 少 → 通道更容易闲着',{c:'sm'});
+  K.text(26,614,'办法之一：每个线程处理几个元素（例如 Triton 编出的 GeLU 每线程一次 8 个），线程少也能喂饱通道',{c:'sm',size:13});
+ }
+}
+SvgStep.scenes({scenes,draw(si,k,K){[launch,warp,diverge,finish][si](k,K);}});
+</script></body></html>

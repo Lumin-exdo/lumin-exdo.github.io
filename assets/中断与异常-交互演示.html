@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>中断与异常 · 一步一步走一遍</title>
+<style id="fit-guard">
+/* 防止切换标签后 JS 重新设宽导致截断：强制不超过容器，且允许横向滚动 */
+html,body{overflow-x:auto !important;max-width:100% !important}
+main,.wrap,.viewport,.lesson,.stage{max-width:100% !important}
+svg{max-width:100% !important;height:auto !important}
+img{max-width:100% !important}
+</style>
+</head>
+<body style="margin:0;padding:24px 12px;background:#fff">
+<!-- ===================================================================
+     中断与异常 · 交互式全流程演示（计组第 5、7 章 + 操作系统 1.3）
+     · 直接双击本文件即可在浏览器中打开，无外部依赖。
+     · ← / → 方向键逐步前进后退；上方按钮切换场景。
+     =================================================================== -->
+<div id="ie-demo" tabindex="0">
+<style>
+#ie-demo{
+  --bg:#faf9f5; --fg:#1a1d21; --muted:#6b7280; --line:#abb9ad;
+  --frame:#9ba99d; --fill:#f0eee7; --accent:#426f63; --accent-soft:#e0eee5;
+  --hot:#1d5e78; --hot-soft:#e8eff4; --panel:#f4f2ec; --border:#dcded5;
+  --warn:#fff7ed; --warnbd:#fdba74; --ok:#15803d;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--fg); background:var(--bg); outline:none;
+  max-width:1840px; margin:0 auto; padding:20px 18px 26px;
+  border:1px solid var(--border); border-radius:14px; line-height:1.72; font-size:15px; box-sizing:border-box;
+}
+#ie-demo *,#ie-demo *::before,#ie-demo *::after{box-sizing:border-box;}
+#ie-demo h2{margin:0 0 4px; font-size:21px;}
+#ie-demo .sub{margin:0 0 14px; color:var(--muted); font-size:14px;}
+#ie-demo code{font-family:var(--mono); background:var(--fill); padding:1px 5px; border-radius:4px; font-size:13.5px;}
+#ie-demo .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 12px;}
+#ie-demo .tab{border:1px solid var(--border); background:var(--panel); color:var(--fg); padding:7px 14px; border-radius:999px; cursor:pointer; font:inherit; font-size:14px;}
+#ie-demo .tab:hover{border-color:var(--accent);}
+#ie-demo .tab.cur{background:var(--accent); border-color:var(--accent); color:#fff;}
+#ie-demo .intro{font-size:14.5px; color:var(--muted); margin:0 0 10px;}
+#ie-demo svg{width:100%; height:auto; display:block; background:var(--bg); border:1px solid var(--border); border-radius:10px;}
+#ie-demo svg text{fill:var(--fg); font-size:12.5px;}
+#ie-demo svg .t{font-weight:600; font-size:13.5px;}
+#ie-demo svg .s{fill:var(--muted); font-size:11.5px;}
+#ie-demo svg .v{font-family:var(--mono); font-size:12px; fill:var(--accent);}
+#ie-demo svg .box{fill:var(--panel); stroke:var(--frame); stroke-width:1.2;}
+#ie-demo svg .cell{fill:var(--bg); stroke:var(--frame); stroke-width:1;}
+#ie-demo svg .wire{fill:none; stroke:var(--line); stroke-width:1.6;}
+#ie-demo svg .zone{fill:none; stroke:var(--frame); stroke-width:1.4; stroke-dasharray:7 5;}
+#ie-demo svg .cell.on,#ie-demo svg .box.on{fill:var(--accent-soft); stroke:var(--accent); stroke-width:2.2;}
+#ie-demo svg .cell.hot{fill:var(--hot-soft); stroke:var(--hot); stroke-width:2.2;}
+#ie-demo svg .wire.on{stroke:var(--hot); stroke-width:3; stroke-dasharray:8 5; animation:ie-flow .7s linear infinite;}
+@keyframes ie-flow{to{stroke-dashoffset:-13;}}
+#ie-demo .ctl{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:12px 0 8px;}
+#ie-demo .btn{border:1px solid var(--border); background:var(--panel); color:var(--fg); padding:6px 14px; border-radius:8px; cursor:pointer; font:inherit; font-size:14px;}
+#ie-demo .btn:hover{border-color:var(--accent); color:var(--accent);}
+#ie-demo .cnt{font-family:var(--mono); color:var(--muted); font-size:13.5px;}
+#ie-demo .bar{flex:1; min-width:120px; height:6px; background:var(--fill); border-radius:3px; overflow:hidden;}
+#ie-demo .bar i{display:block; height:100%; background:var(--accent); width:0;}
+#ie-demo .step{border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:9px; background:var(--panel); padding:12px 16px; min-height:120px;}
+#ie-demo .steprow{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:12px; align-items:stretch;}
+@media (max-width:820px){#ie-demo .steprow{grid-template-columns:1fr;}}
+#ie-demo .tl{border:1px solid var(--border); border-radius:9px; background:var(--panel); padding:10px 14px; font-size:14px;}
+#ie-demo .tl.on{border-color:var(--accent); background:var(--accent-soft);}
+#ie-demo .tl .tlh{font-weight:600; margin-bottom:4px;}
+#ie-demo .why{border:1px solid var(--border); border-radius:10px; background:var(--panel); padding:12px 16px; margin:14px 0 0;}
+#ie-demo .why h3{margin:0 0 6px; font-size:16px;}
+#ie-demo .why p{margin:0 0 8px;}
+#ie-demo .step h3{margin:0 0 6px; font-size:16.5px;}
+#ie-demo .step p{margin:0 0 6px;}
+#ie-demo .step .who{display:inline-block; font-size:12px; padding:1px 8px; border-radius:999px; margin-right:6px; vertical-align:2px; border:1px solid var(--border);}
+#ie-demo .who.hw{color:#b45309; border-color:#f59e0b;}
+#ie-demo .who.sw{color:var(--ok); border-color:var(--ok);}
+#ie-demo .who.dev{color:var(--accent); border-color:var(--accent);}
+#ie-demo .hint{color:var(--muted); font-size:13px; margin-top:8px;}
+#ie-demo details{border:1px solid var(--border); border-radius:10px; background:var(--panel); margin:14px 0 0; padding:0 15px;}
+#ie-demo details[open]{padding-bottom:12px;}
+#ie-demo summary{cursor:pointer; padding:11px 0; font-weight:600; list-style:none;}
+#ie-demo summary::-webkit-details-marker{display:none;}
+#ie-demo summary::before{content:"▸ "; color:var(--accent);}
+#ie-demo details[open] summary::before{content:"▾ ";}
+#ie-demo table{width:100%; border-collapse:collapse; font-size:13.5px; margin:6px 0 10px;}
+#ie-demo th,#ie-demo td{border:1px solid var(--border); padding:6px 9px; text-align:left; vertical-align:top;}
+#ie-demo th{background:var(--fill);}
+</style>
+
+<h2>中断与异常：一步一步走一遍</h2>
+<p class="sub">一张图上同时画出外设、中断控制器、CPU 和内存。每一步只亮出这一步真正用到的部件和连线（红色虚线是正在传递的信号），下面的文字只解释这一步。<b>← / →</b> 方向键前进后退。</p>
+
+<div class="tabs" id="ieTabs"></div>
+<p class="intro" id="ieIntro"></p>
+<p class="intro" style="color:var(--fg)"><b>图怎么分区</b>：最左边一列是外设本体（键盘、硬盘），在主板之外，经线缆接到主板；右边的虚线大框是主板，框里的东西都在主板上或插在主板上。灰色细线是平时不用的连线，只有这一步用到的线才变成红色虚线。键盘接口、时钟芯片、中断控制器、DMA 控制器早年是主板上的独立芯片，今天多已集成进芯片组，其中每个核心各自的中断控制器和定时器做进了 CPU；CPU 和内存条插在主板的插座和插槽上。</p>
+
+<svg viewBox="0 0 1830 1000" role="img" aria-label="中断与异常分布图">
+<defs>
+  <marker id="ieArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+  </marker>
+</defs>
+
+<!-- ========== 外设本体（主板之外） ========== -->
+<rect class="zone" x="10" y="16" width="176" height="974" rx="12"/>
+<text x="24" y="44" class="t">外设本体</text>
+<text x="24" y="64" class="s">在主板之外，经线缆接入</text>
+<rect id="dev-kbd" class="box" x="30" y="311" width="130" height="80" rx="8"/>
+<text x="30" y="414" class="s">单片机负责扫描按键，</text><text x="30" y="432" class="s">把键位编成扫描码</text>
+<text x="95" y="345" class="t" text-anchor="middle">键盘</text><text x="95" y="370" class="s" text-anchor="middle">内含单片机</text>
+<rect id="dev-disk" class="box" x="30" y="477" width="130" height="96" rx="8"/>
+<text x="95" y="503" class="t" text-anchor="middle">硬盘</text><text x="95" y="526" class="s" text-anchor="middle">机械硬盘或固态硬盘</text><text id="dev-disk-v" x="95" y="554" class="s" text-anchor="middle">内含控制器</text>
+<text x="30" y="596" class="s">盘里的控制器负责：</text><text x="30" y="614" class="s">机械硬盘 → 寻道、读写盘片</text><text x="30" y="632" class="s">固态硬盘 → 读写闪存芯片</text>
+
+<path id="ln-ps2" class="wire" d="M160,351 H260" marker-end="url(#ieArrow)"/><text x="208" y="341" class="s">PS/2 线</text>
+<path id="ln-disk-cable" class="wire" d="M160,525 H260" marker-end="url(#ieArrow)" marker-start="url(#ieArrow)"/><text x="208" y="515" class="s">SATA 线</text>
+
+<!-- ========== 主板 ========== -->
+<rect class="zone" x="200" y="16" width="1620" height="974" rx="12"/>
+<text x="1806" y="44" class="s" text-anchor="end">主板（CPU、内存条插在主板的插座 / 插槽上）</text>
+
+<!-- 系统总线：CPU 用 IN / OUT 读写各接口寄存器 -->
+<path id="ln-io" class="wire" d="M1200,110 V60 H580 V700"/>
+<text x="600" y="50" class="s">系统总线：CPU 用 IN / OUT 读写各接口的寄存器</text>
+<path id="ln-io-kbd" class="wire" d="M580,161 H520" marker-end="url(#ieArrow)" marker-start="url(#ieArrow)"/>
+<path id="ln-io-disk" class="wire" d="M580,505 H520" marker-end="url(#ieArrow)" marker-start="url(#ieArrow)"/>
+<path id="ln-io-dma" class="wire" d="M580,700 H520" marker-end="url(#ieArrow)" marker-start="url(#ieArrow)"/>
+
+<!-- ========== 主板上的接口与芯片 ========== -->
+<rect id="kbd" class="box" x="260" y="110" width="260" height="292" rx="10"/>
+<text x="272" y="134" class="t">键盘接口（如 8042）</text>
+<rect id="kbd-dbr" class="cell" x="272" y="146" width="236" height="30" rx="5"/><text x="282" y="166">数据缓冲寄存器　端口 60h</text><text id="kbd-dbr-v" x="498" y="166" class="v" text-anchor="end">—</text>
+<rect id="kbd-sr" class="cell" x="272" y="184" width="236" height="30" rx="5"/><text x="282" y="204">状态寄存器　64h，CPU 读</text><text id="kbd-sr-v" x="498" y="204" class="v" text-anchor="end">0</text>
+<rect id="kbd-cr" class="cell" x="272" y="222" width="236" height="30" rx="5"/><text x="282" y="242">控制寄存器　64h，CPU 写</text><text id="kbd-cr-v" x="498" y="242" class="v" text-anchor="end">—</text>
+<rect id="kbd-req" class="cell" x="272" y="260" width="236" height="30" rx="5"/><text x="282" y="280">中断请求触发器（设备就绪时置 1）</text><text id="kbd-req-v" x="498" y="280" class="v" text-anchor="end">0</text>
+<rect id="kbd-en" class="cell" x="272" y="298" width="236" height="30" rx="5"/><text x="282" y="318">中断允许触发器（仅 CPU 可写）</text><text id="kbd-en-v" x="498" y="318" class="v" text-anchor="end">1</text>
+<rect id="kbd-logic" class="cell" x="272" y="336" width="236" height="30" rx="5"/><text x="282" y="356">地址译码 · I/O 控制逻辑</text>
+<text x="272" y="390" class="s">在主板上，曾是独立芯片</text>
+
+<rect id="clk" class="box" x="260" y="420" width="260" height="50" rx="10"/><text x="272" y="450" class="t">时钟芯片</text><text x="508" y="450" class="s" text-anchor="end">每 1 ms 一次</text>
+
+<rect id="disk" class="box" x="260" y="490" width="260" height="70" rx="10"/><text x="272" y="516" class="t">磁盘接口</text><text id="disk-v" x="508" y="548" class="s" text-anchor="end">空闲</text>
+<path id="ln-dreq" class="wire" d="M390,560 V590" marker-end="url(#ieArrow)"/><text x="398" y="580" class="s">DMA 请求</text>
+
+<rect id="dma" class="box" x="260" y="590" width="260" height="140" rx="10"/>
+<text x="272" y="616" class="t">DMA 控制器</text>
+<rect id="dma-ar" class="cell" x="272" y="632" width="236" height="30" rx="5"/><text x="282" y="652">主存地址计数器</text><text id="dma-ar-v" x="498" y="652" class="v" text-anchor="end">—</text>
+<rect id="dma-wc" class="cell" x="272" y="674" width="236" height="30" rx="5"/><text x="282" y="694">传送长度计数器</text><text id="dma-wc-v" x="498" y="694" class="v" text-anchor="end">—</text>
+
+<rect id="pwr" class="box" x="760" y="870" width="200" height="50" rx="10"/><text x="772" y="900" class="t">电源监测</text><text x="948" y="900" class="s" text-anchor="end">掉电 → NMI</text>
+
+<!-- 中断请求：各接口 → 中断控制器（直线进入） -->
+<path id="ln-irq-kbd" class="wire" d="M520,370 H720" marker-end="url(#ieArrow)"/><text x="600" y="362" class="s">键盘 IRQ</text>
+<path id="ln-irq-clk" class="wire" d="M520,445 H720" marker-end="url(#ieArrow)"/><text x="600" y="437" class="s">时钟 IRQ</text>
+<path id="ln-irq-disk" class="wire" d="M520,545 H720" marker-end="url(#ieArrow)"/><text x="600" y="537" class="s">磁盘 IRQ</text>
+<path id="ln-dma-irq" class="wire" d="M520,610 H720" marker-end="url(#ieArrow)"/><text x="600" y="602" class="s">DMA 完成中断</text>
+
+<!-- DMA 借总线、直接写内存；NMI 直达 CPU -->
+<path id="ln-dma-hrq" class="wire" d="M500,730 V820 H1150 V620" marker-end="url(#ieArrow)" marker-start="url(#ieArrow)"/>
+<text x="600" y="812" class="s">HRQ 申请总线 / HLDA 批准（DMA 控制器 ↔ CPU）</text>
+<path id="ln-dma-mem" class="wire" d="M470,730 V960 H1630 V830" marker-end="url(#ieArrow)"/>
+<text x="600" y="952" class="s">DMA 直接写内存（经总线，不经过 CPU）</text>
+<path id="ln-nmi" class="wire" d="M960,895 H1250 V620" marker-end="url(#ieArrow)"/>
+<text x="980" y="887" class="s">NMI 线：不经中断控制器，不受 IF 影响</text>
+
+<!-- ========== 中断控制器 ========== -->
+<rect id="pic" class="box" x="720" y="330" width="230" height="330" rx="10"/>
+<text x="732" y="354" class="t">中断控制器</text><text x="938" y="354" class="s" text-anchor="end">8259A / APIC</text>
+<text x="732" y="378" class="s">请求寄存器（1 = 有请求）</text>
+<rect id="ir0" class="cell" x="732" y="386" width="46" height="28" rx="4"/><text id="ir-v0" x="755" y="405" class="v" text-anchor="middle">0</text>
+<rect id="ir1" class="cell" x="784" y="386" width="46" height="28" rx="4"/><text id="ir-v1" x="807" y="405" class="v" text-anchor="middle">0</text>
+<rect id="ir2" class="cell" x="836" y="386" width="46" height="28" rx="4"/><text id="ir-v2" x="859" y="405" class="v" text-anchor="middle">0</text>
+<rect id="ir3" class="cell" x="888" y="386" width="46" height="28" rx="4"/><text id="ir-v3" x="911" y="405" class="v" text-anchor="middle">0</text>
+<text id="ir-l0" x="755" y="432" class="s" text-anchor="middle">时钟</text>
+<text id="ir-l1" x="807" y="432" class="s" text-anchor="middle">键盘</text>
+<text id="ir-l2" x="859" y="432" class="s" text-anchor="middle">磁盘</text>
+<text id="ir-l3" x="911" y="432" class="s" text-anchor="middle">DMA</text>
+<text x="732" y="462" class="s">屏蔽字（1 = 屏蔽）</text>
+<rect id="mk0" class="cell" x="732" y="470" width="46" height="28" rx="4"/><text id="mk-v0" x="755" y="489" class="v" text-anchor="middle">0</text>
+<rect id="mk1" class="cell" x="784" y="470" width="46" height="28" rx="4"/><text id="mk-v1" x="807" y="489" class="v" text-anchor="middle">0</text>
+<rect id="mk2" class="cell" x="836" y="470" width="46" height="28" rx="4"/><text id="mk-v2" x="859" y="489" class="v" text-anchor="middle">0</text>
+<rect id="mk3" class="cell" x="888" y="470" width="46" height="28" rx="4"/><text id="mk-v3" x="911" y="489" class="v" text-anchor="middle">0</text>
+<rect id="prio" class="cell" x="732" y="512" width="206" height="36" rx="5"/><text x="742" y="535">判优电路（硬件排队器）</text>
+<rect id="vec" class="cell" x="732" y="562" width="206" height="36" rx="5"/><text x="742" y="585">中断类型号</text><text id="vec-v" x="928" y="585" class="v" text-anchor="end">—</text>
+<text x="732" y="624" class="s">请求位与“屏蔽位取反”相与，</text>
+<text x="732" y="644" class="s">通过的才进判优电路</text>
+
+<!-- 中断控制器 ↔ CPU -->
+<path id="ln-intr" class="wire" d="M950,400 H1060" marker-end="url(#ieArrow)"/><text x="962" y="392" class="s">INTR 有请求</text>
+<path id="ln-inta" class="wire" d="M1060,530 H950" marker-end="url(#ieArrow)"/><text x="962" y="522" class="s">INTA 确认</text>
+<path id="ln-vec" class="wire" d="M950,580 H1060" marker-end="url(#ieArrow)"/><text x="962" y="572" class="s">类型号（数据线）</text>
+
+<!-- ========== CPU ========== -->
+<rect id="cpu" class="box" x="1060" y="110" width="360" height="510" rx="10"/>
+<text x="1074" y="138" class="t">CPU</text>
+<rect id="mode" class="cell" x="1140" y="118" width="268" height="28" rx="5"/><text id="mode-v" x="1274" y="137" text-anchor="middle">用户态（模式位 = 1）</text>
+<rect id="pc" class="cell" x="1074" y="160" width="140" height="32" rx="5"/><text x="1084" y="181">PC</text><text id="pc-v" x="1206" y="181" class="v" text-anchor="end">i</text>
+<rect id="psw" class="cell" x="1220" y="160" width="188" height="32" rx="5"/><text x="1230" y="181">PSW · IF（1 = 允许中断）</text><text id="if-v" x="1400" y="181" class="v" text-anchor="end">1</text>
+<rect id="gpr" class="cell" x="1074" y="204" width="334" height="32" rx="5"/><text x="1084" y="225">通用寄存器</text><text id="gpr-v" x="1400" y="225" class="v" text-anchor="end">—</text>
+<rect id="alu" class="cell" x="1074" y="248" width="164" height="34" rx="5"/><text x="1156" y="270" text-anchor="middle">ALU</text>
+<rect id="mmu" class="cell" x="1244" y="248" width="164" height="34" rx="5"/><text x="1326" y="270" text-anchor="middle">MMU（查页表）</text>
+<rect id="cycle" class="cell" x="1074" y="296" width="334" height="40" rx="5"/><text x="1084" y="320">取指 → 译码 → 执行 → 写回</text>
+<rect id="chk" class="cell" x="1350" y="302" width="52" height="28" rx="5"/><text x="1376" y="320" text-anchor="middle">检查点</text>
+<rect id="hid" class="box" x="1074" y="352" width="334" height="130" rx="7"/>
+<text x="1084" y="374" class="t">中断隐指令（硬件自动）</text>
+<rect id="hid1" class="cell" x="1082" y="384" width="318" height="26" rx="4"/><text x="1090" y="402">① 关中断：IF ← 0</text>
+<rect id="hid2" class="cell" x="1082" y="416" width="318" height="26" rx="4"/><text x="1090" y="434">② 保存断点：PC、PSW；切内核态</text>
+<rect id="hid3" class="cell" x="1082" y="448" width="318" height="26" rx="4"/><text x="1090" y="466">③ 取类型号 → 查向量表 → PC</text>
+<rect id="iret" class="cell" x="1074" y="496" width="334" height="60" rx="5"/>
+<text x="1084" y="519">返回指令 IRET / SYSRET（硬件原子）</text>
+<text x="1084" y="543" class="s">恢复 PC、PSW；模式位 ← 1</text>
+<text x="1160" y="604" class="s">HLDA / HRQ</text>
+<text x="1258" y="604" class="s">NMI</text>
+
+<!-- CPU ↔ 内存 -->
+<path id="ln-bus" class="wire" d="M1420,300 H1480" marker-end="url(#ieArrow)" marker-start="url(#ieArrow)"/>
+<text x="1436" y="290" class="s">总线</text>
+
+<!-- ========== 内存 ========== -->
+<rect id="mem" class="box" x="1480" y="110" width="300" height="720" rx="10"/>
+<text x="1492" y="134" class="t">内存</text>
+<text x="1492" y="158" class="s">用户程序（用户态）</text>
+<rect id="usr0" class="cell" x="1492" y="166" width="276" height="26" rx="4"/><text id="usr0-t" x="1500" y="184" class="v">—</text>
+<rect id="usr1" class="cell" x="1492" y="198" width="276" height="26" rx="4"/><text id="usr1-t" x="1500" y="216" class="v">—</text>
+<rect id="usr2" class="cell" x="1492" y="230" width="276" height="26" rx="4"/><text id="usr2-t" x="1500" y="248" class="v">—</text>
+<text x="1492" y="282" class="s">中断向量表（类型号 → 服务程序入口）</text>
+<rect id="ivt0" class="cell" x="1492" y="290" width="276" height="26" rx="4"/><text x="1500" y="308">0　 除法错误 → divide_error</text>
+<rect id="ivt14" class="cell" x="1492" y="320" width="276" height="26" rx="4"/><text x="1500" y="338">14　缺页 → page_fault</text>
+<rect id="ivt32" class="cell" x="1492" y="350" width="276" height="26" rx="4"/><text x="1500" y="368">32　时钟 → timer_isr</text>
+<rect id="ivt33" class="cell" x="1492" y="380" width="276" height="26" rx="4"/><text x="1500" y="398">33　键盘 → kbd_isr</text>
+<rect id="ivt80" class="cell" x="1492" y="410" width="276" height="26" rx="4"/><text x="1500" y="428">0x80 系统调用 → system_call</text>
+<text x="1492" y="462" class="s">系统调用表（调用号 → 处理函数）</text>
+<rect id="sct" class="cell" x="1492" y="470" width="276" height="26" rx="4"/><text x="1500" y="488">0 → sys_read　1 → sys_write　…</text>
+<text x="1492" y="522" class="s">内核栈</text>
+<rect id="ks1" class="cell" x="1492" y="530" width="276" height="26" rx="4"/><text id="ks1-t" x="1500" y="548">（空）</text>
+<rect id="ks2" class="cell" x="1492" y="562" width="276" height="26" rx="4"/><text id="ks2-t" x="1500" y="580">（空）</text>
+<text x="1492" y="614" class="s">服务程序 / 处理程序（内核态）</text>
+<rect id="isr" class="cell" x="1492" y="622" width="276" height="120" rx="5"/>
+<text id="isr-t1" x="1500" y="648">—</text>
+<text id="isr-t2" x="1500" y="676">—</text>
+<text id="isr-t3" x="1500" y="704">—</text>
+<text id="isr-t4" x="1500" y="730" class="s"></text>
+<text x="1492" y="772" class="s">主存数据区</text>
+<rect id="buf" class="cell" x="1492" y="780" width="276" height="28" rx="4"/><text id="buf-t" x="1500" y="799" class="v">—</text>
+</svg>
+
+<div class="ctl">
+  <button class="btn" id="iePrev">← 上一步</button>
+  <button class="btn" id="ieNext">下一步 →</button>
+  <button class="btn" id="iePlay">▶ 自动播放</button>
+  <span class="cnt" id="ieCnt">1 / 1</span>
+  <div class="bar"><i id="ieBar"></i></div>
+</div>
+<div class="steprow">
+<div class="step"><h3 id="ieTitle"></h3><div id="ieBody"></div></div>
+<div class="tl" id="tl"><div class="tlh" id="tl-title">进程状态</div><div id="tl1"></div><div id="tl2"></div><div id="tl3"></div><div id="tl4"></div><div id="tl5"></div><div id="tl6"></div></div>
+</div>
+<p class="hint">图例：<span style="color:#b45309">硬件</span> 表示由电路自动完成，<span style="color:var(--ok)">软件</span> 表示由内核代码完成，<span style="color:var(--accent)">外设</span> 表示由设备一侧完成。</p>
+
+<div class="why">
+<h3>为什么隐指令那三步必须由硬件来做</h3>
+<p>这三步夹在“用户程序最后一条指令做完”和“服务程序第一条指令开始”之间。这个空档里没有任何一段软件在为这次中断干活：用户程序不知道中断来了，服务程序还没开始跑，能动手的只有 CPU 的电路。</p>
+<p><b>① 关中断。</b>IF 就是 PSW（x86 里叫标志寄存器 EFLAGS）里的一位，1 表示 CPU 接收 INTR 送来的中断。如果把关中断交给服务程序自己写一条 <code>CLI</code>，“进入服务程序”和“关上中断”就成了先后两件事，中间有没有空子可钻，要看 CPU 在哪设检查点、每个服务程序是否都记得第一句写 <code>CLI</code>。硬件在响应的同一个动作里把 IF 清 0，保证后面保存断点、保存现场的过程不会被新中断打断。</p>
+<p><b>② 保存断点、切内核态。</b>软件想保存 PC，就得执行一条“把 PC 存起来”的指令，可这条指令在服务程序里，CPU 要先跳转到服务程序才能执行它，一跳转 PC 就已经被改掉了，原来的值找不回来。所以只能由电路在装入新 PC 的同时把旧 PC 存进内核栈。PSW 同理，而且 IF 就在 PSW 里：这里存下的是响应前 IF = 1 的样子，返回时恢复 PSW，IF 自然回到 1。切内核态更不能交给软件：用户程序若能自己切换，任何程序都能给自己升权限。硬件只在“跳到操作系统指定的入口”这一刻顺带切换，入口不是用户程序选的。</p>
+<p><b>③ 取类型号、查向量表、跳转。</b>跳转之前 CPU 还停在用户程序里，没有哪条软件指令会去跳到服务程序，只能由电路取来类型号、查表、装入 PC。表是操作系统事先填好的，用户程序改不了，这也保证了跳到哪里由内核说了算。</p>
+<p><b>返回时反过来。</b>IRET 要一次性恢复 PC、PSW 和模式位。如果先把模式切回用户态，下一条还在内核里的指令就会因权限不够出错；如果先恢复 PC，CPU 已经跳回用户程序，剩下的恢复指令再也执行不到。所以返回也只能是一条由硬件原子执行的指令。</p>
+</div>
+<details>
+<summary>分类总表：中断、异常，以及两套归类</summary>
+<table>
+<tr><th></th><th>中断（外中断）</th><th>异常（内中断）</th></tr>
+<tr><td>来源</td><td>CPU 执行指令<b>之外</b>的事件</td><td>由<b>当前这条指令</b>引起</td></tr>
+<tr><td>例子</td><td>键盘、磁盘完成、时钟；电源掉电（NMI）</td><td>缺页、除以 0、非法操作码、特权指令违规、<code>syscall</code></td></tr>
+<tr><td>同一程序再跑一遍</td><td>发生位置会变</td><td>必在同一条指令上发生</td></tr>
+<tr><td>是否经中断控制器</td><td>INTR 经过；NMI 不经过</td><td>不经过，CPU 内部产生类型号</td></tr>
+<tr><td>能否屏蔽</td><td>INTR 可以（IF、屏蔽字）；NMI 不能</td><td>一律不能</td></tr>
+<tr><td>何时响应</td><td>当前指令执行完，在检查点响应（NMI 也要等）</td><td>当场处理，不等指令完成</td></tr>
+</table>
+<table>
+<tr><th>异常的三类</th><th>故障 Fault</th><th>自陷 Trap</th><th>终止 Abort</th></tr>
+<tr><td>性质</td><td>意外出错，可能修复</td><td>程序故意安排</td><td>硬件故障</td></tr>
+<tr><td>例子</td><td>缺页、除 0、溢出、非法操作码、特权指令违规</td><td>系统调用、条件陷阱指令、断点 <code>int3</code></td><td>内存校验错、控制器出错</td></tr>
+<tr><td>处理后返回</td><td><b>第 i 条</b>（重新执行）；无法修复则终止程序</td><td><b>第 i+1 条</b></td><td>不返回，程序终止</td></tr>
+</table>
+<p>二次归类：<b>软件中断 = 故障 + 自陷</b>；<b>硬件中断 = 终止 + 外中断</b>。终止按“内 / 外”分是内中断，按“软 / 硬”分是硬件中断。</p>
+<p>用户态进入内核态只有四种情形：① 系统调用（自陷，主动）；② 外中断；③ 程序执行中的异常（如缺页、除 0）；④ 企图执行特权指令。返回用户态由内核执行特权指令 IRET 完成。</p>
+</details>
+
+<details>
+<summary>响应条件、隐指令与服务程序九步（计组）</summary>
+<p><b>CPU 响应可屏蔽中断的条件</b>：有未被屏蔽的有效请求；IF = 1（NMI 和异常不看 IF）；当前指令已执行完（只有异常不等）。请求还要先过设备接口自己的“中断允许触发器”。</p>
+<table>
+<tr><th>步骤</th><th>动作</th><th>谁做</th></tr>
+<tr><td>①②③</td><td>关中断；保存断点（PC、PSW）；引出服务程序（向量法：取类型号查表）</td><td>硬件（中断隐指令）</td></tr>
+<tr><td>④</td><td>保存现场（通用寄存器）和屏蔽字</td><td>软件</td></tr>
+<tr><td>⑤</td><td>开中断（单重中断省略）</td><td>软件</td></tr>
+<tr><td>⑥</td><td>执行服务程序本体</td><td>软件</td></tr>
+<tr><td>⑦</td><td>关中断（单重中断省略）</td><td>软件</td></tr>
+<tr><td>⑧</td><td>恢复现场和屏蔽字</td><td>软件</td></tr>
+<tr><td>⑨</td><td>开中断 + 中断返回</td><td>软件发起，IRET 由硬件原子执行</td></tr>
+</table>
+<p><b>断点 vs 现场</b>：断点是 PC（和 PSW），由硬件保存；现场是通用寄存器，由服务程序自己 PUSH / POP。<b>向量地址、中断向量、向量中断</b>：类型号 × 表项长度 = 向量地址；向量地址里存的是中断向量（服务程序入口）；整套“按编号查表跳转”的方式叫向量中断。</p>
+<p><b>响应优先级</b>由判优电路焊死，决定“先跳进谁的入口”；<b>处理优先级</b>由屏蔽字决定“进门后谁能打断谁”，可以动态改（见场景 5）。</p>
+</details>
+
+<details>
+<summary>中断处理 vs 子程序调用</summary>
+<table>
+<tr><th></th><th>中断处理</th><th>子程序调用</th></tr>
+<tr><td>关系</td><td>与被中断的程序无关</td><td>同一程序的主从关系</td></tr>
+<tr><td>何时发生</td><td>随机</td><td><code>CALL</code> 指令事先安排</td></tr>
+<tr><td>实现</td><td>需要硬件支持（请求线、控制器、判优）</td><td>纯软件</td></tr>
+<tr><td>入口地址</td><td>中断向量表提供</td><td><code>CALL</code> 指令的地址码</td></tr>
+<tr><td>PC 谁保存</td><td>硬件在响应过程中自动保存</td><td><code>CALL</code> 指令执行时压栈</td></tr>
+<tr><td>优先级</td><td>多个请求同时到要判优；只有更高优先级能嵌套</td><td>不存在这个问题</td></tr>
+</table>
+</details>
+
+<details>
+<summary>现状更新</summary>
+<p><b>中断控制器</b>：8259A 已被 APIC 取代，能把中断分发到多个核心。<b>MSI</b>：PCIe 设备不再用专门的请求线，而是往一个特殊地址写一小段数据来报告中断，不受引脚数量限制。</p>
+<p><b>陷入指令</b>：<code>int 0x80</code>（走完整的查表流程，约 1000 个周期）已被 <code>syscall</code> 取代（入口预存在 MSR 寄存器里，约 100 个周期）。本页按教材模型画成“查向量表 0x80”。</p>
+<p><b>上半部 / 下半部</b>：服务程序关着中断运行时，别的设备的请求只能在控制器里排队。更糟的是，接口的中断请求触发器只有一位：同一台设备在这期间又来一次请求，只是把已经是 1 的位再置一次 1，两次合成了一次，等于丢了一次。所以关中断的时间越短越好。Linux 把服务程序拆成两段。以网卡收包为例：<b>上半部</b>在关中断的状态下，只把包从网卡搬进内存、告诉网卡“收到了”，再记一笔“有包待处理”，几微秒就返回；<b>下半部</b>稍后在开中断的状态下慢慢做剩下的事：检查包是否完整、交给对应的程序。下半部运行期间，新的中断随时能进来。</p><p><b>多核</b>：<code>CLI</code> 只把执行它的那个核心的 IF 清 0。四核机器上，核 0 关了中断、正在往键盘缓冲区里写，核 1 照常运行，它上面的程序可能同时在从这个缓冲区取字符，两边一起改就乱了。关中断挡得住本核的服务程序插进来，挡不住别的核。所以还要一把<b>锁</b>：内存里放一个变量，0 表示没人在用。谁要改缓冲区，先把它从 0 改成 1，改成功才能进去，用完改回 0；别的核看到是 1，就原地反复查看，等它变回 0，这叫<b>自旋锁</b>。“看到是 0 就改成 1”必须由一条不可拆的<b>原子指令</b>完成（如 x86 的 <code>xchg</code>），否则两个核可能同时看到 0，都以为自己拿到了锁。</p>
+<p><b>代价</b>：8086 响应一次中断约 61 个周期；现代 CPU 流水线更深、要保证精确中断，常在数百个周期量级。</p>
+</details>
+
+<script>
+(function(){
+  var root=document.getElementById('ie-demo');
+  function $(id){return document.getElementById(id);}
+  var HW='<span class="who hw">硬件</span>', SW='<span class="who sw">软件</span>', DV='<span class="who dev">外设</span>';
+  var BASE={'kbd-dbr-v':'—','kbd-cr-v':'—','dma-ar-v':'—','dma-wc-v':'—','buf-t':'—','dev-disk-v':'内含控制器','kbd-sr-v':'0','kbd-req-v':'0','kbd-en-v':'1','disk-v':'空闲',
+    'ir-v0':'0','ir-v1':'0','ir-v2':'0','ir-v3':'0','ir-l0':'时钟','ir-l1':'键盘','ir-l2':'磁盘','ir-l3':'DMA',
+    'mk-v0':'0','mk-v1':'0','mk-v2':'0','mk-v3':'0','vec-v':'—','mode-v':'用户态（模式位 = 1）',
+    'pc-v':'i','if-v':'1','gpr-v':'—','usr0-t':'—','usr1-t':'—','usr2-t':'—','ks1-t':'（空）','ks2-t':'（空）',
+    'isr-t1':'—','isr-t2':'—','isr-t3':'—','isr-t4':'','tl-title':'进程状态','tl1':'','tl2':'','tl3':'','tl4':'','tl5':'','tl6':''};
+  var KM='内核态（模式位 = 0）', UM='用户态（模式位 = 1）';
+  var SCN=[
+  {name:'① 外中断：按下键盘',
+   intro:'Chrome 正在执行一条普通的加法指令，你按下了键盘上的 A。这是最完整的一条路：设备 → 接口 → 中断控制器 → CPU → 服务程序 → 返回。',
+   init:{'usr0-t':'i-1  mov rbx, [x]','usr1-t':'i    add rax, rbx','usr2-t':'i+1  cmp rax, 100','gpr-v':'rax=5  rbx=3','tl1':'Chrome：运行（用户态）','tl6':'阻塞 = 在等某件事（磁盘、按键…），给它 CPU 也干不了活'},
+   steps:[
+    {t:'CPU 正在执行第 i 条指令',on:['usr1','cycle','pc'],d:'<p>Chrome 在用户态执行 <code>add rax, rbx</code>。PSW 里的 IF = 1，表示允许响应可屏蔽中断。此时键盘还没被按下，整个系统里没有任何中断请求。</p>'},
+    {t:'按键：数据先进键盘接口',on:['dev-kbd','ln-ps2','kbd-logic','kbd-dbr','kbd-sr'],set:{'kbd-dbr-v':'0x1E','kbd-sr-v':'1'},d:'<p>'+DV+'键盘里的单片机扫描到 A 键，经 PS/2 线把扫描码送到主板上的键盘接口；接口的 I/O 控制逻辑把它整理成 <code>0x1E</code> 写进数据缓冲寄存器，并把状态寄存器的“有新数据”位置 1。这一切发生在键盘接口芯片内部，CPU 毫不知情，还在算它的加法。</p>'},
+    {t:'接口发出中断请求',on:['kbd-req','kbd-en','ln-irq-kbd'],set:{'kbd-req-v':'1'},d:'<p>'+DV+'接口里的中断请求触发器置 1。它自己的<b>中断允许触发器</b>也是 1（驱动初始化设备时设置的），请求才能送出接口。</p><p>请求沿 IRQ 线送到的是<b>中断控制器</b>，不是 CPU：键盘接口没有直接和 CPU 打交道的线。</p>'},
+    {t:'中断控制器：登记、筛选、判优',on:['ir1','mk1','prio','pic','vec','ln-irq-kbd'],set:{'ir-v1':'1','vec-v':'33'},d:'<p>'+HW+'请求寄存器的键盘位置 1。这一位先和屏蔽字对应位的取反相与：键盘的屏蔽位是 0，放行，进入判优电路。如果此刻还有别的设备也在请求，判优电路按硬件焊死的顺序挑出一个。</p><p>选出键盘后，控制器当场就算出了它的<b>中断类型号</b>：开机时操作系统写进控制器的基数 32，加上键盘所接的 1 号请求线，得 33。这个号码先放在控制器里，等 CPU 来要。</p>'},
+    {t:'拉高 INTR：告诉 CPU“有请求”',on:['ln-intr','ln-irq-kbd'],d:'<p>'+HW+'控制器通过 INTR 线通知 CPU。注意这根线只说“有人请求”，<b>不说是谁</b>，“是谁”要等 CPU 回应之后再经数据线告诉它。</p>'},
+    {t:'CPU 先把当前指令做完',on:['cycle','gpr','pc','ln-intr','ln-irq-kbd'],set:{'gpr-v':'rax=8  rbx=3','pc-v':'i+1'},d:'<p>'+HW+'CPU 不会在加法做到一半时响应。第 i 条指令走完写回，rax 变成 8，PC 已经指向第 i+1 条。</p><p>原因是“精确中断”：响应时 CPU 的状态必须干净，不能留下半条指令的中间结果。</p>'},
+    {t:'检查点：满足三个条件，响应',on:['chk','psw','ln-intr','ln-irq-kbd'],d:'<p>'+HW+'每条指令末尾有一个固定的检查点。此刻三个条件都满足：① 有未被屏蔽的请求；② IF = 1；③ 当前指令已执行完。于是 CPU 决定响应，开始执行“中断隐指令”。</p><p>中断隐指令不是一条能写出来的汇编指令，而是控制器里固化的一段操作，执行期间不会被打断。</p>'},
+    {t:'隐指令 ①：关中断',on:['hid1','psw','ln-intr','ln-irq-kbd'],set:{'if-v':'0'},d:'<p>'+HW+'IF 清 0。如果不立刻关，键盘这种“请求信号一直拉高直到数据被取走”的设备，会在后面几步的空隙里让 CPU 再次判定要响应，反复跳转、反复压栈，直到栈溢出。</p>'},
+    {t:'隐指令 ②：保存断点，进入内核态',on:['hid2','ks1','mode','ln-bus','ln-intr','ln-irq-kbd'],set:{'tl1':'Chrome：仍是运行态（服务程序只是插队，没换进程）','ks1-t':'断点：PC = i+1，PSW（IF = 1）','mode-v':KM},d:'<p>'+HW+'把 PC（此刻是 i+1）和 PSW 存进内核栈，模式位置 0，切到内核栈。</p><p>存的 PSW 是关中断<b>之前</b>的值（IF = 1），这样返回时 IF 会自动恢复成 1。</p>'},
+    {t:'隐指令 ③：取类型号',on:['hid3','ln-inta','ln-vec','vec','ln-intr','ln-irq-kbd'],set:{'vec-v':'33'},d:'<p>'+HW+'CPU 发出中断确认信号 INTA，控制器把第 4 步就已算好的<b>中断类型号</b> 33 经<b>数据线</b>送给 CPU。</p><p>号码早就有了，为什么拖到现在才给？因为 CPU 只在检查点决定响应之后才会来要，INTA 就是“我要了”的信号；在此之前数据线可能正被别的传送占着，控制器不能擅自往上放。</p><p>请求走 IRQ / INTR 控制线，类型号走数据线，两条路完全不同。键盘自己并不知道自己是 33 号。</p>'},
+    {t:'隐指令 ③：查中断向量表，跳到服务程序',on:['ivt33','ln-bus','pc','ln-irq-kbd'],set:{'pc-v':'kbd_isr'},d:'<p>'+HW+'向量地址 = 类型号 33 × 表项长度。从这个地址读出的内容就是<b>中断向量</b>，即键盘服务程序的入口地址，送进 PC。</p><p>这种“按编号查表跳转”的方式叫<b>向量中断</b>。</p>'},
+    {t:'服务程序 ④：保存现场和屏蔽字',on:['isr','ks2','ln-irq-kbd'],set:{'ks2-t':'现场：rax、rbx… + 旧屏蔽字','isr-t1':'④ PUSH 寄存器；OUT 写新屏蔽字'},d:'<p>'+SW+'从这一步起是软件。服务程序马上要用 AL 寄存器，所以先把通用寄存器压栈（这叫<b>现场</b>，硬件不管），再把旧屏蔽字保存、写入自己的新屏蔽字。</p><p><b>断点</b>（PC、PSW）由硬件保存，<b>现场</b>（通用寄存器）由软件保存。</p>'},
+    {t:'服务程序 ⑤：开中断',on:['psw','isr','ln-irq-kbd'],set:{'if-v':'1','isr-t2':'⑤ STI 开中断'},d:'<p>'+SW+'执行 STI，IF = 1。这样比键盘更紧急、且没被新屏蔽字屏蔽的中断（比如时钟）可以打断这段服务程序，形成<b>多重中断</b>。</p><p>单重中断系统省略 ⑤ 和 ⑦，从头到尾一直关着中断。</p>'},
+    {t:'服务程序 ⑥：真正干活',on:['kbd-dbr','isr','gpr','ln-io','ln-io-kbd','ln-bus','buf','kbd-sr','kbd-req'],set:{'gpr-v':'al = 0x1E','buf-t':'键盘缓冲区 ← 0x1E','kbd-sr-v':'0','kbd-req-v':'0','ir-v1':'0','kbd-dbr-v':'（已取走）','isr-t2':'⑥ IN AL, 60h；存进键盘缓冲区','tl3':'等键盘输入的程序（如终端）：阻塞 → 就绪'},d:'<p>'+SW+'<code>IN AL, 60h</code> 从接口的数据缓冲寄存器取走 <code>0x1E</code>，再经总线写进内存里内核的<b>键盘缓冲区</b>。数据被取走后，接口的状态位和请求触发器清 0，请求撤销。</p>'},
+    {t:'服务程序 ⑦⑧：关中断，恢复现场',on:['psw','ks2','gpr'],set:{'if-v':'0','ks2-t':'（已弹出）','gpr-v':'rax=8  rbx=3','isr-t3':'⑦ CLI；⑧ POP 现场，OUT 旧屏蔽字'},d:'<p>'+SW+'先 CLI 关中断，保护接下来的恢复过程不被打断；再 POP 把通用寄存器恢复成 Chrome 当时的值（rax = 8），并把旧屏蔽字写回控制器。</p><p>这样 AL 里的 <code>0x1E</code> 就被 Chrome 原来的 rax 覆盖了。这是应该的：寄存器要原样还给被打断的程序，而 <code>0x1E</code> 在上一步已经存进内存的键盘缓冲区，不会丢，之后由等键盘输入的程序通过系统调用取走。</p>'},
+    {t:'服务程序 ⑨：开中断并返回',on:['iret','ks1','pc','mode','psw'],set:{'pc-v':'i+1','if-v':'1','ks1-t':'（已弹出）','mode-v':UM,'isr-t4':'⑨ STI + IRET'},d:'<p>'+SW+'发起，'+HW+'执行。IRET 一条指令原子地从内核栈弹出 PC（i+1）和 PSW（IF = 1），模式位置回 1。</p><p>恢复 PC 和恢复 IF 必须是一个不可拆的动作，两种先后顺序都不行：</p><p><b>先开 IF、后跳回</b>：中间若来了新中断，CPU 会在服务程序的最后一刻再次被打断，内核栈上又压一层断点；中断来得密，就一层层越压越深。</p><p><b>先跳回、后开 IF</b>：PC 一回到用户程序，后面那条“开中断”还留在服务程序里，再也执行不到。用户程序就在 IF = 0 下运行，连时钟中断都进不来，它可以一直霸占 CPU。</p><p>所以 IRET 一条指令同时弹出 PC 和 PSW（IF 就在 PSW 里）。x86 的 STI 也特意推迟一条指令才生效，就是为了让 STI 紧跟 IRET 时不留空隙。</p>'},
+    {t:'回到第 i+1 条，继续',on:['usr2','pc'],set:{'tl1':'Chrome：继续运行','tl2':'（内核在返回前也可能先调度别的进程）'},d:'<p>中断返回的是<b>第 i+1 条</b>：第 i 条在响应之前已经执行完，如果回到第 i 条，rbx 会被再加一遍。</p><p>从操作系统的角度看，返回用户态之前内核常常顺手调度一次，所以被打断的程序不一定立刻继续，可能要重新排队。</p>'}
+   ]},
+  {name:'② 异常·故障：缺页',
+   intro:'网易云执行一条读内存的指令，要读的那一页刚好被换到了磁盘上。异常由这条指令自己引起：不经中断控制器，不看 IF，也不等指令做完。',
+   init:{'usr0-t':'i-1  add rcx, 1','usr1-t':'i    mov rax, [0x9F3000]','usr2-t':'i+1  add rax, 1','gpr-v':'rax = ?','tl1':'网易云：运行（用户态）'},
+   steps:[
+    {t:'执行第 i 条：要读 0x9F3000',on:['usr1','cycle','mmu'],d:'<p>网易云在用户态执行 <code>mov rax, [0x9F3000]</code>。执行阶段，MMU 拿这个虚拟地址去查页表。</p>'},
+    {t:'MMU 发现页不在内存：缺页',on:['mmu'],d:'<p>'+HW+'页表项的 P 位 = 0，说明这一页被换到了磁盘交换区。MMU 当场产生<b>缺页异常</b>。</p><p>此刻 rax 里什么也没装进去，这条指令<b>等于没做完</b>。</p>'},
+    {t:'异常走的路和中断不同',on:['mmu','cpu'],d:'<p>和场景 ① 对比：</p><p>· 不经过中断控制器，不走 INTR，类型号（14）由 CPU 内部产生；<br>· 不看 IF，关着中断也照样处理；<br>· 不等指令做完，因为这条指令本身就做不下去了。</p><p>所以异常<b>一律不可屏蔽</b>，必须立即处理。</p>'},
+    {t:'保存断点：这次存的是 i',on:['hid2','ks1','mode','ln-bus'],set:{'ks1-t':'断点：PC = i（要重新执行），PSW','mode-v':KM},d:'<p>'+HW+'保存的断点是<b>第 i 条</b>本身，不是 i+1，模式位置 0 进入内核。</p><p>图里没画 IF 的变化：x86 的向量表项分“进入时自动关中断”和“不关”两种，选哪种由操作系统定。Linux 给缺页选的是关的那种，读出出错地址后马上重开。</p>'},
+    {t:'查向量表：14 号 → page_fault',on:['ivt14','pc','ln-bus'],set:{'pc-v':'page_fault'},d:'<p>'+HW+'按类型号 14 查中断向量表，跳到内核的缺页处理程序。</p><p>14 这个号码是 CPU 设计时就定死在电路里的：x86 把 0～31 号留给异常，除法错误是 0，缺页是 14。MMU 一报缺页，CPU 直接用 14，不用问任何人。操作系统改不了号码，只负责把 14 号表项填成自己的处理程序入口。外中断则相反，号码由控制器给出，开机时由操作系统设定（场景 ① 的 33）。</p>'},
+    {t:'缺页处理：发起磁盘读，网易云被阻塞',on:['isr','disk','dev-disk','ln-disk-cable','ln-io','ln-io-disk','ln-io-dma','dma'],set:{'isr-t1':'找空闲页帧（没有就换出一页）','isr-t2':'向磁盘发读请求（约 80 μs）','disk-v':'读第 3821 块','tl1':'网易云：阻塞（等磁盘）','tl2':'内核调度 VS Code 上 CPU'},d:'<p>'+SW+'内核查到这一页在交换区第 3821 块，找一个空闲物理页帧（没有就挑一页最久没用的写回磁盘腾出来），然后发起磁盘读：告诉磁盘接口读第 3821 块，告诉 DMA 控制器把数据放进这个页帧。</p><p>读盘要约 80 μs，内核不会让 CPU 干等：网易云改为阻塞，调度别的进程运行。</p>'},
+    {t:'磁盘把这一页直接搬进内存（DMA）',on:['dev-disk','ln-disk-cable','disk','ln-dreq','dma','ln-dma-hrq','ln-dma-mem','buf'],set:{'disk-v':'传送中','dev-disk-v':'读出数据','buf-t':'空闲页帧 ← 第 3821 块（4 KB）'},d:'<p>'+DV+'硬盘读出这一页，经 SATA 线交给磁盘接口；'+HW+'DMA 控制器借用总线，把这 4 KB 直接写进刚才找好的页帧，<b>不经过 CPU</b>，过程同场景 ⑦。</p><p>这期间 CPU 在跑别的进程，网易云仍是阻塞。</p>'},
+    {t:'传送完成：一次外中断',on:['dma','ln-dma-irq','ir3','ln-intr','disk','dev-disk'],set:{'ir-v3':'1','disk-v':'完成','dev-disk-v':'内含控制器','tl1':'网易云：就绪','isr-t3':'磁盘中断：页已读入'},d:'<p>'+HW+'整页写完，DMA 控制器发出中断请求，走的是场景 ① 那条外中断的路。内核在服务程序里把网易云改回<b>就绪</b>。</p><p>一次缺页，里面套着一次外中断。</p>'},
+    {t:'更新页表',on:['mmu','isr'],set:{'ir-v3':'0','isr-t4':'更新页表项：P = 1，填物理页帧号'},d:'<p>'+SW+'把这一页的页表项改成 P = 1，填上物理页帧号。</p>'},
+    {t:'调度到网易云，返回第 i 条',on:['iret','ks1','pc','mode'],set:{'pc-v':'i','ks1-t':'（已弹出）','mode-v':UM,'tl1':'网易云：运行','tl2':''},d:'<p>'+HW+'轮到网易云时，从内核栈恢复断点 PC = i，回到用户态。</p>'},
+    {t:'重新执行第 i 条，这次成功',on:['usr1','mmu','gpr'],set:{'gpr-v':'rax = 读到的数据'},d:'<p>同一条 <code>mov</code> 再执行一遍，这次 MMU 查到 P = 1，rax 读到了数据。</p><p><b>故障返回第 i 条</b>：如果返回 i+1，rax 就永远是空的。除以 0、溢出、非法操作码也是故障，但通常修不好，内核会改为终止程序（见场景 ④）。</p>'}
+   ]},
+  {name:'③ 异常·自陷：系统调用',
+   intro:'Chrome 调用 read(3, buf, 4096) 读文件。系统调用是程序故意制造的异常（自陷），是用户程序主动进入内核的唯一合法途径。',
+   init:{'usr0-t':'i-1  mov rdx, 4096（共 4 条 mov）','usr1-t':'i    syscall','usr2-t':'i+1  cmp rax, 0','gpr-v':'—','tl1':'Chrome：运行（用户态）'},
+   steps:[
+    {t:'阶段 1：传递参数',on:['usr0','gpr'],set:{'gpr-v':'rax=0 rdi=3 rsi=buf rdx=4096'},d:'<p>'+SW+'用户程序在 syscall 前面执行 4 条普通指令：<code>mov rax, 0</code>、<code>mov rdi, 3</code>、<code>lea rsi, [buf]</code>、<code>mov rdx, 4096</code>，把<b>系统调用号</b> 0（read）放进 rax，参数放进 rdi、rsi、rdx。内存里画的是其中最后一条。</p><p>现代系统用寄存器传参，不压用户栈：寄存器切换特权级时内容不变，内核直接能读。</p>'},
+    {t:'阶段 2：执行陷入指令',on:['usr1','cycle'],d:'<p>执行 <code>syscall</code>。这条指令设计出来就是为了触发异常，所以叫<b>自陷</b>。它是“异常”而不是“中断”，因为是当前这条指令引起的。</p>'},
+    {t:'硬件切换：保存断点 i+1，进入内核态',on:['hid2','ks1','mode','ln-bus'],set:{'ks1-t':'断点：PC = i+1，PSW','mode-v':KM},d:'<p>'+HW+'模式位置 0，切到内核栈，保存 PC 和 PSW。这次存的断点是 <b>i+1</b>：自陷的目的就是进内核，进来了就算完成，不需要重做。</p><p>现场存在<b>内核栈</b>，因为用户栈里的内容用户程序可以随便改。</p>'},
+    {t:'跳到内核预设的入口',on:['ivt80','pc','ln-bus'],set:{'pc-v':'system_call'},d:'<p>'+HW+'教材模型：按 0x80 查向量表，跳到系统调用总入口。（x86-64 的 <code>syscall</code> 直接从 MSR 寄存器取入口地址，不查表，更快。）</p><p>入口地址是内核开机时自己填的，用户程序只能决定“敲哪扇门”，不能决定门后执行什么。</p>'},
+    {t:'内核入口保存其余寄存器',on:['ks2'],set:{'ks2-t':'现场：其余通用寄存器'},d:'<p>'+SW+'硬件只保存了最关键的 PC 和 PSW，其余通用寄存器由内核入口代码压进内核栈。</p>'},
+    {t:'阶段 3：查系统调用表，分派',on:['sct','gpr'],set:{'isr-t1':'检查调用号合法 → sys_call_table[0]'},d:'<p>'+SW+'先检查 rax 是否在合法范围内（否则传一个超大的号就能让内核跳到表外），再以它为下标查系统调用表：第 0 项是 <code>sys_read</code>。</p><p>普通函数调用是一跳到位；系统调用是“先进总入口、再查表”，多一次间接。</p>'},
+    {t:'sys_read：可能阻塞，调度别人',on:['isr','disk','dev-disk','ln-disk-cable','ln-io','ln-io-disk','ln-io-dma','dma'],set:{'isr-t2':'查打开文件表、检查权限','isr-t3':'页缓存未命中 → 发磁盘 I/O','disk-v':'读文件','tl1':'Chrome：阻塞','tl2':'VS Code 被调度上 CPU'},d:'<p>'+SW+'按 fd = 3 找到文件、检查读权限、查页缓存。没有缓存就要读盘，Chrome 被阻塞，内核调度别的进程。</p><p>不过并非所有系统调用都会阻塞：像取进程号、取当前时间这类不需要等待外部事件的调用，进去拿到结果就回来，进程不会因此让出 CPU。</p><p>这是和普通函数调用最大的区别之一：调一次 read，程序可能被换下 CPU 好几毫秒。</p>'},
+    {t:'磁盘数据直接进内核缓冲区（DMA）',on:['dev-disk','ln-disk-cable','disk','ln-dreq','dma','ln-dma-hrq','ln-dma-mem','buf'],set:{'disk-v':'传送中','dev-disk-v':'读出数据','buf-t':'内核缓冲区 ← 文件数据'},d:'<p>'+DV+'硬盘读出文件数据，经 SATA 线交给磁盘接口；'+HW+'DMA 控制器借用总线，把数据直接写进内核的缓冲区（页缓存），不经过 CPU，过程同场景 ⑦。</p>'},
+    {t:'传送完成，数据拷进 buf',on:['dma','ln-dma-irq','ir3','ln-intr','ln-bus','buf','disk','dev-disk'],set:{'disk-v':'完成','dev-disk-v':'内含控制器','buf-t':'内核缓冲区 → Chrome 的 buf','tl1':'Chrome：就绪','tl2':'','isr-t4':'数据拷贝到用户的 buf'},d:'<p>'+HW+'DMA 传送完成的中断（外中断）唤醒 Chrome。轮到它时，内核把数据从内核缓冲区直接拷进 Chrome 给的 buf：内核和用户程序共用一个地址空间，所以内核能直接写用户内存。</p>'},
+    {t:'阶段 4：恢复现场，返回用户态',on:['iret','ks1','ks2','pc','gpr','mode'],set:{'ir-v3':'0','gpr-v':'rax = 4096（返回值）','pc-v':'i+1','ks1-t':'（已弹出）','ks2-t':'（已弹出）','mode-v':UM,'tl1':'Chrome：运行'},d:'<p>'+SW+'把返回值 4096 放进 rax，恢复其余寄存器；'+HW+'SYSRET / IRET 恢复 PC 和 PSW，模式位置回 1。</p>'},
+    {t:'从 syscall 的下一条继续',on:['usr2'],d:'<p>Chrome 从第 i+1 条继续，rax 里是读到的字节数。它的代码看起来只是调了一个函数，全程却没获得过任何特权：读硬盘、拷数据都是内核<b>代为完成</b>的。</p>'}
+   ]},
+  {name:'④ 违规、除零、终止与 NMI',
+   intro:'不是所有异常都能修好。这一组看三种“回不去”的情况，以及唯一不受 IF 约束的外中断 NMI。',
+   init:{'usr0-t':'i-1  mov rax, 7','usr1-t':'i    cli（关中断，特权指令）','usr2-t':'i+1  …','gpr-v':'rax = 7','tl1':'某程序：运行（用户态）'},
+   steps:[
+    {t:'用户态执行特权指令：执行之前就被拦下',on:['usr1','cycle','mode','psw'],d:'<p>'+HW+'CPU 译码发现 <code>cli</code> 是特权指令，检查模式位 = 1（用户态），<b>在执行之前</b>就拒绝。IF 一刻也没被关上，这条指令从未真正执行过。</p><p>如果允许用户关中断再死循环，时钟中断进不来，整机就永远卡死了。</p>'},
+    {t:'产生异常，进入内核',on:['hid2','ks1','mode','ln-bus'],set:{'ks1-t':'断点：PC = i，PSW','mode-v':KM},d:'<p>'+HW+'产生一般保护异常（故障类），保存断点，切到内核态，按向量表跳到异常处理程序。</p>'},
+    {t:'内核判定非法，终止程序',on:['isr'],set:{'isr-t1':'判定：用户程序的非法操作','isr-t2':'发信号终止进程，回收资源','tl1':'某程序：被终止'},d:'<p>'+SW+'这不是能修好的问题，内核给该进程发信号（SIGSEGV / SIGILL）终止它，回收内存、关闭文件。</p>'},
+    {t:'不返回原程序，调度别人',on:['mode'],set:{'mode-v':UM,'ks1-t':'（已丢弃）','tl2':'调度 VS Code 运行'},d:'<p>'+SW+'被终止的程序不会再返回。内核重新调度，让别的进程上 CPU。用户态进入内核态的四种情形里，这是第 ④ 种：企图执行特权指令。</p>'},
+    {t:'除以 0：故障，通常无法修复',on:['usr1','alu','ivt0'],set:{'usr1-t':'i    div rcx（rcx = 0）','isr-t1':'divide_error：无法修复','isr-t2':'通知进程（Python 打印 ZeroDivisionError）','isr-t3':'','tl1':'Python：收到错误信号','tl2':''},d:'<p>'+HW+'ALU 发现除数为 0，产生 0 号异常，跳到 divide_error。它属于<b>故障</b>，理论上返回第 i 条重做，但除数还是 0，重做也没用，所以内核把错误交给程序处理，程序不处理就终止。</p>'},
+    {t:'终止 Abort：硬件坏了',on:['mem','isr'],set:{'isr-t1':'内存校验错 / 控制器出错','isr-t2':'无法恢复：终止程序，严重时整机停机','isr-t3':'','isr-t4':'按软 / 硬分类，属于硬件中断'},d:'<p>内存条校验出错、控制器出错，属于<b>终止</b>。它是由指令执行引起的（内中断），但根源是硬件故障，按“软件 / 硬件”的二次归类算<b>硬件中断</b>。处理后不返回，程序终止。</p>'},
+    {t:'NMI：电源掉电',on:['pwr','ln-nmi','cycle'],set:{'isr-t1':'NMI 服务程序：几毫秒内保存关键数据','isr-t2':'','isr-t4':'','tl1':'','tl2':''},d:'<p>'+DV+'电源监测发现掉电，经 <b>NMI 线</b>直接送到 CPU，不经过中断控制器，不受 IF 和屏蔽字影响。</p><p>但它仍是<b>中断</b>，照样要等当前指令执行完（只多等几纳秒）。真正不等指令做完的只有异常。电容只能撑几毫秒，必须在这期间把关键数据写出去。</p>'}
+   ]},
+  {name:'⑤ 多重中断与屏蔽字',
+   intro:'教材例 7.3：A、B、C、D 四个中断源，硬件响应优先级 A > B > C > D 固定不变，要求实际处理顺序变成 A > D > C > B。办法是给每个服务程序设计屏蔽字（四位依次对应 A、B、C、D，1 = 屏蔽）。',
+   init:{'ir-l0':'A','ir-l1':'B','ir-l2':'C','ir-l3':'D','usr0-t':'主程序','usr1-t':'主程序（屏蔽字 0000）','usr2-t':'主程序','tl-title':'执行顺序','isr-t1':'A：1111　D：0111','isr-t2':'C：0110　B：0100','isr-t3':'处理优先级越高，屏蔽得越多','gpr-v':'—'},
+   steps:[
+    {t:'两种优先级',on:['prio','isr'],d:'<p><b>响应优先级</b>：多个请求同时到达时先跳进谁的入口，由判优电路焊死，改不了。</p><p><b>处理优先级</b>：进了服务程序之后谁能打断谁，由屏蔽字决定，可以按需设计。</p><p>设计原则：处理优先级越高，屏蔽字里的 1 越多。A 最高，屏蔽全部（1111）；D 次之（0111），C 再次（0110），B 最低，只屏蔽它自己（0100）。每个屏蔽字都屏蔽自己，以及处理优先级比自己低的源。</p>'},
+    {t:'A、C、D 同时请求',on:['ir0','ir2','ir3'],set:{'ir-v0':'1','ir-v2':'1','ir-v3':'1'},d:'<p>'+DV+'A、C、D 三个请求同时到达。主程序的屏蔽字是 0000，全部放行。</p>'},
+    {t:'判优选中 A',on:['prio','mk0','mk1','mk2','mk3'],set:{'ir-v0':'0','mk-v0':'1','mk-v1':'1','mk-v2':'1','mk-v3':'1','tl1':'① 响应 A，写屏蔽字 1111，独占执行'},d:'<p>'+HW+'响应优先级 A 最高，先跳进 A 的入口。'+SW+'A 在 ④ 步写入屏蔽字 1111，执行期间谁也打断不了它。</p>'},
+    {t:'A 返回，C、D 还在等',on:['mk0','mk1','mk2','mk3'],set:{'mk-v0':'0','mk-v1':'0','mk-v2':'0','mk-v3':'0','tl2':'② A 返回主程序，屏蔽字恢复 0000'},d:'<p>A 执行完返回主程序，屏蔽字恢复 0000。C、D 的请求仍然挂着。</p>'},
+    {t:'判优选中 C，但 C 一进门就“让路”',on:['prio','ir2','mk0','mk1','mk2','mk3'],set:{'ir-v2':'0','mk-v0':'0','mk-v1':'1','mk-v2':'1','mk-v3':'0','tl3':'③ 响应 C，写屏蔽字 0110（对 D 放行）'},d:'<p>'+HW+'C、D 之间响应优先级 C 更高，先跳进 C 的入口。'+SW+'C 在 ④ 步写入屏蔽字 0110：对 D 那一位是 0，放行。</p>'},
+    {t:'C 开中断，D 立刻打断 C',on:['ir3','mk0','mk1','mk2','mk3','psw'],set:{'ir-v3':'0','mk-v0':'0','mk-v1':'1','mk-v2':'1','mk-v3':'1','tl4':'④ D 打断 C（C 的业务代码还没执行），写屏蔽字 0111'},d:'<p>C 执行到 ⑤ 开中断时，D 的请求没被屏蔽，CPU 立即响应 D。此时 C 的业务代码（⑥）<b>还一行没执行</b>。D 写入屏蔽字 0111，执行完返回 C。</p>'},
+    {t:'C 执行业务代码，B 被挡住',on:['ir1','mk1'],set:{'ir-v1':'1','mk-v0':'0','mk-v1':'1','mk-v2':'1','mk-v3':'0','tl5':'⑤ 回到 C 执行；B 请求到达，但被屏蔽'},d:'<p>D 返回后屏蔽字恢复成 C 的 0110，C 这才真正执行。期间 B 发来请求，C 的屏蔽字对 B 那一位是 1，B 被挡在外面。</p>'},
+    {t:'C 返回，B 才被响应',on:['ir1','prio','mk0','mk1','mk2','mk3'],set:{'ir-v1':'0','mk-v0':'0','mk-v1':'1','mk-v2':'0','mk-v3':'0','tl6':'⑥ C 返回后才响应 B → 完成顺序 A → D → C → B'},d:'<p>C 返回主程序，屏蔽字恢复 0000，B 终于被响应（写屏蔽字 0100）。</p><p>结论：响应优先级只决定<b>先跳进谁的入口</b>；真正执行业务代码的先后，可以用屏蔽字任意安排。这里实际完成顺序是 <b>A → D → C → B</b>，正是要求的处理优先级。</p>'}
+   ]},
+  {name:'⑥ 程序查询方式',
+   intro:'不用中断，由 CPU 反复去问接口“好了没有”（计组 7.3.1）。用键盘举例：CPU 先发命令字启用键盘，然后循环读状态寄存器，等到“有数据”再去读数据缓冲寄存器。',
+   init:{'usr0-t':'loop: IN AL, 64h（读状态）','usr1-t':'      TEST AL, 1 ; JZ loop','usr2-t':'      IN AL, 60h（读数据）','kbd-en-v':'0','gpr-v':'—','tl1':'程序：独占查询，CPU 一直在循环'},
+   steps:[
+    {t:'发命令字：OUT 64h, AEh',on:['ln-io','ln-io-kbd','kbd-logic','kbd-cr','ln-ps2','dev-kbd'],set:{'kbd-cr-v':'AEh'},d:'<p>'+SW+'CPU 执行 <code>OUT 64h, AEh</code>：地址线送 64h，控制线说“写”，数据线送 AEh。'+HW+'接口的地址译码认出 64h，又因为是写，选中<b>控制寄存器</b>，把 AEh 锁存进去；I/O 控制逻辑把它翻译成线缆信号送给键盘，含义是“启用键盘”。</p><p>同一个地址 64h：写的时候是控制寄存器，读的时候是状态寄存器。</p>'},
+    {t:'循环查询：读状态寄存器',on:['usr0','usr1','ln-io','ln-io-kbd','kbd-sr','cycle','gpr'],set:{'gpr-v':'al = 00h（没数据）'},d:'<p>'+SW+'<code>IN AL, 64h</code> 读回状态寄存器，“有新数据”位是 0，<code>JZ</code> 跳回去再读一次。CPU 就在这三条指令里打转，这叫<b>独占查询</b>（忙等待）。</p><p>这个方式用不到中断：接口的中断允许触发器是 0，中断控制器和 INTR 全程不参与。</p>'},
+    {t:'按键：数据进数据缓冲寄存器',on:['dev-kbd','ln-ps2','kbd-logic','kbd-dbr','kbd-sr'],set:{'kbd-dbr-v':'0x1E','kbd-sr-v':'1'},d:'<p>'+DV+'键盘经 PS/2 线送来扫描码，I/O 控制逻辑写进数据缓冲寄存器，并把状态位置 1。这时 CPU 还在循环，它并不知道，要等下一次查询才会发现。</p>'},
+    {t:'下一次查询：就绪，跳出循环',on:['usr0','usr1','ln-io','ln-io-kbd','kbd-sr','gpr'],set:{'gpr-v':'al = 01h（有数据）'},d:'<p>'+SW+'再次 <code>IN AL, 64h</code>，这次读到状态位 1，不再跳回，往下执行。</p>'},
+    {t:'读数据，修改计数',on:['usr2','ln-io','ln-io-kbd','kbd-dbr','gpr','ln-bus','buf','kbd-sr'],set:{'gpr-v':'al = 0x1E','kbd-dbr-v':'（已取走）','kbd-sr-v':'0','buf-t':'输入缓冲区 ← 0x1E'},d:'<p>'+SW+'<code>IN AL, 60h</code> 从数据缓冲寄存器取走 0x1E，再存进内存的输入缓冲区，地址加 1、计数减 1；计数没到 0 就回到循环继续查询下一个。</p><p>完整流程：预置参数 → 发命令启动外设 → 循环读状态 → 就绪就传一个数据 → 改地址和计数 → 判断是否完成。</p>'},
+    {t:'代价：CPU 被外设拖住',on:['cycle','tl'],set:{'tl1':'独占查询：CPU 100% 用在等待上','tl2':'定时查询：例 7.1，至少占 CPU 4%','tl3':'CPU 与外设串行，一次只能服务一台外设'},d:'<p>独占查询时 CPU 和外设完全串行，外设慢多少，CPU 就陪着等多少。改成<b>定时查询</b>（每隔固定时间查一次）能省一些：例 7.1 里 500 MHz、CPI = 4、外设 2 MB/s、每次查询 10 条指令，CPU 至少要拿出 4% 的时间来查询。</p><p>优点是硬件最简单：只要数据缓冲寄存器和状态寄存器，不需要中断请求线和中断控制器。</p>'}
+   ]},
+  {name:'⑦ DMA 方式',
+   intro:'从硬盘读 1024 字节到内存 0x00020000（计组 7.3.3）。CPU 只交代一次任务，搬运由 DMA 控制器直接在硬盘和内存之间完成，整批数据只在结束时中断一次。',
+   init:{'usr0-t':'OUT：设备 = 硬盘，方向 = 读入内存','usr1-t':'OUT：地址 = 0x00020000，长度 = 1024','usr2-t':'OUT：启动命令','gpr-v':'—','tl1':'某程序：发起读盘'},
+   steps:[
+    {t:'预处理：CPU 给 DMA 控制器交代任务',on:['usr0','usr1','usr2','ln-io','ln-io-dma','dma','dma-ar','dma-wc'],set:{'dma-ar-v':'0x00020000','dma-wc-v':'1024'},d:'<p>'+SW+'DMA 控制器也是挂在总线上的一块接口，有自己的端口地址。CPU 用几条 <code>OUT</code> 指令写进去：哪个设备、读还是写、主存起始地址 0x00020000、传送长度 1024，最后再写一个启动命令。</p>'},
+    {t:'CPU 去干别的；硬盘开始准备数据',on:['ln-io','ln-io-disk','disk','ln-disk-cable','dev-disk'],set:{'disk-v':'等硬盘读出','dev-disk-v':'读取中…','tl1':'该程序：阻塞，等数据','tl2':'CPU 去运行别的程序'},d:'<p>'+DV+'启动命令经磁盘接口送到硬盘，硬盘开始寻道、等盘片转到位、把数据读进自己的缓冲区，要花毫秒级时间。这期间 CPU 完全不管它，去运行别的程序。</p>'},
+    {t:'硬盘就绪：向 DMA 控制器请求',on:['dev-disk','ln-disk-cable','disk','ln-dreq','dma'],set:{'disk-v':'数据就绪','dev-disk-v':'数据就绪'},d:'<p>'+DV+'数据准备好后，磁盘接口通过一根专门的线向 <b>DMA 控制器</b>发请求，置位它的 DMA 请求触发器。注意这一步的接收方是 DMA 控制器，不是中断控制器，CPU 仍然没被打扰。</p>'},
+    {t:'DMA 控制器向 CPU 借总线',on:['ln-dma-hrq','dma','cpu','ln-disk-cable','ln-dreq'],d:'<p>'+HW+'DMA 控制器发 <b>HRQ</b>（总线请求）。CPU 在当前总线周期结束后回 <b>HLDA</b>（批准），从这一刻起由 DMA 控制器驱动地址线、数据线、控制线。</p><p>CPU 只是暂时用不了总线，它不用跳去执行任何程序，也不用保存现场。</p>'},
+    {t:'搬运一个字：直接写进内存',on:['ln-dma-mem','dma-ar','dma-wc','buf','ln-disk-cable','ln-dreq','ln-dma-hrq'],set:{'buf-t':'0x00020000 ← 第 1 个字节','dma-ar-v':'0x00020001','dma-wc-v':'1023'},d:'<p>'+HW+'DMA 控制器把地址计数器里的 0x00020000 放上地址线，把硬盘交来的字节放上数据线，发“写内存”信号，数据直接进了内存，<b>不经过 CPU</b>。随后地址计数器加 1，长度计数器减 1。</p>'},
+    {t:'循环，直到长度归零',on:['ln-dma-mem','ln-dma-hrq','dma-ar','dma-wc','buf','ln-disk-cable','ln-dreq'],set:{'buf-t':'0x00020000 起 1024 字节已写入','dma-ar-v':'0x00020400','dma-wc-v':'0'},d:'<p>'+HW+'每搬一个字重复一次。按<b>周期挪用</b>方式，每次只占一个存储周期，搬完立即把总线还给 CPU，下次再申请；CPU 恰好也要访存时会被卡一下。另外两种方式：<b>停止 CPU 访存</b>（整批传完才还总线）、<b>DMA 与 CPU 交替访存</b>（按固定节拍分时）。</p>'},
+    {t:'传送完成：唯一一次中断',on:['ln-dma-irq','ir3','prio','ln-intr','dma','disk','dev-disk'],set:{'ir-v3':'1','disk-v':'空闲','dev-disk-v':'内含控制器'},d:'<p>'+HW+'长度计数器归零，DMA 控制器通过中断请求线向中断控制器发请求，之后走的是场景 ① 那条完全相同的中断路径。</p><p>1024 字节只中断这一次；如果用程序中断方式，每个字节都要完整走一遍中断，就是 1024 次。</p>'},
+    {t:'很短的服务程序：收尾',on:['isr','hid','iret','ln-dma-irq','ln-intr'],set:{'ir-v3':'0','isr-t1':'确认传送完成、检查有没有出错','isr-t2':'唤醒等这批数据的进程','isr-t3':'','tl1':'该程序：就绪','tl2':''},d:'<p>'+SW+'CPU 响应中断（隐指令、查向量表，同场景 ①），执行一段很短的服务程序：确认传送完成、检查有无错误、把等这批数据的进程改为就绪，然后返回。</p><p>对比：程序查询是 CPU 一直等；程序中断是每个数据中断一次、由 CPU 用 <code>IN</code> 搬运；DMA 是硬件直接搬、整批只中断一次。</p>'}
+   ]}
+  ];
+  var cur=0, idx=0, timer=null;
+  var IDS=[];
+  root.querySelectorAll('svg [id]').forEach(function(e){ if(e.classList.contains('cell')||e.classList.contains('box')||e.classList.contains('wire')) IDS.push(e.id); });
+  IDS.push('tl');
+  function setText(map){ for(var k in map){ var e=$(k); if(e) e.textContent=map[k]; } }
+  function render(){
+    var s=SCN[cur], st=s.steps[idx];
+    IDS.forEach(function(id){ $(id).classList.remove('on'); });
+    setText(BASE); setText(s.init);
+    for(var i=0;i<=idx;i++){ if(s.steps[i].set) setText(s.steps[i].set); }
+    (st.on||[]).forEach(function(id){ var e=$(id); if(e) e.classList.add('on'); });
+    $('ieTitle').textContent=(idx+1)+'. '+st.t;
+    $('ieBody').innerHTML=st.d;
+    $('ieCnt').textContent='第 '+(cur+1)+'/'+SCN.length+' 幕 · 第 '+(idx+1)+'/'+s.steps.length+' 步';
+    $('ieBar').style.width=((idx+1)/s.steps.length*100)+'%';
+    $('ieIntro').textContent=s.intro;
+    root.querySelectorAll('.tab').forEach(function(b,i){ b.classList.toggle('cur',i===cur); });
+  }
+  function go(n){ var m=SCN[cur].steps.length; idx=Math.max(0,Math.min(m-1,n)); render(); }
+  function stop(){ if(timer){clearInterval(timer);timer=null;} $('iePlay').textContent='▶ 自动播放'; }
+  SCN.forEach(function(s,i){ var b=document.createElement('button'); b.className='tab'; b.textContent=s.name;
+    b.onclick=function(){ stop(); cur=i; idx=0; render(); }; $('ieTabs').appendChild(b); });
+  $('iePrev').onclick=function(){ stop(); go(idx-1); };
+  $('ieNext').onclick=function(){ stop(); go(idx+1); };
+  $('iePlay').onclick=function(){
+    if(timer){ stop(); return; }
+    $('iePlay').textContent='⏸ 暂停';
+    timer=setInterval(function(){ if(idx>=SCN[cur].steps.length-1){ stop(); return; } go(idx+1); },3200);
+  };
+  document.addEventListener('keydown',function(e){
+    if(e.target.closest && e.target.closest('input,textarea')) return;
+    if(e.key==='ArrowRight'){ stop(); go(idx+1); e.preventDefault(); }
+    else if(e.key==='ArrowLeft'){ stop(); go(idx-1); e.preventDefault(); }
+  });
+  function fromHash(){var m=/^#s(\d+)$/.exec(location.hash);if(m){var n=+m[1]-1;if(n>=0&&n<SCN.length){stop();cur=n;idx=0;}}}
+  fromHash();window.addEventListener('hashchange',function(){fromHash();render();});
+  render();
+})();
+</script>
+</div>
+<style id="irq-palette">
+/* 逐图手配：CPU 蓝、内存绿、中断控制器紫（本图主角，面积小）、键盘接口橙、磁盘接口与 DMA 金、时钟靛蓝、外设与电源中性；平时白底，本步=本色深一档 */
+#ie-demo{--accent:#495057;--accent-soft:#f1f3f5;--hot:#e03131;--hot-soft:#ffe3e3;--bg:#ffffff;--panel:#fbfbfa}
+#ie-demo svg .zone{fill:#ffffff;stroke:#ced4da}#ie-demo svg .cell,#ie-demo svg .box{fill:#ffffff;stroke:#ced4da}
+#ie-demo svg .cell.on,#ie-demo svg .cell.hot,#ie-demo svg .box.on{fill:#fff0b3;stroke:#d4a106;stroke-width:2.2}
+#ie-demo svg #cpu{fill:#f7faff;stroke:#4c8fe8;stroke-width:1.6}
+#ie-demo svg #cpu.on{fill:#f7faff;stroke-width:2.6}
+#ie-demo svg #mode,#ie-demo svg #pc,#ie-demo svg #psw,#ie-demo svg #gpr,#ie-demo svg #alu,#ie-demo svg #mmu,#ie-demo svg #cycle,#ie-demo svg #chk{fill:#ffffff;stroke:#4c8fe8;stroke-opacity:.55;stroke-width:1.1}
+#ie-demo svg #mode:is(.on,.hot),#ie-demo svg #pc:is(.on,.hot),#ie-demo svg #psw:is(.on,.hot),#ie-demo svg #gpr:is(.on,.hot),#ie-demo svg #alu:is(.on,.hot),#ie-demo svg #mmu:is(.on,.hot),#ie-demo svg #cycle:is(.on,.hot),#ie-demo svg #chk:is(.on,.hot){fill:#d3e4ff;stroke-opacity:1;stroke-width:2.2}
+#ie-demo svg #hid{fill:#f7faff;stroke:#4c8fe8;stroke-width:1.6}
+#ie-demo svg #hid.on{fill:#f7faff;stroke-width:2.6}
+#ie-demo svg #hid1,#ie-demo svg #hid2,#ie-demo svg #hid3,#ie-demo svg #iret{fill:#ffffff;stroke:#4c8fe8;stroke-opacity:.55;stroke-width:1.1}
+#ie-demo svg #hid1:is(.on,.hot),#ie-demo svg #hid2:is(.on,.hot),#ie-demo svg #hid3:is(.on,.hot),#ie-demo svg #iret:is(.on,.hot){fill:#d3e4ff;stroke-opacity:1;stroke-width:2.2}
+#ie-demo svg #mem{fill:#f6fcf7;stroke:#40a65a;stroke-width:1.6}
+#ie-demo svg #mem.on{fill:#f6fcf7;stroke-width:2.6}
+#ie-demo svg #usr0,#ie-demo svg #usr1,#ie-demo svg #usr2,#ie-demo svg #ivt0,#ie-demo svg #ivt14,#ie-demo svg #ivt32,#ie-demo svg #ivt33,#ie-demo svg #ivt80,#ie-demo svg #sct,#ie-demo svg #ks1,#ie-demo svg #ks2,#ie-demo svg #isr,#ie-demo svg #buf{fill:#ffffff;stroke:#40a65a;stroke-opacity:.55;stroke-width:1.1}
+#ie-demo svg #usr0:is(.on,.hot),#ie-demo svg #usr1:is(.on,.hot),#ie-demo svg #usr2:is(.on,.hot),#ie-demo svg #ivt0:is(.on,.hot),#ie-demo svg #ivt14:is(.on,.hot),#ie-demo svg #ivt32:is(.on,.hot),#ie-demo svg #ivt33:is(.on,.hot),#ie-demo svg #ivt80:is(.on,.hot),#ie-demo svg #sct:is(.on,.hot),#ie-demo svg #ks1:is(.on,.hot),#ie-demo svg #ks2:is(.on,.hot),#ie-demo svg #isr:is(.on,.hot),#ie-demo svg #buf:is(.on,.hot){fill:#cdeed4;stroke-opacity:1;stroke-width:2.2}
+#ie-demo svg #pic{fill:#faf8ff;stroke:#845ef7;stroke-width:1.6}
+#ie-demo svg #pic.on{fill:#faf8ff;stroke-width:2.6}
+#ie-demo svg #ir0,#ie-demo svg #ir1,#ie-demo svg #ir2,#ie-demo svg #ir3,#ie-demo svg #mk0,#ie-demo svg #mk1,#ie-demo svg #mk2,#ie-demo svg #mk3,#ie-demo svg #prio,#ie-demo svg #vec{fill:#ffffff;stroke:#845ef7;stroke-opacity:.55;stroke-width:1.1}
+#ie-demo svg #ir0:is(.on,.hot),#ie-demo svg #ir1:is(.on,.hot),#ie-demo svg #ir2:is(.on,.hot),#ie-demo svg #ir3:is(.on,.hot),#ie-demo svg #mk0:is(.on,.hot),#ie-demo svg #mk1:is(.on,.hot),#ie-demo svg #mk2:is(.on,.hot),#ie-demo svg #mk3:is(.on,.hot),#ie-demo svg #prio:is(.on,.hot),#ie-demo svg #vec:is(.on,.hot){fill:#e5dbff;stroke-opacity:1;stroke-width:2.2}
+#ie-demo svg #kbd{fill:#fffaf3;stroke:#f08c00;stroke-width:1.6}
+#ie-demo svg #kbd.on{fill:#fffaf3;stroke-width:2.6}
+#ie-demo svg #kbd-dbr,#ie-demo svg #kbd-sr,#ie-demo svg #kbd-cr,#ie-demo svg #kbd-req,#ie-demo svg #kbd-en,#ie-demo svg #kbd-logic{fill:#ffffff;stroke:#f08c00;stroke-opacity:.55;stroke-width:1.1}
+#ie-demo svg #kbd-dbr:is(.on,.hot),#ie-demo svg #kbd-sr:is(.on,.hot),#ie-demo svg #kbd-cr:is(.on,.hot),#ie-demo svg #kbd-req:is(.on,.hot),#ie-demo svg #kbd-en:is(.on,.hot),#ie-demo svg #kbd-logic:is(.on,.hot){fill:#ffe2bd;stroke-opacity:1;stroke-width:2.2}
+#ie-demo svg #disk{fill:#fffcef;stroke:#e0a800;stroke-width:1.6}
+#ie-demo svg #disk.on{fill:#fffcef;stroke-width:2.6}
+#ie-demo svg #dma{fill:#fffcef;stroke:#e0a800;stroke-width:1.6}
+#ie-demo svg #dma.on{fill:#fffcef;stroke-width:2.6}
+#ie-demo svg #dma-ar,#ie-demo svg #dma-wc{fill:#ffffff;stroke:#e0a800;stroke-opacity:.55;stroke-width:1.1}
+#ie-demo svg #dma-ar:is(.on,.hot),#ie-demo svg #dma-wc:is(.on,.hot){fill:#ffeca6;stroke-opacity:1;stroke-width:2.2}
+#ie-demo svg #clk{fill:#f7f8ff;stroke:#5c7cfa;stroke-width:1.6}
+#ie-demo svg #clk.on{fill:#f7f8ff;stroke-width:2.6}
+#ie-demo svg #disk.on{fill:#ffeca6}#ie-demo svg #clk.on{fill:#dbe2ff}
+#ie-demo svg :is(#dev-kbd,#dev-disk,#pwr){fill:#ffffff;stroke:#adb5bd}#ie-demo svg :is(#dev-kbd,#dev-disk,#pwr).on{fill:#f1f3f5;stroke:#495057;stroke-width:2.2}
+#ie-demo svg .wire{stroke:#c3c9d1}#ie-demo svg .wire.on{stroke:#e03131;stroke-width:3}
+#ie-demo svg .v{fill:#2b2f36}
+#ie-demo .tab.cur{background:#495057;border-color:#495057}#ie-demo .bar i{background:#868e96}#ie-demo .step{border-left-color:#e03131}
+</style>
+<script src="figure-fit.js"></script>
+</body>
+</html>

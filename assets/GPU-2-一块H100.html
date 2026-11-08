@@ -1,0 +1,68 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一块 H100</title><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body>
+<header><h1>一块 H100：SM 怎样排在芯片上，数据从哪来</h1><small>按 NVIDIA 公布的 GH100 结构重画（位置为示意，数量为实数）。第一步看芯片平面，第二步看数据从主机内存一路到 SM，第三步从侧面看 HBM 显存怎样贴在芯片旁边。</small><nav id="steps"></nav></header>
+<div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 680" role="img" aria-label="H100 芯片平面图：8 个 GPC 共 144 个 SM 方格、L2 两半、两侧 HBM 堆栈、PCIe 与 NVLink；数据路径；HBM 侧视剖面"><g id="draw"></g></svg></div><footer id="note"></footer>
+<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+const steps=[
+ {b:'① 芯片平面',t:'一颗 GH100 芯片：144 个 SM 分在 8 个 GPC 里，卖出的 H100 启用 132 个',n:'每个小方格是一个 SM（上一张图放大过的那种）。每 18 个 SM 编成一个 <b>GPC</b>，这只是物理上的分组，写程序时不用管。芯片做出来总有少数 SM 有缺陷，H100 SXM 屏蔽 12 个（灰色），启用 132 个，这样能卖的芯片更多。中间两条是 <b>L2 缓存</b>，共 50 MB，所有 SM 共用；分左右两半，SM 读自己这一半快，读另一半要绕过去，约慢一倍。'},
+ {b:'② 数据从哪来',t:'数据的路：主机内存 → PCIe → HBM → L2 → SM',n:'张量先由 CPU 经 <b>PCIe</b> 搬进显卡的显存 <b>HBM</b>（<code>x.to("cuda")</code>，64 MB 约 1 ms）。之后 kernel 运行时，SM 需要的数从 HBM 经内存控制器、L2 送到 SM。<b>GigaThread 引擎</b>负责把一个 kernel 的工作切块分给各 SM（第 3 节）。NVLink 连同一台服务器里的其他 GPU。'},
+ {b:'③ HBM 侧视',t:'HBM：DRAM 芯片叠成一摞，贴在 GPU 旁边',n:'HBM 就是计组里的 DRAM，只是做法不同：8 层左右的 DRAM 芯片叠在一起，用穿透硅片的竖直导线（TSV）连通，叫一个<b>堆栈</b>；堆栈和 GPU 芯片并排放在同一块硅转接板上，中间只隔几毫米，所以能拉出 1024 根数据线。H100 SXM 用 5 个堆栈（第 6 个位置不工作），共 80 GB、3.35 TB/s。主板上的内存条到 CPU 只有 64 位宽，隔着十几厘米。'}
+];
+const C={sm:['#dff0e2','#3e8c55'],off:['#e6e3dc','#b0aaa0'],l2:['#e7e0f6','#7a5bb0'],hbm:['#fde6cc','#c4861e'],io:['#e1edf9','#3d6fae'],die:['#fbfaf7','#6f6a60']};
+function chip(K,hl){
+ K.rect(16,14,968,620,{f:'#f2eee6',s:'#a9a49a',sw:1.5,rx:14});K.text(30,38,'H100 SXM 封装',{c:'sm b'});
+ // HBM stacks
+ [[36,90],[36,250],[36,410],[870,90],[870,250],[870,410]].forEach(([x,y],i)=>{const dead=i===5;
+  K.rect(x,y,96,130,{f:dead?C.off[0]:C.hbm[0],s:dead?C.off[1]:C.hbm[1],sw:hl==='hbm'?2.6:1.6,rx:6});
+  for(let l=0;l<6;l++)K.line(`M${x+8} ${y+30+l*14}H${x+88}`,{c:dead?'#cfc9be':'#e2b885',w:1});
+  K.text(x+48,y+22,dead?'不工作':'HBM 16 GB',{a:'middle',c:'sm b',size:13});});
+ // die
+ K.rect(150,60,700,540,{f:C.die[0],s:C.die[1],sw:2.2,rx:6});K.text(162,82,'GPU 芯片（GH100，约 814 mm²）',{c:'sm b'});
+ K.rect(300,88,400,36,{f:C.io[0],s:C.io[1],sw:hl==='pcie'?2.6:1.4});K.text(500,111,'PCIe 5.0 接口 ＋ GigaThread 引擎',{a:'middle',c:'sm b',size:14});
+ K.rect(300,556,400,34,{f:C.io[0],s:C.io[1]});K.text(500,578,'NVLink（连其他 GPU）',{a:'middle',c:'sm b',size:14});
+ // memory controllers
+ K.rect(158,130,26,420,{f:C.hbm[0],s:C.hbm[1]});K.rect(816,130,26,420,{f:C.hbm[0],s:C.hbm[1]});
+ // GPCs
+ let off=0;const dis=[[0,5],[1,11],[2,3],[2,16],[3,8],[4,0],[4,13],[5,6],[6,10],[6,17],[7,2],[7,14]];
+ for(let g=0;g<8;g++){const gx=196+(g%4)*154,gy=g<4?132:350;
+  K.rect(gx,gy,146,192,{f:'#fff',s:'#9fbfa6',rx:6});K.text(gx+8,gy+18,'GPC '+g,{c:'sm',size:12});
+  for(let s=0;s<18;s++){const sx=gx+8+(s%6)*22.5,sy=gy+28+Math.floor(s/6)*52,d=dis.some(([a,b])=>a===g&&b===s);
+   K.rect(sx,sy,19,44,{f:d?C.off[0]:C.sm[0],s:d?C.off[1]:C.sm[1],sw:1,rx:2});}}
+ // L2
+ K.rect(196,328,302,18,{f:C.l2[0],s:C.l2[1],sw:hl==='l2'?2.6:1.4});K.rect(502,328,302,18,{f:C.l2[0],s:C.l2[1],sw:hl==='l2'?2.6:1.4});
+ K.text(347,342,'L2 左半 25 MB',{a:'middle',c:'sm b',size:12});K.text(653,342,'L2 右半 25 MB',{a:'middle',c:'sm b',size:12});
+}
+SvgStep.start({steps,draw(k,K){
+ if(k===0){chip(K,'');
+  K.rect(16,642,968,32,{f:'#fff',s:'#d9d2c4',rx:6});
+  K.rect(30,650,16,16,{f:C.sm[0],s:C.sm[1]});K.text(52,664,'启用的 SM（132 个）',{c:'sm',size:13});
+  K.rect(230,650,16,16,{f:C.off[0],s:C.off[1]});K.text(252,664,'屏蔽的 SM（12 个）',{c:'sm',size:13});
+  K.rect(410,650,16,16,{f:C.hbm[0],s:C.hbm[1]});K.text(432,664,'芯片两侧竖条：内存控制器（连 HBM）',{c:'sm',size:13});
+ }else if(k===1){chip(K,'path');
+  const R='#b8473a';
+  K.rect(196+3*154+8+0*22.5-3,132+28+2*52-3,25,50,{f:'none',s:R,sw:3,rx:3});
+  K.arrow('M500 18V86',{c:R,w:3});K.text(512,40,'① 主机内存 → PCIe：每方向约 64 GB/s（64 MB 约 1 ms）',{c:'sm b',fill:R});
+  K.arrow('M700 106H808',{c:R,w:3});K.line('M842 106H868',{c:R,w:3});K.text(712,99,'② 写进 HBM',{c:'sm b',size:13,fill:R});
+  K.arrow('M868 300H846',{c:R,w:3});K.arrow('M816 337H808',{c:R,w:3});K.arrow('M676 328V311',{c:R,w:3});
+  K.rect(196,604,608,26,{f:'#fff',s:R,rx:4});K.text(206,622,'③ kernel 运行时：HBM → 内存控制器 → L2 → 红框里的 SM，3.35 TB/s',{c:'sm b',size:14,fill:R});
+  K.rect(30,642,940,32,{f:'#fff',s:'#d9d2c4',rx:6});K.text(40,664,'带宽：PCIe 64 GB/s ≪ HBM 3.35 TB/s ＜ L2 约 12 TB/s ＜ 共享内存合计约 33 TB/s ＜ 寄存器合计约 400 TB/s',{c:'sm',size:13});
+ }else{
+  K.text(24,40,'从侧面剖开看（不按比例）',{c:'b'});
+  // substrate
+  K.rect(40,520,920,40,{f:'#d9e6d2',s:'#7f9a73'});K.text(500,546,'封装基板（下面焊到显卡板上）',{a:'middle',c:'sm b'});
+  K.rect(80,470,840,46,{f:'#cfd8e4',s:'#6d84a3'});K.text(730,499,'硅转接板：刻着上千根细导线',{a:'start',c:'sm b'});
+  // GPU die
+  K.rect(420,330,300,136,{f:'#fbfaf7',s:'#6f6a60',sw:2});K.text(570,392,'GPU 芯片',{a:'middle',c:'b'});K.text(570,418,'（132 个 SM、L2 都在这片硅上）',{a:'middle',c:'sm',size:13});
+  // HBM stack
+  const sx=150,sw=200;
+  K.rect(sx,430,sw,36,{f:'#f6dcc0',s:'#c4861e'});K.text(sx+sw/2,454,'底层逻辑芯片',{a:'middle',c:'sm',size:13});
+  for(let l=0;l<8;l++){const y=392-l*36;K.rect(sx,y,sw,32,{f:C.hbm[0],s:C.hbm[1]});K.text(sx+sw/2,y+21,'DRAM 芯片 '+(l+1),{a:'middle',c:'sm',size:13});}
+  [sx+8,sx+18,sx+sw-18,sx+sw-8].forEach(x=>K.line(`M${x} 140V466`,{c:'#8a5a1e',w:2,dash:'3 3'}));
+  K.text(sx+sw+10,150,'竖直虚线：TSV，',{c:'sm',fill:'#8a5a1e'});K.text(sx+sw+10,172,'穿过每层硅片的导线',{c:'sm',fill:'#8a5a1e'});
+  K.text(sx,120,'一个 HBM 堆栈（16 GB）',{c:'sm b'});
+  for(let t=0;t<6;t++)K.line(`M${sx+sw} ${476+t*6}H420`,{c:'#3d6fae',w:1.2});
+  K.arrow('M385 590V512',{c:'#3d6fae',w:1.8});K.text(300,606,'堆栈和 GPU 之间：1024 根数据线，只隔几毫米',{a:'start',c:'sm b',fill:'#3d6fae'});
+  K.rect(740,170,230,150,{f:'#fff',s:'#a9a49a',rx:8});K.text(752,196,'对照：CPU 的内存条',{c:'sm b'});K.text(752,222,'插在主板插槽里，',{c:'sm',size:14});K.text(752,244,'离 CPU 十几厘米，',{c:'sm',size:14});K.text(752,266,'每条通道 64 根数据线，',{c:'sm',size:14});K.text(752,288,'带宽几十 GB/s',{c:'sm',size:14});
+  K.text(40,650,'H100 SXM：5 个堆栈 × 16 GB = 80 GB；5 × 1024 = 5120 根数据线，合计 3.35 TB/s',{c:'sm b'});
+ }
+}});
+</script></body></html>

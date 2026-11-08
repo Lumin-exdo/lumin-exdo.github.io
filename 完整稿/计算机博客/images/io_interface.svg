@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" role="img" aria-labelledby="title desc">
+<title id="title">一个 I/O 接口怎样连接 CPU、寄存器和外设</title>
+<desc id="desc">CPU 发出端口地址和读写控制；数据线双向。接口内地址译码和访问选择决定数据、状态、控制三个寄存器的访问；设备侧逻辑连接外设，并经中断控制器向 CPU 请求处理。</desc>
+<defs>
+  <marker id="addr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#bf621e"/></marker>
+  <marker id="data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#1779a5"/></marker>
+  <marker id="ctrl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#47664a"/></marker>
+  <marker id="irq" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#b64d58"/></marker>
+  <style>
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#223446}
+    .h{font-size:21px;font-weight:700}.sub{font-size:14px;fill:#506174}
+    .t{font-size:17px;font-weight:700}.s{font-size:15px;fill:#516174}
+    .chip{fill:#fff;stroke:#63798a;stroke-width:2}.reg{fill:#fff;stroke:#2679a5;stroke-width:2}
+    .addr{fill:none;stroke:#bf621e;stroke-width:3;marker-end:url(#addr)}
+    .data{fill:none;stroke:#1779a5;stroke-width:3;marker-start:url(#data);marker-end:url(#data)}
+    .ctrl{fill:none;stroke:#47664a;stroke-width:3;marker-end:url(#ctrl)}
+    .irq{fill:none;stroke:#b64d58;stroke-width:3;marker-end:url(#irq)}
+    .wire{fill:none;stroke:#64798b;stroke-width:2.5;marker-start:url(#data);marker-end:url(#data)}
+  </style>
+</defs>
+<rect width="1000" height="780" fill="#fbfaf7"/>
+<text x="25" y="36" class="h">一个 I/O 接口：三组总线信号怎样找到寄存器和外设</text>
+
+<rect x="20" y="58" width="775" height="596" rx="15" fill="#edf5f7" stroke="#6c9ba6" stroke-width="2" stroke-dasharray="8 5"/>
+<text x="35" y="84" class="t" fill="#376676">主机侧（逻辑范围；接口可集成，也可在扩展卡上）</text>
+<text x="823" y="84" class="t" fill="#9b6320">设备侧</text>
+
+<rect x="42" y="245" width="160" height="130" rx="15" fill="#dce9fb" stroke="#3972b0" stroke-width="2.5"/>
+<text x="122" y="282" text-anchor="middle" class="t">CPU</text>
+<text x="122" y="307" text-anchor="middle" class="s">本例发起一次</text>
+<text x="122" y="333" text-anchor="middle" class="s">端口读／写</text>
+<text x="122" y="360" text-anchor="middle" class="s">数据可进、可出</text>
+
+<rect x="315" y="106" width="447" height="431" rx="14" fill="#f8f8f2" stroke="#8c9873" stroke-width="2.5"/>
+<text x="337" y="134" class="t">I/O 接口电路</text>
+<rect x="345" y="155" width="145" height="59" rx="9" class="chip"/>
+<text x="417" y="180" class="t" text-anchor="middle">地址译码</text>
+<text x="417" y="201" class="s" text-anchor="middle">选中端口</text>
+<rect x="345" y="310" width="145" height="65" rx="9" class="chip"/>
+<text x="417" y="336" class="t" text-anchor="middle">访问选择</text>
+<text x="417" y="359" class="s" text-anchor="middle">端口＋读／写</text>
+<path d="M417 214V307" class="ctrl"/>
+<text x="433" y="267" class="s">选中结果</text>
+
+<rect x="545" y="165" width="181" height="61" rx="9" class="reg"/>
+<text x="635" y="190" class="t" text-anchor="middle">数据缓冲寄存器</text>
+<text x="635" y="211" class="s" text-anchor="middle">CPU 可读、可写</text>
+<rect x="545" y="260" width="181" height="61" rx="9" class="reg"/>
+<text x="635" y="285" class="t" text-anchor="middle">状态寄存器</text>
+<text x="635" y="306" class="s" text-anchor="middle">CPU 读：就绪／错误</text>
+<rect x="545" y="355" width="181" height="61" rx="9" class="reg"/>
+<text x="635" y="380" class="t" text-anchor="middle">控制寄存器</text>
+<text x="635" y="401" class="s" text-anchor="middle">CPU 写：设备命令</text>
+<rect x="545" y="453" width="181" height="60" rx="9" fill="#fbeacf" stroke="#bf7a25" stroke-width="2"/>
+<text x="635" y="478" class="t" text-anchor="middle">设备侧控制逻辑</text>
+<text x="635" y="500" class="s" text-anchor="middle">缓冲／转换／握手</text>
+
+<!-- 三组主机总线信号：地址、数据、控制分开走；数据线两端都有箭头。 -->
+<path d="M202 265H270V185H342" class="addr"/>
+<text x="212" y="169" class="s" fill="#a65719">地址线：选端口</text>
+<path d="M202 315H268V526H522V195" class="data"/>
+<path d="M522 195H542M522 290H542M522 385H542" fill="none" stroke="#1779a5" stroke-width="3"/>
+<circle cx="522" cy="290" r="4" fill="#1779a5"/><circle cx="522" cy="385" r="4" fill="#1779a5"/>
+<text x="282" y="549" class="s" fill="#176889">数据线：写入数据／命令，读回数据／状态</text>
+<path d="M202 350H296V345H342" class="ctrl"/>
+<text x="42" y="493" class="s" fill="#47664a">控制线：读或写</text>
+
+<!-- 访问选择的三条使能支路止于寄存器旁，不与蓝色数据线混接。 -->
+<path d="M490 343H505V241M505 241V194M505 343V289M505 343V384" fill="none" stroke="#47664a" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="349" y="413" class="s" fill="#47664a">绿虚线＝寄存器使能</text>
+<circle cx="505" cy="194" r="4" fill="#47664a"/><circle cx="505" cy="289" r="4" fill="#47664a"/><circle cx="505" cy="384" r="4" fill="#47664a"/>
+
+<!-- 三类寄存器在设备侧汇合；此灰线表示物理连接，方向由操作决定。 -->
+<path d="M729 195H741V483H729M729 290H741M729 385H741" class="wire"/>
+<text x="545" y="442" class="s">寄存器 ↔ 设备侧逻辑</text>
+
+<path d="M726 483H808V270H837" class="wire"/>
+<path d="M808 395H837" class="wire"/>
+<text x="801" y="160" class="s">设备接口电缆</text>
+<text x="801" y="186" class="s">传数据／状态／控制</text>
+<rect x="840" y="232" width="130" height="76" rx="12" fill="#fff0d7" stroke="#bd812d" stroke-width="2"/>
+<text x="905" y="261" text-anchor="middle" class="t">外设 A</text>
+<text x="905" y="286" text-anchor="middle" class="s">例如键盘</text>
+<rect x="840" y="357" width="130" height="76" rx="12" fill="#fff0d7" stroke="#bd812d" stroke-width="2"/>
+<text x="905" y="386" text-anchor="middle" class="t">外设 B</text>
+<text x="905" y="411" text-anchor="middle" class="s">也可只有一个</text>
+
+<rect x="320" y="584" width="180" height="53" rx="10" fill="#f9e8ea" stroke="#b64d58" stroke-width="2"/>
+<text x="410" y="607" text-anchor="middle" class="t">中断控制器</text>
+<text x="410" y="633" text-anchor="middle" class="s">接收并仲裁 IRQ</text>
+<path d="M635 513V610H503" class="irq"/>
+<text x="527" y="580" class="s" fill="#a7444e">接口有事：IRQ</text>
+<path d="M317 610H246V449H122V378" class="irq"/>
+<text x="46" y="575" class="s" fill="#a7444e">向同一个 CPU 请求处理</text>
+
+<!-- 两条短流程替代旧图底部六段文字；逐步细节由左栏②演示。 -->
+<rect x="20" y="670" width="960" height="92" rx="11" fill="#fff" stroke="#c5d1d4" stroke-width="1.5"/>
+<text x="37" y="698" class="t">看方向</text>
+<text x="150" y="698" class="s">写命令：CPU → 控制寄存器 → 设备侧逻辑 → 外设</text>
+<text x="150" y="727" class="s">读数据：外设 → 数据缓冲寄存器 → CPU；接口可另发 IRQ 提醒 CPU 来读</text>
+<text x="150" y="750" class="s">状态寄存器供 CPU 读取；状态与控制可共用端口地址，但读写对应不同寄存器。</text>
+</svg>

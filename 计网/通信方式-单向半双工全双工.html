@@ -1,0 +1,214 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>通信方式：单向、半双工、全双工</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>通信方式：单向、半双工、全双工</h1><small>右半是 10 秒里 A、B 各自在发的时段：色条首尾相接＝半双工，色条有重叠＝全双工。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 396" role="img" aria-label="通信方式：单向、半双工、全双工"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>三种方式：同一时刻能不能两个方向都在发</h2><span class="tag">看色条有没有重叠</span></summary><div class="body">
+<table><tr><th>方式</th><th>同一时刻</th><th>要几个信道</th><th>例子</th><th>图中怎样看</th></tr>
+<tr><td><b>单向通信</b></td><td>只有一个方向有通信，没有反方向的交互</td><td>1 个</td><td>无线电广播、电视广播：电台一直发，收音机从不回话</td><td>A 的色条整段亮，B 一栏写“只收，不发”</td></tr>
+<tr><td><b>半双工通信</b></td><td>双方都可发送或接收，但任何一方都不能同时发送和接收</td><td>1 个，分时双向传输，无须两个物理信道</td><td>对讲机；早期用一根同轴电缆连成的以太网，同一时间只许一台主机发</td><td>A 在 0～3、6～8 秒，B 在 3～6、8～10 秒，色条首尾相接，从不重叠</td></tr>
+<tr><td><b>全双工通信</b></td><td>双方可同时发送和接收</td><td>2 个独立信道，每个方向一个</td><td>电话；今天交换机和电脑之间的网线（两个方向各用一对线）</td><td>A 在 0～9 秒，B 在 1～10 秒，1～9 秒两条色条重叠（绿色虚线框）</td></tr></table>
+</div></details>
+<details class="note c-gr"><summary><h2>信道不等于电路：数方向，不数线</h2><span class="tag">紫色虚线框＝一条电路，两个信道</span></summary><div class="body">
+<ol class="steps">
+<li><div>信道是信号传输介质上的一条通路，只管一个方向。</div></li>
+<li><div>一条能双向通话的电路，要有一个发送信道（A→B）和一个接收信道（B→A），共 <b>2 个信道</b>：全双工那一行紫色虚线框里的一条电话电路，里面有两根方向相反的箭头。</div></li>
+<li><div>反过来，一条电缆被 3 个用户共用时，这条电路里有 <b>3 个</b>用户各自的信道。</div></li>
+<li><div class="ans">所以数信道不能数线，要数“有几个方向可以各自独立传信号”。</div></li>
+</ol>
+</div></details>
+<details class="note c-or"><summary><h2>笔记本 A 与服务器 B：B 要回一个“收到”</h2><span class="tag">半双工要等，全双工不等</span></summary><div class="body">
+<p>A 经网线向 B 发完字节 0x41，B 要回一个“收到”。<b>半双工</b>：A 发完这一个字节、停下来，B 才开始回，两个方向轮流使用同一个信道（图中半双工一行，A、B 的色条在时间上首尾相接，从不重叠）。<b>全双工</b>：A 在发后面的字节的同时，B 已经可以回前面字节的“收到”，两个方向互不等待（图中全双工一行，两条色条重叠的那段）。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 396
+const ST = [
+ { b: '① 单向', t: '只有一个方向有信号', n: '例：无线电广播。电台一直发，收音机从不回话；只需要 1 个信道。' },
+ { b: '② 半双工', t: '双方都能发，但不能同时发', n: '例：对讲机。A 发完 0x41 停下，B 才能回“收到”，两个方向轮流用同一个信道（1 个）。' },
+ { b: '③ 全双工', t: '双方可以同时发', n: '例：电话。A 还在发后面的字节时，B 已在回前面的“收到”，1～9 秒两边同时在发；要 2 个信道。' },
+ { b: '④ 数信道', t: '信道不等于电路：数方向，不数线', n: '一条电话电路里有发送、接收两个信道；一根电缆被 3 个用户共用，就有 3 个信道。' }
+];
+const ROWS = [
+ { y: 0, name: '单向通信', ex: '无线电广播', ch: '信道 1 个', A: [[0, 10]], B: [], cap: '只有一个方向有信号' },
+ { y: 126, name: '半双工通信', ex: '对讲机', ch: '信道 1 个，轮流用', A: [[0, 3], [6, 8]], B: [[3, 6], [8, 10]], cap: '任何时刻只有一边在发' },
+ { y: 252, name: '全双工通信', ex: '电话', ch: '电路里有 2 个信道', A: [[0, 9]], B: [[1, 10]], cap: '1～9 秒两边同时在发' }];
+const SX = 318, SWd = 33;
+function row(K, ri, o) {
+  const r = ROWS[ri], y = r.y;
+  K.rect(0, y + 2, 700, 120, { f: ri % 2 ? '#fbf5e8' : C.BOX, s: C.BORD, rx: 10, sw: 1.4 });
+  T(K, 12, y + 28, r.name, { size: 18, c: 'b' }); T(K, 150, y + 28, '例：' + r.ex, { size: 15, fill: C.MUT });
+  [['A', 14], ['B', 190]].forEach(([t, x]) => { K.rect(x, y + 46, 54, 44, { f: '#fff3c4', s: C.YL, rx: 8, sw: 2 }); T(K, x + 27, y + 76, t, { a: 'middle', size: 20, c: 'b' }); });
+  if (ri === 0) K.arrow(`M72 ${y + 68}H186`, { c: C.OR, w: 4 });
+  if (ri === 1) K.arrow(`M72 ${y + 68}H186`, { c: C.OR, w: 4, both: true });
+  if (ri === 2) { K.arrow(`M72 ${y + 58}H186`, { c: C.OR, w: 4 }); K.arrow(`M186 ${y + 80}H72`, { c: C.BL, w: 4 }); }
+  const lane = (k, segs, col, lab) => {
+    const ly = y + 36 + k * 38;
+    T(K, SX - 8, ly + 21, lab, { a: 'end', size: 16, c: 'b', fill: col[2] });
+    K.rect(SX, ly, 10 * SWd, 30, { f: '#f1ebdd', s: 'none', rx: 4 });
+    segs.forEach(([a, b]) => { K.rect(SX + a * SWd, ly, (b - a) * SWd, 30, { f: col[0], s: col[1], rx: 4, sw: 2 }); T(K, SX + (a + b) * SWd / 2, ly + 21, '正在发', { a: 'middle', size: 15, c: 'b', fill: col[2] }); });
+    if (!segs.length) T(K, SX + 5 * SWd, ly + 21, '只收，不发', { a: 'middle', size: 15, fill: C.MUT });
+  };
+  if (!o.noLanes) { lane(0, r.A, P.A, 'A 发'); lane(1, r.B, P.B, 'B 发');
+    if (ri === 2) K.rect(SX + 1 * SWd - 2, y + 32, 8 * SWd + 4, 72, { f: 'none', s: C.GR, rx: 6, sw: 2.4, dash: '6 4' });
+    T(K, SX + 5 * SWd, y + 117, r.cap, { a: 'middle', size: 15, c: 'b', fill: C.GRd }); }
+}
+function chTag(K, ri) { const r = ROWS[ri]; T(K, 130, r.y + 112, r.ch, { a: 'middle', size: 15, c: 'b', fill: C.GRd }); }
+function draw(a0, K) {
+  const at = a0 + 1;
+  [0, 1, 2].forEach(ri => {
+    const vis = at < ri + 1 ? 0 : (at === ri + 1 ? 2 : 1);
+    G(vis, () => { row(K, ri, { noLanes: at === 4 }); if (at !== 4) chTag(K, ri); });
+  });
+  G(at >= 1 ? 1 : 0, () => { const ay = 372; K.line(`M${SX} ${ay}H${SX + 10 * SWd}`, { c: C.MUT, w: 1.6 });
+    for (let t = 0; t <= 10; t += 2) { K.line(`M${SX + t * SWd} ${ay}v6`, { c: C.MUT, w: 1.4 }); T(K, SX + t * SWd, ay + 22, String(t), { a: 'middle', size: 15, c: 'mono', fill: C.MUT }); }
+    T(K, SX - 8, ay + 22, '秒', { a: 'end', size: 15, fill: C.MUT }); });
+  if (at === 4) {
+    // 左侧三行的信道数标签（醒目），右侧换成“数信道”示意
+    [0, 1, 2].forEach(ri => { T(K, 130, ROWS[ri].y + 112, ROWS[ri].ch, { a: 'middle', size: 15, c: 'b', fill: C.GRd }); });
+    K.rect(60, ROWS[2].y + 38, 136, 58, { f: 'none', s: C.PU, rx: 10, sw: 2.6, dash: '6 4' });
+    K.rect(SX - 6, 8, 392, 358, { f: '#fffdf8', s: C.BORD, rx: 10, sw: 1.6 });
+    T(K, SX + 6, 34, '一条电话电路：发送信道＋接收信道', { size: 16, c: 'b', fill: C.PU });
+    H.box(K, SX + 6, 50, 52, 40, 'A', [C.YLb, C.YL, C.INK], { size: 20 }); H.box(K, SX + 320, 50, 52, 40, 'B', [C.YLb, C.YL, C.INK], { size: 20 });
+    K.arrow(`M${SX + 62} 62H${SX + 316}`, { c: C.OR, w: 4 }); K.arrow(`M${SX + 316} 80H${SX + 62}`, { c: C.BL, w: 4 });
+    T(K, SX + 189, 56, '信道 1：A→B', { a: 'middle', size: 15, c: 'b', fill: C.ORd }); T(K, SX + 189, 102, '信道 2：B→A', { a: 'middle', size: 15, c: 'b', fill: C.BLd });
+    K.line(`M${SX} 116H${SX + 380}`, { c: '#e3d9c4', w: 1.2 });
+    T(K, SX + 6, 144, '一根电缆被 3 个用户共用：3 个信道', { size: 16, c: 'b', fill: C.PU });
+    K.rect(SX + 6, 160, 366, 124, { f: '#f1ebdd', s: C.LINE, rx: 30, sw: 2 });
+    [['用户 1', P.A], ['用户 2', P.G], ['用户 3', P.B]].forEach(([u, p], i) => { const y = 170 + i * 36; K.rect(SX + 70, y, 290, 28, { f: p[0], s: p[1], rx: 6, sw: 2 }); T(K, SX + 62, y + 20, u, { a: 'end', size: 15, c: 'b', fill: p[2] }); T(K, SX + 215, y + 20, '各自的信道', { a: 'middle', size: 15, fill: p[2] }); });
+    T(K, SX + 189, 312, '数信道不数线：', { a: 'middle', size: 16, c: 'b', fill: C.RD });
+    T(K, SX + 189, 338, '数“有几个方向、几路能各自独立传信号”', { a: 'middle', size: 16, c: 'b', fill: C.RD });
+  }
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

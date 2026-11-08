@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "next_number": 1,
+  "files": {
+    "16209609752074389636:1125899908763040": {
+      "first_seen": "2026-10-09 20:49:44",
+      "source": "计算机",
+      "path": "AI\\GPU 入门：从一次 ReLU 到 FlashAttention.md",
+      "title": "GPU 入门：从一次 ReLU 到 FlashAttention",
+      "fingerprint": "daa9c8b4540831bcff095e048e8e1a555fa75188809be01d9b087c034e830ae8",
+      "name": "gpu-intro-relu-flashattention",
+      "slug": "ai/gpu-intro-relu-flashattention.html"
+    },
+    "16209609752074389636:1125899908763069": {
+      "first_seen": "2026-08-22 20:58:26",
+      "source": "计算机",
+      "path": "计组\\7.2-7.3 - I-O 接口与方式：完整整理.md",
+      "title": "7.2–7.3 · I-O 接口与方式：完整整理",
+      "fingerprint": "31309f0a18219ef0fc759e866e43746a76a060cbb9531840640f85c6376a58b1",
+      "name": "io-interfaces-and-methods",
+      "slug": "coa/io-interfaces-and-methods.html",
+      "old_slugs": [
+        "计算机-19.html",
+        "coa-io-interfaces-and-methods.html"
+      ]
+    },
+    "16209609752074389636:1125899908763081": {
+      "first_seen": "2026-10-09 20:49:28",
+      "source": "计算机",
+      "path": "计组\\专题 - GPU 入门：从一次 ReLU 到 FlashAttention.md",
+      "title": "专题 - GPU 入门：从一次 ReLU 到 FlashAttention",
+      "fingerprint": "4fec9fb8dbccd453455568aa71017f9468f8a33ab54c3a527ee8e41e6e290215",
+      "name": "gpu-intro-relu-flashattention",
+      "slug": "coa/gpu-intro-relu-flashattention.html"
+    },
+    "16209609752074389636:1125899908763083": {
+      "first_seen": "2026-10-08 14:53:02",
+      "source": "计算机",
+      "path": "计网\\2.1a - 通信基础：基本概念与信道的极限容量.md",
+      "title": "2.1 · 通信基础：基本概念与信道的极限容量",
+      "fingerprint": "edb2f4b1a89b5f9f1c90eb0fe1f22a0f3c5bb8753fa6a2cf0a3b4ef2545776e7",
+      "name": "channel-capacity",
+      "slug": "net/channel-capacity.html",
+      "old_slugs": [
+        "计算机-62.html",
+        "net-channel-capacity.html"
+      ]
+    },
+    "16209609752074389636:1125899908763037": {
+      "first_seen": "2026-08-25 06:12:58",
+      "source": "数学",
+      "path": "凯莱哈密顿定理.md",
+      "title": "凯莱哈密顿定理",
+      "fingerprint": "4f31a61668879612f86702054aef9cd70eb90d8ccdb56c146f6acbd8620e0dfd",
+      "name": "cayley-hamilton",
+      "slug": "math/cayley-hamilton.html",
+      "old_slugs": [
+        "数学-2.html",
+        "math-cayley-hamilton.html"
+      ]
+    }
+  }
+}

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 790" role="img" aria-labelledby="title desc">
+<title id="title">DMA 每传一个字节前的许可判断、计数更新与循环</title>
+<desc id="desc">以设备三个字节写入主存为例，DMAC 每轮等待设备数据与总线许可；未获许可时暂存同一个字节并重试，获权后写一个字节、更新地址与剩余数、归还总线。仍有数据就取下一字节，整块传完才向 CPU 发一次完成中断。</desc>
+<defs>
+ <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#286da2"/></marker>
+ <style>
+ text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#263744;font-size:17px}
+ .h{font-size:25px;font-weight:700}.b{font-weight:700}.s{font-size:15px}
+ .line{fill:none;stroke:#286da2;stroke-width:3;marker-end:url(#ar);stroke-linejoin:round}
+ .loop{fill:none;stroke:#ce781d;stroke-width:3;marker-end:url(#ar);stroke-linejoin:round}
+ </style>
+</defs>
+<rect width="1180" height="790" fill="#f6f1e8"/>
+<text x="30" y="43" class="h">DMA 的循环：什么时候可以传，什么时候算传完</text>
+<text x="30" y="70" class="s">经典共享总线的“周期挪用”示例：设备 0 送来 A1、B2、C3，依次写 RAM 的 0x4000、0x4001、0x4002。</text>
+
+<!-- The flow has real yes/no branches and a visible return path. -->
+<rect x="33" y="105" width="170" height="112" rx="11" fill="#e5f1fa" stroke="#5589ad" stroke-width="2"/>
+<text x="48" y="136" class="b">CPU 配置一次</text>
+<text x="48" y="166" class="s">目的首址 0x4000</text><text x="48" y="193" class="s">数量 3；再启动</text>
+<path d="M203 162H255" class="line"/>
+<rect x="255" y="105" width="170" height="112" rx="11" fill="#fff0dc" stroke="#c68b49" stroke-width="2"/>
+<text x="270" y="136" class="b">外设交来字节</text>
+<text x="270" y="166" class="s">DREQ → DMAC</text><text x="270" y="193" class="s">本轮：A1 / B2 / C3</text>
+<path d="M425 162H457" class="line"/>
+<polygon points="535,106 613,161 535,216 457,161" fill="#eee5f8" stroke="#8767a7" stroke-width="2"/>
+<text x="492" y="155" class="s b">获总线</text><text x="511" y="177" class="s b">许可？</text>
+<text x="607" y="145" class="s b">允许</text><path d="M613 161H671" class="line"/>
+<rect x="671" y="105" width="194" height="112" rx="11" fill="#ffebd0" stroke="#c68b49" stroke-width="2"/>
+<text x="687" y="136" class="b">DMAC 写 1 字节</text>
+<text x="687" y="166" class="s">地址线：RAM 地址</text><text x="687" y="193" class="s">数据线：本轮字节</text>
+<path d="M865 161H912" class="line"/>
+<rect x="912" y="105" width="232" height="112" rx="11" fill="#e5f1fa" stroke="#5589ad" stroke-width="2"/>
+<text x="929" y="132" class="b">硬件更新两个寄存器</text>
+<text x="929" y="157" class="s">下一主存地址前移</text><text x="929" y="180" class="s">剩余字节数减少</text>
+<text x="929" y="203" class="s b">每字节后归还总线</text>
+<text x="546" y="235" class="s b">不允许</text>
+<path d="M535 216V260" class="loop"/>
+<rect x="452" y="260" width="200" height="80" rx="9" fill="#f8ede0" stroke="#c99560" stroke-width="2"/>
+<text x="469" y="286" class="s b">等待／让出总线</text>
+<text x="469" y="307" class="s">暂存本字节；不写 RAM</text>
+<text x="469" y="328" class="s">同一字节重试许可</text>
+<path d="M452 293H441V161H457" class="loop"/>
+
+<path d="M1030 217V248" class="line"/>
+<polygon points="1030,248 1111,297 1030,346 949,297" fill="#eee5f8" stroke="#8767a7" stroke-width="2"/>
+<text x="980" y="291" class="s b">还有未传</text><text x="1001" y="314" class="s b">字节？</text>
+<text x="799" y="287" class="s b">有：回到下一字节</text>
+<path d="M949 297H735V383H339V218" class="loop"/>
+<text x="1044" y="370" class="s b">无：整块完成</text>
+<path d="M1030 346V401" class="line"/>
+<rect x="897" y="401" width="250" height="65" rx="9" fill="#e9dff2" stroke="#9477ae" stroke-width="2"/>
+<text x="916" y="429" class="b">DMAC 报告整块完成</text>
+<text x="916" y="454" class="s">一次完成 IRQ → CPU</text>
+
+<!-- Concrete state trace: values live in their owners, so no mental arithmetic is needed. -->
+<text x="35" y="510" class="b">回路实际跑 3 次：下表的地址属于主存，A1 / B2 / C3 来自外设 0</text>
+<rect x="35" y="527" width="1110" height="197" rx="11" fill="#fffdfa" stroke="#a9a89d" stroke-width="2"/>
+<rect x="35" y="527" width="1110" height="48" rx="10" fill="#dbeaf4"/>
+<path d="M35 575H1145M35 624H1145M35 673H1145M133 527V724M305 527V724M535 527V724M760 527V724M965 527V724" stroke="#b6c7cb" stroke-width="1.5"/>
+<text x="55" y="558" class="s b">第几轮</text><text x="155" y="558" class="s b">外设交来的字节</text>
+<text x="327" y="558" class="s b">DMAC 写入的 RAM 地址</text><text x="555" y="558" class="s b">写完后下一地址</text>
+<text x="782" y="558" class="s b">写完后剩余数</text><text x="988" y="558" class="s b">接下来</text>
+<text x="69" y="607" class="b">1</text><text x="190" y="607" class="b">A1</text><text x="376" y="607" class="b">0x4000</text>
+<text x="612" y="607" class="b">0x4001</text><text x="842" y="607" class="b">2</text><text x="995" y="607" class="s">还没传完 ↺</text>
+<text x="69" y="656" class="b">2</text><text x="190" y="656" class="b">B2</text><text x="376" y="656" class="b">0x4001</text>
+<text x="612" y="656" class="b">0x4002</text><text x="842" y="656" class="b">1</text><text x="995" y="656" class="s">还没传完 ↺</text>
+<text x="69" y="705" class="b">3</text><text x="190" y="705" class="b">C3</text><text x="376" y="705" class="b">0x4002</text>
+<text x="612" y="705" class="b">0x4003</text><text x="842" y="705" class="b">0</text><text x="995" y="705" class="s b">完成 → IRQ</text>
+<text x="36" y="760" class="s">周期挪用会逐次申请／确认许可；若采用整块突发占用，获权后可连续传多个字节，仍要在全部传完后才发完成通知。</text>
+</svg>

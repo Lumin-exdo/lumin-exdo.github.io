@@ -1,0 +1,5 @@
+site/
+__pycache__/
+*.log
+vendor/
+site_daemon.log

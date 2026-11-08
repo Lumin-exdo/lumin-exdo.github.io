@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 820" width="1240" height="820" font-family="system-ui,'Microsoft YaHei','PingFang SC',sans-serif">
+<rect class="bg" width="1240" height="820" fill="#f7f8f3"/>
+<defs><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b968e"/></marker><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b42318"/></marker><marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker><marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c26a12"/></marker><marker id="an" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4f7d2b"/></marker><marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6b4c9a"/></marker></defs>
+<text x="24" y="34" font-size="20" fill="#1f2a24" text-anchor="start" font-weight="700">屋顶线：横轴是“每搬 1 字节做几次运算”，纵轴是能达到的速度（H100，对数坐标）</text>
+<path d="M130.0,720 L130.0,726" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="130.0" y="744" font-size="14" fill="#1f2a24" text-anchor="middle">0.01</text>
+<path d="M256.7,720 L256.7,726" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="256.66666666666663" y="744" font-size="14" fill="#1f2a24" text-anchor="middle">0.1</text>
+<path d="M383.3,720 L383.3,726" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="383.3333333333333" y="744" font-size="14" fill="#1f2a24" text-anchor="middle">1</text>
+<path d="M510.0,720 L510.0,726" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="510.0" y="744" font-size="14" fill="#1f2a24" text-anchor="middle">10</text>
+<path d="M636.7,720 L636.7,726" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="636.6666666666666" y="744" font-size="14" fill="#1f2a24" text-anchor="middle">100</text>
+<path d="M763.3,720 L763.3,726" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="763.3333333333334" y="744" font-size="14" fill="#1f2a24" text-anchor="middle">1000</text>
+<path d="M890.0,720 L890.0,726" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="890.0" y="744" font-size="14" fill="#1f2a24" text-anchor="middle">10000</text>
+<path d="M124,720.0 L130,720.0" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="120" y="725.0" font-size="14" fill="#1f2a24" text-anchor="end">0.1</text>
+<path d="M124,596.0 L130,596.0" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="120" y="601.0" font-size="14" fill="#1f2a24" text-anchor="end">1</text>
+<path d="M124,472.0 L130,472.0" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="120" y="477.0" font-size="14" fill="#1f2a24" text-anchor="end">10</text>
+<path d="M124,348.0 L130,348.0" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="120" y="353.0" font-size="14" fill="#1f2a24" text-anchor="end">100</text>
+<path d="M124,224.0 L130,224.0" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="120" y="229.0" font-size="14" fill="#1f2a24" text-anchor="end">1000</text>
+<path d="M124,100.0 L130,100.0" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="120" y="105.0" font-size="14" fill="#1f2a24" text-anchor="end">10000</text>
+<path d="M130,720 L890,720" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<path d="M130,720 L130,100" stroke="#1f2a24" stroke-width="1.2" fill="none"/>
+<text x="510.0" y="772" font-size="15" fill="#1f2a24" text-anchor="middle" font-weight="700">算术强度（FLOP / 字节）</text>
+<text x="40" y="84" font-size="15" fill="#1f2a24" text-anchor="start" font-weight="700">TFLOP/s</text>
+<path d="M190.2,720.0 L696.2,224.6" stroke="#c26a12" stroke-width="3" fill="none"/>
+<path d="M696.2,224.6 L890.0,224.6" stroke="#4f7d2b" stroke-width="3" fill="none"/>
+<path d="M548.1,369.6 L890.0,369.6" stroke="#2f5d3a" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+<path d="M444.3,348.0 L570.4,224.6" stroke="#2563eb" stroke-width="1.6" fill="none" stroke-dasharray="5 4"/>
+<text x="564.3797645511104" y="216.59565984194973" font-size="13" fill="#2563eb" text-anchor="end" font-weight="700">共享内存 33 TB/s</text>
+<path d="M307.1,348.0 L433.1,224.6" stroke="#6b4c9a" stroke-width="1.6" fill="none" stroke-dasharray="5 4"/>
+<text x="427.13059803410084" y="216.59565984194973" font-size="13" fill="#6b4c9a" text-anchor="end" font-weight="700">寄存器 400 TB/s</text>
+<path d="M449.6,660.8 L553.9,558.7 L890.0,558.7" stroke="#5e6b63" stroke-width="1.6" fill="none" stroke-dasharray="5 4"/>
+<text x="823.7686922644906" y="550.6722805376663" font-size="13" fill="#5e6b63" text-anchor="middle" font-weight="700">桌面 CPU（估算）</text>
+<text x="150" y="420" font-size="14.5" fill="#c26a12" text-anchor="start" font-weight="700">斜线：HBM 3.35 TB/s</text>
+<text x="150" y="444" font-size="14" fill="#c26a12" text-anchor="start">速度 = 3.35 × 强度</text>
+<text x="785.6382261470529" y="214.59565984194973" font-size="14.5" fill="#4f7d2b" text-anchor="middle" font-weight="700">BF16 Tensor Core 989</text>
+<text x="785.6382261470529" y="359.56672446509754" font-size="14.5" fill="#2f5d3a" text-anchor="middle" font-weight="700">FP32 普通通道 67</text>
+<path d="M696.2,472.0 L696.2,720" stroke="#4f7d2b" stroke-width="1.2" fill="none" stroke-dasharray="5 4"/>
+<text x="702.177455357234" y="708" font-size="14" fill="#4f7d2b" text-anchor="start" font-weight="700">拐点 295</text>
+<circle cx="268.9" cy="642.9" r="7" fill="#b42318"/>
+<text x="278.9419349810205" y="668.8776023144322" font-size="14" fill="#b42318" text-anchor="start" font-weight="700">ReLU float32</text>
+<circle cx="307.1" cy="605.5" r="7" fill="#b42318"/>
+<text x="319.07240109845804" y="627.5498828520986" font-size="14" fill="#b42318" text-anchor="start" font-weight="700">ReLU bf16</text>
+<circle cx="263.7" cy="648.0" r="7" fill="#6b4c9a"/>
+<text x="275.6988615276453" y="700.010295274052" font-size="14" fill="#6b4c9a" text-anchor="start" font-weight="700">sin²+cos² 分 5 个 kernel</text>
+<circle cx="357.5" cy="556.2" r="7" fill="#6b4c9a"/>
+<text x="369.4781355302495" y="578.2053217767659" font-size="14" fill="#6b4c9a" text-anchor="start" font-weight="700">sin²+cos² 融合</text>
+<circle cx="589.8" cy="328.8" r="7" fill="#2563eb"/>
+<text x="601.8112372242394" y="352.76344327633365" font-size="14" fill="#2563eb" text-anchor="start" font-weight="700">矩阵乘 N=128</text>
+<circle cx="780.5" cy="224.6" r="7" fill="#2563eb"/>
+<text x="790.4635678114275" y="258.5956598419497" font-size="14" fill="#2563eb" text-anchor="start" font-weight="700">矩阵乘 N=4096</text>
+<text x="920" y="110" font-size="14.5" fill="#1f2a24" text-anchor="start" font-weight="700">每个点的算法</text>
+<text x="920" y="136" font-size="14" fill="#b42318" text-anchor="start">ReLU float32：读 4 B 写 4 B，1 次运算</text>
+<text x="920" y="162" font-size="14" fill="#5e6b63" text-anchor="start">→ 1/8，最多 0.42 TFLOP/s</text>
+<text x="920" y="188" font-size="14" fill="#b42318" text-anchor="start">ReLU bf16：字节减半 → 1/4</text>
+<text x="920" y="214" font-size="14" fill="#6b4c9a" text-anchor="start">sin²+cos² 不融合：5 次运算，</text>
+<text x="920" y="240" font-size="14" fill="#6b4c9a" text-anchor="start">读写 11 个张量 44 B → 0.11</text>
+<text x="920" y="266" font-size="14" fill="#6b4c9a" text-anchor="start">融合：读 4 B 写 4 B → 0.63</text>
+<text x="920" y="292" font-size="14" fill="#2563eb" text-anchor="start">矩阵乘 N×N（bf16）：</text>
+<text x="920" y="318" font-size="14" fill="#2563eb" text-anchor="start">2N³ 次运算 / 3N²×2 B = N/3</text>
+<text x="920" y="344" font-size="14" fill="#5e6b63" text-anchor="start">N=128 → 43，仍在斜线下</text>
+<text x="920" y="370" font-size="14" fill="#5e6b63" text-anchor="start">N=4096 → 1365，顶到 989</text>
+<text x="920" y="406" font-size="14.5" fill="#1f2a24" text-anchor="start" font-weight="700">读法</text>
+<text x="920" y="432" font-size="14" fill="#1f2a24" text-anchor="start">点在斜线下：受内存带宽限制，</text>
+<text x="920" y="458" font-size="14" fill="#1f2a24" text-anchor="start">运算通道在等数据；</text>
+<text x="920" y="484" font-size="14" fill="#1f2a24" text-anchor="start">点在平线下：受运算能力限制。</text>
+<text x="920" y="510" font-size="14" fill="#1f2a24" text-anchor="start">拐点 = 989 ÷ 3.35 ≈ 295：</text>
+<text x="920" y="536" font-size="14" fill="#1f2a24" text-anchor="start">每字节至少做 295 次运算</text>
+<text x="920" y="562" font-size="14" fill="#1f2a24" text-anchor="start">才能喂饱 Tensor Core。</text>
+<text x="920" y="588" font-size="14" fill="#1f2a24" text-anchor="start">虚线斜线：数据已在共享内存、</text>
+<text x="920" y="614" font-size="14" fill="#1f2a24" text-anchor="start">寄存器里时的上限——越靠近</text>
+<text x="920" y="640" font-size="14" fill="#1f2a24" text-anchor="start">运算通道，拐点越靠左。</text>
+<text x="920" y="666" font-size="14" fill="#5e6b63" text-anchor="start">灰虚线：桌面 CPU，内存约 90 GB/s、</text>
+<text x="920" y="692" font-size="14" fill="#5e6b63" text-anchor="start">约 2 TFLOP/s（估算）。</text>
+</svg>

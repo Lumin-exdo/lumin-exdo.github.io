@@ -1,0 +1,55 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DMA 与 CPU 分享主存：三种时间安排</title></head><body data-figure-fit-static>
+<header><h1>DMA 和 CPU 怎样轮流访问主存</h1><small>蓝格＝这段时间由 CPU 访存；橙格＝由 DMA 访存。①②每格是一个主存存取周期；③每格是预先划定的半个 CPU 工作周期。</small></header>
+<div class="scroll"><svg viewBox="0 0 1080 760" role="img" aria-label="三种 DMA 与 CPU 共享主存的时间安排：停止 CPU 访存连续占用，周期挪用每次借一个主存存取周期，固定交替则在 1.2 微秒 CPU 工作周期内各给 DMA 和 CPU 0.6 微秒"><g id="draw"></g></svg></div>
+<footer id="note"><b>先分清两种“周期”：</b>周期挪用借走的是一次主存存取周期，具体时长随机器而异；固定交替示例把一个 1.2 μs 的 CPU 工作周期切成两个 0.6 μs 时隙，主存单次访问须短于 0.6 μs。这里只画教材的经典共享总线模型。</footer>
+<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+SvgStep.still(K=>{
+ const T=(x,y,s,c='')=>K.text(x,y,s,{c});
+ const R=(x,y,w,h,f,s)=>K.rect(x,y,w,h,{f,s,sw:1.5,rx:5});
+ const B='#2377ad',O='#df8421',GRID='#b9c7ca',X=236,W=94;
+ R(30,22,22,18,'#d8edfa',B);T(59,38,'CPU 占用','sm b');
+ R(191,22,22,18,'#ffe4bd',O);T(220,38,'DMA 占用','sm b');
+ K.arrow('M760 32H1035',{c:'#536b77',w:2});T(936,26,'时间向右','sm b');
+ function panel(y,num,title,unit){
+  R(20,y,1040,205,'#fffdf8','#d7c7ad');
+  T(40,y+34,num+' '+title,'lg');T(690,y+32,unit,'sm b');
+  T(65,y+100,'CPU','b');T(65,y+146,'DMA','b');
+  for(let i=0;i<8;i++){
+   R(X+i*W,y+69,W,36,'#fff',GRID);
+   R(X+i*W,y+115,W,36,'#fff',GRID);
+  }
+ }
+ function cell(y,i,who,label){let cy=who==='c'?y+69:y+115;
+  R(X+i*W+2,cy+2,W-4,32,who==='c'?'#d8edfa':'#ffe4bd',who==='c'?B:O);
+  if(label)T(X+i*W+12,cy+25,label,'sm b');
+ }
+ function oneCycle(y){K.line('M'+X+' '+(y+62)+'V'+(y+52)+'H'+(X+W)+'V'+(y+62),{c:'#657b85',w:2});T(X+6,y+47,'1 个主存存取周期','sm');}
+ panel(66,'①','停止 CPU 访存','①②每一小格 = 1 个主存存取周期');
+ oneCycle(66);
+ [0,1,6,7].forEach(i=>cell(66,i,'c'));
+ [2,3,4,5].forEach(i=>cell(66,i,'d'));
+ T(430,251,'DMA 连续占 4 格；这段期间 CPU 暂停访存','sm b');
+
+ panel(282,'②','周期挪用','请求何时来，才临时借 1 格');
+ oneCycle(282);
+ [0,1,3,4,6].forEach(i=>cell(282,i,'c'));
+ [2,5,7].forEach(i=>cell(282,i,'d'));
+ T(424,467,'每次只借 1 个主存存取周期；间隔并不固定','sm b');
+
+ R(20,498,1040,244,'#fffdf8','#d7c7ad');
+ T(40,531,'③ 固定交替访存','lg');
+ T(535,531,'例：1 个 CPU 工作周期 = 1.2 μs','sm b');
+ T(65,632,'CPU','b');T(65,678,'DMA','b');
+ for(let i=0;i<8;i++){
+  let x=X+i*W;
+  R(x,601,W,36,'#fff',GRID);R(x,647,W,36,'#fff',GRID);
+  if(i%2===0){cell(532,i,'d','DMA');T(x+14,594,'C1 · 0.6 μs','sm');}
+  else{cell(532,i,'c','CPU');T(x+14,594,'C2 · 0.6 μs','sm');}
+ }
+ for(let i=0;i<4;i++){
+  let x=X+2*i*W;
+  K.line('M'+x+' 574V565H'+(x+2*W)+'V574',{c:'#657b85',w:2});
+ }
+ T(390,725,'每两格合成 1.2 μs；主存一次访问须短于 0.6 μs','sm b');
+});
+</script></body></html>

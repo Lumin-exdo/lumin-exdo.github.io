@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="650" viewBox="0 0 1000 650" role="img" aria-labelledby="title desc">
+<title id="title">SATA 硬盘装进 USB 硬盘盒后，数据与供电各走哪条路</title>
+<desc id="desc">盒内 SATA 硬盘的 7 针数据口连接 USB-SATA 桥接芯片，15 针电源口连接供电电路。盒外 USB 线把数据接到电脑 USB 主机控制器，并可向供电电路供电；需要更多功率时可用独立电源。SATA 的数据协议不会未经转换直接走 USB 线。</desc>
+<defs>
+<marker id="dataArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#2778a6"/></marker>
+<marker id="powerArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#c46a21"/></marker>
+<style>
+text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#24354a}
+.h{font-size:24px;font-weight:700}.t{font-size:18px;font-weight:700}.s{font-size:15px}.m{font-size:14px}
+.data{fill:none;stroke:#2778a6;stroke-width:3;marker-start:url(#dataArrow);marker-end:url(#dataArrow)}
+.power{fill:none;stroke:#c46a21;stroke-width:3;marker-end:url(#powerArrow)}
+.card{fill:#fffdf9;stroke:#c8d1d9;stroke-width:2}
+</style>
+</defs>
+<rect width="1000" height="650" fill="#fbfaf7"/>
+<text x="24" y="39" class="h">一块 SATA 硬盘放进 USB 硬盘盒，里面发生了什么？</text>
+<line x1="27" y1="75" x2="75" y2="75" stroke="#2778a6" stroke-width="4"/><text x="84" y="80" class="s">数据／协议</text>
+<line x1="213" y1="75" x2="261" y2="75" stroke="#c46a21" stroke-width="4"/><text x="270" y="80" class="s">供电</text>
+<text x="535" y="80" class="s">数据双向；橙色箭头只表示电源流向硬盘</text>
+
+<rect x="20" y="109" width="708" height="404" rx="18" fill="#f9f5ed" stroke="#bcae95" stroke-width="2" stroke-dasharray="8 5"/>
+<text x="38" y="141" class="t">USB 硬盘盒内部</text>
+<text x="38" y="165" class="s">硬盘的 SATA 接口仍在盒内；桥接芯片负责转换协议</text>
+
+<rect x="48" y="204" width="173" height="231" rx="14" class="card"/>
+<rect x="67" y="226" width="135" height="121" rx="11" fill="#e8edf4" stroke="#7690aa" stroke-width="2"/>
+<circle cx="133" cy="286" r="42" fill="#f8fbfd" stroke="#7592aa" stroke-width="3"/>
+<circle cx="133" cy="286" r="8" fill="#7094af"/>
+<path d="M176 265L142 294" stroke="#a06a42" stroke-width="5" stroke-linecap="round"/>
+<text x="134" y="381" class="t" text-anchor="middle">SATA 硬盘</text>
+<text x="134" y="408" class="s" text-anchor="middle">内部仍按 SATA 工作</text>
+
+<rect x="250" y="234" width="112" height="75" rx="10" fill="#e8f3fb" stroke="#5a92b6" stroke-width="2"/>
+<text x="306" y="262" text-anchor="middle" class="t">数据口</text>
+<text x="306" y="288" text-anchor="middle" class="s">SATA · 7 针</text>
+<rect x="250" y="358" width="112" height="75" rx="10" fill="#fff0dd" stroke="#c58a4f" stroke-width="2"/>
+<text x="306" y="386" text-anchor="middle" class="t">电源口</text>
+<text x="306" y="412" text-anchor="middle" class="s">SATA · 15 针</text>
+
+<rect x="399" y="222" width="178" height="106" rx="12" fill="#e5f1fa" stroke="#548caf" stroke-width="2"/>
+<text x="488" y="256" text-anchor="middle" class="t">USB–SATA</text>
+<text x="488" y="283" text-anchor="middle" class="t">桥接芯片</text>
+<text x="488" y="310" text-anchor="middle" class="s">转换数据协议／信号</text>
+<rect x="399" y="352" width="178" height="80" rx="12" fill="#fff0dd" stroke="#c58a4f" stroke-width="2"/>
+<text x="488" y="384" text-anchor="middle" class="t">供电电路</text>
+<text x="488" y="411" text-anchor="middle" class="s">向 SATA 电源口供电</text>
+
+<rect x="613" y="221" width="94" height="215" rx="12" class="card"/>
+<text x="660" y="249" text-anchor="middle" class="t">盒外接口</text>
+<rect x="631" y="267" width="58" height="49" rx="7" fill="#e8f3fb" stroke="#5a92b6" stroke-width="2"/>
+<text x="660" y="298" text-anchor="middle" class="s">数据</text>
+<rect x="631" y="357" width="58" height="49" rx="7" fill="#fff0dd" stroke="#c58a4f" stroke-width="2"/>
+<text x="660" y="388" text-anchor="middle" class="s">电源</text>
+<text x="660" y="462" text-anchor="middle" class="m">例：USB 3 Micro-B</text>
+<text x="660" y="485" text-anchor="middle" class="m">也可采用 USB-C</text>
+
+<path d="M221 271H250" class="data"/><path d="M362 271H399" class="data"/><path d="M577 279H613" class="data"/>
+<path d="M613 384H577" class="power"/><path d="M399 394H362" class="power"/><path d="M250 394H221" class="power"/>
+
+<rect x="767" y="172" width="211" height="276" rx="16" fill="#f4f7fb" stroke="#9cb1c8" stroke-width="2"/>
+<text x="872" y="205" text-anchor="middle" class="t">电脑</text>
+<rect x="790" y="235" width="166" height="94" rx="11" fill="#e8f0fa" stroke="#658eb2" stroke-width="2"/>
+<text x="873" y="268" text-anchor="middle" class="t">USB 主机控制器</text>
+<text x="873" y="295" text-anchor="middle" class="s">接收数据并交给系统</text>
+<rect x="790" y="352" width="166" height="64" rx="11" fill="#fff0dd" stroke="#c58a4f" stroke-width="2"/>
+<text x="873" y="389" text-anchor="middle" class="s">USB 端口供电</text>
+<path d="M707 281H790" class="data"/>
+<path d="M790 384H707" class="power"/>
+<text x="769" y="151" class="s">盒外 USB 线</text>
+
+<rect x="38" y="530" width="295" height="91" rx="12" fill="#eaf3fb" stroke="#9abbd0"/>
+<text x="54" y="558" class="t">SATA 与 NVMe 是不同路径</text>
+<text x="54" y="584" class="s">SATA 6 Gb/s 级；NVMe SSD 走 PCIe</text>
+<text x="54" y="607" class="s">USB 盒内这块硬盘仍使用 SATA</text>
+<rect x="347" y="530" width="626" height="91" rx="12" fill="#fff6e9" stroke="#d9b88e"/>
+<text x="365" y="558" class="t">只有数据需要协议桥接，供电走另一条路</text>
+<text x="365" y="584" class="s">USB 供电不足时，硬盘盒可改用独立电源适配器。</text>
+<text x="365" y="607" class="s">桥接芯片处理传输；供电电路向硬盘的 15 针口送电。</text>
+</svg>

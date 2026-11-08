@@ -1,0 +1,79 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CPU 核心与 SM</title><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body>
+<header><h1>CPU 核心和 GPU 的 SM：晶体管花在哪</h1><small>同一件事：对 x 做 ReLU（负数换成 0）。先盯住 x 开头的 −3、2、−1、5。每个部件里画的是它此刻装着的内容；部件大小为示意。</small><nav id="steps"></nav></header>
+<div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 680" role="img" aria-label="CPU 核心的分支预测表、乱序执行窗口、缓存行、向量寄存器与向量单元；H100 SM 分区的 warp 槽、寄存器堆、32 条通道；等内存时两边的时间线"><g id="draw"></g></svg></div><footer id="note"></footer>
+<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+const steps=[
+ {b:'① CPU 的一个核心',t:'CPU 核心：多数电路在帮一条线程少等',n:'x[0..15] 这一行已在 L1 缓存里，被装进向量寄存器 v1，向量单元一条 <code>max</code> 指令让 16 条通道同时算出结果（图里只写前 4 个）。核心的大部分电路是左上的<b>分支预测表</b>、右上的<b>乱序执行窗口</b>和中间的<b>缓存</b>：窗口里第 1 条指令在等内存，后面不依赖它的第 2、3 条已经先做完了。'},
+ {b:'② GPU 的一个 SM',t:'SM 的一个分区：一条指令，32 条通道，16 个 warp 轮流',n:'H100 有 132 个 <b>SM</b>，每个 SM 有 4 个一样的分区。分区里的调度器每个周期从它的 warp 槽里挑一个“就绪”的 warp，发一条指令；这条指令同时送到 32 条通道，32 个线程各用自己寄存器里的数。一组同时接受同一条指令的 32 个线程叫 <b>warp</b>。寄存器堆里每个线程都有自己的一份寄存器（图里是 W0 的 32 个线程的 r0–r2）。'},
+ {b:'③ 等内存时',t:'等内存的 350 ns：CPU 线程停着，SM 每周期换一个 warp',n:'时间轴中间断开：左段放大 0–10 ns，右段放大 350–360 ns。CPU 线程缓存没命中、窗口里又没有别的事可做，就停着等。SM 分区里 W0 发出读指令后，下一个周期调度器就给 W1 发，16 个 warp 在 8 ns 内都发出了读；约 350 ns 后数据陆续回来，再一个个算 max。换 warp 时不用保存寄存器，因为每个 warp 的寄存器一直放在寄存器堆里。'}
+];
+const P={ctl:['#fdeccf','#c4861e'],cache:['#e3f2e6','#3e8c55'],reg:['#ece5f8','#7a5bb0'],alu:['#fbe0dc','#b8473a'],tc:['#fff4d4','#b98a10'],wait:['#f1efea','#a9a49a'],ok:['#dff0e2','#3e8c55']};
+const cell=(K,x,y,w,h,t,c,o={})=>{K.rect(x,y,w,h,{f:c[0],s:c[1],sw:o.sw||1.2,rx:3});K.text(x+w/2,y+h/2+5,t,{a:'middle',c:o.c||'sm mono',size:o.size||14,fill:o.fill});};
+SvgStep.start({steps,draw(k,K){
+ if(k===0){
+  K.rect(14,14,972,652,{f:'#fbfaf7',s:'#3d6fae',sw:2.4,rx:12});K.text(28,42,'一个 CPU 核心（桌面 CPU，约 4 GHz；整颗有十几个这样的核心）',{c:'b'});
+  // branch predictor table
+  K.rect(28,58,420,190,{f:P.ctl[0],s:P.ctl[1],sw:1.8,rx:8});K.text(40,82,'分支预测表',{c:'sm b'});
+  ['分支指令地址','最近 3 次','预测'].forEach((h,i)=>K.text([44,214,354][i],108,h,{c:'sm',size:13}));
+  [['0x4012（循环）','跳 跳 跳','跳'],['0x40a8（if）','不 跳 不','不'],['0x4130（if）','跳 不 跳','跳']].forEach((r,j)=>{const y=118+j*40;
+   cell(K,40,y,164,32,r[0],['#fff','#d9b77c'],{size:13});cell(K,210,y,134,32,r[1],['#fff','#d9b77c'],{size:13});cell(K,350,y,84,32,r[2],['#fff','#d9b77c'],{size:13,c:'sm b'});});
+  // OoO window
+  K.rect(462,58,510,190,{f:P.ctl[0],s:P.ctl[1],sw:1.8,rx:8});K.text(474,82,'乱序执行窗口（能装约 500 条，这里画 5 条）',{c:'sm b'});
+  [['1','ld   v1 ← x[0..15]','等内存',P.wait],['2','add  r3 ← r3 + 64','已做完',P.ok],['3','cmp  r3, r9','已做完',P.ok],['4','ld   v2 ← x[16..31]','等内存',P.wait],['5','max  v3 ← v1, 0','等 1 号',P.wait]].forEach((r,j)=>{const y=92+j*30;
+   K.text(482,y+20,r[0],{c:'sm mono',size:13});cell(K,500,y,330,26,r[1],['#fff','#d9b77c'],{size:13});cell(K,840,y,118,26,r[2],r[3],{size:13,c:'sm b'});});
+  // caches
+  K.rect(28,262,944,150,{f:P.cache[0],s:P.cache[1],sw:1.8,rx:8});K.text(40,286,'缓存：L1 48 KB ＋ L2 2 MB（核心外还有共用的 L3，几十 MB）。每行 64 字节，存一段内存的副本',{c:'sm b'});
+  const lines=[['0x7000_0000','−3 2 −1 5 4 −2 … （x[0..15]）',true],['0x5f20_0040','程序里别的数据',false],['0x7000_0040','x[16..31]：还没来',false]];
+  lines.forEach((r,j)=>{const y=298+j*36;cell(K,40,y,150,30,r[0],['#fff','#93c39f'],{size:13});cell(K,196,y,420,30,r[1],r[2]?['#fff7c9','#b98a10']:['#fff','#93c39f'],{size:13});});
+  K.text(632,323,'← 命中：x[0..15] 已在缓存',{c:'sm',fill:'#3e8c55'});K.text(632,395,'← 没命中：要去内存取（约 90 ns）',{c:'sm',fill:'#8f8a80'});
+  // vector register and units
+  K.rect(28,426,944,86,{f:P.reg[0],s:P.reg[1],sw:1.8,rx:8});K.text(40,450,'向量寄存器 v1（16 个 float32）',{c:'sm b'});
+  [-3,2,-1,5].forEach((v,i)=>cell(K,40+i*52,462,48,36,String(v),['#fff','#7a5bb0'],{size:15,c:'b mono'}));for(let i=4;i<16;i++)cell(K,40+i*52,462,48,36,'·',['#fff','#c7b8e3']);
+  K.arrow('M560 330V458',{c:'#b98a10',w:2.4});K.text(570,446,'整行装入 v1',{c:'sm',fill:'#b98a10'});
+  K.rect(28,526,944,128,{f:P.alu[0],s:P.alu[1],sw:1.8,rx:8});K.text(40,550,'向量运算单元：16 条通道，一条 max 指令同时算',{c:'sm b'});
+  [0,2,0,5].forEach((v,i)=>cell(K,40+i*52,566,48,36,String(v),['#fff','#b8473a'],{size:15,c:'b mono'}));for(let i=4;i<16;i++)cell(K,40+i*52,566,48,36,'·',['#fff','#e3aaa2']);
+  for(let i=0;i<4;i++)K.arrow(`M${64+i*52} 500V562`,{c:'#b8473a',w:1.8});
+  K.text(40,632,'核心里一共两三个这样的单元：真正做运算的电路只占一小块。',{c:'sm'});
+ }else if(k===1){
+  K.rect(14,14,972,652,{f:'#fbfaf7',s:'#3e8c55',sw:2.4,rx:12});K.text(28,42,'H100 的一个 SM（约 1.98 GHz）：放大分区 0，另外 3 个分区一模一样',{c:'b'});
+  // warp slots
+  K.rect(28,56,944,104,{f:P.ctl[0],s:P.ctl[1],sw:1.8,rx:8});K.text(40,80,'调度器的 warp 槽（这个分区住着 16 个 warp）：本周期挑 W3 发指令',{c:'sm b'});
+  for(let w=0;w<16;w++){const x=40+w*58,st=w===3?'发':w<3?'等':'就绪',c=w===3?['#f6c96b','#b98a10']:w<3?P.wait:P.ok;cell(K,x,92,54,28,'W'+w,c,{size:13,c:'sm b'});K.text(x+27,142,st,{a:'middle',c:'sm',size:13});}
+  // register file grid
+  K.rect(28,172,944,250,{f:P.reg[0],s:P.reg[1],sw:1.8,rx:8});K.text(40,196,'寄存器堆 64 KB：每个线程有自己的一份。下面是 W0 的 32 个线程的三个寄存器（W1–W15 的在同一个堆里别处）',{c:'sm b'});
+  const th=['线程 0','1','2','3','4','…','31'];th.forEach((t,i)=>K.text(130+i*118+40,226,t,{a:'middle',c:'sm',size:13}));
+  const rows=[['r0：下标 i','0','1','2','3','4','…','31'],['r1：x[i]','−3','2','−1','5','4','…','1.1'],['r2：y[i]','0','2','0','5','4','…','1.1']];
+  rows.forEach((r,j)=>{const y=236+j*44;K.text(40,y+24,r[0],{c:'sm mono',size:13});for(let i=0;i<7;i++)cell(K,130+i*118,y,110,34,r[i+1],['#fff',j===2?'#b8473a':'#a891d4'],{size:14,c:'sm b mono'});});
+  K.text(40,394,'1 条指令 “r2 ← max(r1, 0)”：32 个线程同时执行，各用各的 r1，各写各的 r2',{c:'sm',fill:'#7a5bb0'});
+  K.text(40,414,'整个 SM 的寄存器堆 256 KB，最多同时放 2048 个线程（64 个 warp）的寄存器',{c:'sm',size:13});
+  // lanes
+  K.rect(28,434,640,120,{f:P.alu[0],s:P.alu[1],sw:1.8,rx:8});K.text(40,458,'32 条 FP32 运算通道：通道 k 算线程 k 的数',{c:'sm b'});
+  for(let i=0;i<32;i++){const x=40+i*19.4;K.rect(x,470,16,30,{f:i<4?'#f7b6ab':'#fff',s:'#b8473a',sw:1,rx:2});}
+  K.text(40,522,'通道 0–3 正在算 −3、2、−1、5 → 0、2、0、5',{c:'sm',size:14});K.text(40,544,'一份取指、调度电路带 32 条通道：省下的面积放通道和寄存器',{c:'sm',size:13});
+  K.rect(682,434,290,120,{f:P.tc[0],s:P.tc[1],sw:1.8,rx:8});K.text(694,458,'Tensor Core',{c:'sm b'});
+  for(let r=0;r<4;r++)for(let c=0;c<4;c++)K.rect(700+c*20,470+r*18,18,16,{f:'#fff',s:'#d6b86a',sw:1,rx:2});K.text(790,486,'一条指令做一个',{c:'sm',size:13});K.text(790,506,'小矩阵乘加',{c:'sm',size:13});K.text(694,544,'ReLU 用不上，矩阵乘才用',{c:'sm',size:13});
+  K.rect(28,566,944,86,{f:P.cache[0],s:P.cache[1],sw:1.8,rx:8});K.text(40,590,'4 个分区共用：共享内存 / L1 缓存 256 KB',{c:'sm b'});
+  K.text(40,616,'整块 H100：132 个 SM × 4 分区 × 32 条 = 16 896 条 FP32 通道；Tensor Core 528 个',{c:'sm'});K.text(40,640,'FP32 约 67 TFLOP/s；Tensor Core 做 bf16 矩阵乘约 989 TFLOP/s',{c:'sm'});
+ }else{
+  const A0=170,A1=470,B0=560,B1=930; // px ranges
+  const ta=t=>A0+t/10*(A1-A0), tb=t=>B0+(t-350)/10*(B1-B0);
+  K.text(20,40,'时间（ns）。中间断开：左段 0–10 ns，右段 350–360 ns，两段刻度相同',{c:'b'});
+  for(let t=0;t<=10;t+=2){K.line(`M${ta(t)} 58V660`,{c:'#ece6da'});K.text(ta(t),74,String(t),{a:'middle',c:'sm mut',size:13});}
+  for(let t=350;t<=360;t+=2){K.line(`M${tb(t)} 58V660`,{c:'#ece6da'});K.text(tb(t),74,String(t),{a:'middle',c:'sm mut',size:13});}
+  K.line('M505 60L520 70L505 80L520 90',{c:'#8f8a80',w:1.6});K.line('M525 60L540 70L525 80L540 90',{c:'#8f8a80',w:1.6});K.text(515,112,'340 ns',{a:'middle',c:'sm mut',size:13});
+  const rowY=y=>y;
+  K.text(20,124,'CPU 线程',{c:'sm b'});K.text(20,146,'（设同样等 350 ns）',{c:'sm mut',size:12});
+  K.rect(ta(0),104,ta(1)-ta(0),26,{f:'#f6c96b',s:'#b98a10',sw:1});K.text(ta(1)+6,122,'发出读',{c:'sm',size:13});
+  K.rect(ta(1),136,A1-ta(1),18,{f:P.wait[0],s:P.wait[1],dash:'5 4',sw:1});K.rect(B0,136,tb(352)-B0,18,{f:P.wait[0],s:P.wait[1],dash:'5 4',sw:1});K.text(ta(3),150,'停着等数据',{c:'sm',size:13});
+  K.rect(tb(352),104,tb(353)-tb(352),26,{f:'#f7b6ab',s:'#b8473a',sw:1});K.text(tb(353)+6,122,'数据到，算',{c:'sm',size:13});
+  K.text(20,196,'SM 分区 0',{c:'sm b'});K.text(20,218,'每行一个 warp',{c:'sm mut',size:13});
+  for(let w=0;w<16;w++){const y=180+w*28,t0=w*0.5;
+   K.text(A0-10,y+17,'W'+w,{a:'end',c:'sm mono',size:13});
+   K.rect(ta(t0),y,ta(t0+0.5)-ta(t0),22,{f:'#f6c96b',s:'#b98a10',sw:1});
+   K.rect(ta(t0+0.5),y+6,A1-ta(t0+0.5),10,{f:P.wait[0],s:P.wait[1],sw:1,dash:'4 3'});
+   K.rect(B0,y+6,tb(350+t0)-B0,10,{f:P.wait[0],s:P.wait[1],sw:1,dash:'4 3'});
+   K.rect(tb(350+t0),y,tb(350.5+t0)-tb(350+t0),22,{f:'#f7b6ab',s:'#b8473a',sw:1});}
+  K.text(ta(0),652,'黄：发“读 x”　　灰虚线：等数据　　红：数据到了，算 max、写 y',{c:'sm',size:14});
+ }
+}});
+</script></body></html>

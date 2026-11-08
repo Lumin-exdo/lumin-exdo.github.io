@@ -1,0 +1,226 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>传输方式：异步与同步</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>字节从哪里起算：异步（起止位）与同步（时钟）</h1><small>先看不知道起点会切错，再看异步、同步两种办法怎样给 B 一个起点。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 404" role="img" aria-label="传输方式：异步与同步"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-yl"><summary><h2>为什么需要这两种办法：切错一位，整个字节都错</h2><span class="tag">0x41 变成 0x82</span></summary><div class="body">
+<p>A 连发 0x41、0x42，线上是 <code>0100000101000010</code>。若 B 不知道起点，从第 2 位起 8 位一组切，读到 <code>10000010</code>＝0x82，而不是 0x41。异步、同步是两种给 B 起点的办法，它们描述的是字节与字节之间怎样对齐，是通信方式，不是传输方式；传输方式只有串行和并行两种。</p>
+</div></details>
+<details class="note c-or"><summary><h2>异步：每个字节自带起止位</h2><span class="tag">10 位里 8 位是数据</span></summary><div class="body">
+<ol class="steps">
+<li><div>线路空闲时保持高电平 1（图中灰色的 1）。</div></li>
+<li><div>新字节来之前，先发 1 个<b>起始位 0</b>：线上从 1 跳到 0（红箭头处），B 的网卡就知道一个字节开始了。</div></li>
+<li><div>从这一跳变起，B 每隔一格在格子中央取一次样，依次读到 8 位数据（图中 0x41＝<code>01000001</code>）。</div></li>
+<li><div>再读到 1 个<b>停止位 1</b>，这个字节结束，线路回到空闲的 1，等下一个 1→0 跳变（图中紧接着的 0x42）。字节与字节之间可以隔任意长时间。</div></li>
+<li><div class="ans">代价：8 位数据要用 10 位，有效比例 $8\div10=80\%$。</div></li>
+</ol>
+<p>图里两个字节为了易读，按高位先发的次序画；真实串口（异步）是低位先发。起止位、10 位一帧的格式是串口的做法，用来说明异步的原理；以太网等同步传输的具体帧格式见第 3 章。</p>
+</div></details>
+<details class="note c-gr"><summary><h2>同步：连续发，靠同一个时钟对齐</h2><span class="tag">头尾只付一次</span></summary><div class="body">
+<ol class="steps">
+<li><div>收发双方用同一个时钟节拍（专门的时钟线，或把时钟藏在编码里，见 2.1b 的曼彻斯特编码）。图中同步一行上沿的竖线每格一个，就是时钟的节拍。</div></li>
+<li><div>字节紧挨着连续发，不加起止位；开头先发同步头、结尾发同步尾（图中都是 <code>01111110</code>，各 8 位）。</div></li>
+<li><div>B 看到同步头，就知道从下一格起每 8 位是一个字节，直到同步尾。</div></li>
+</ol>
+<p>发 $n$ 个字节要多花 16 位，有效比例是 $\dfrac{8n}{8n+16}$：</p>
+<table><tr><th>字节数 $n$</th><th>总位数</th><th>有效比例</th><th>与异步 80% 比</th></tr>
+<tr><td>3（图中）</td><td>$24+16=40$</td><td>$24\div40=60\%$</td><td>更低</td></tr>
+<tr><td>8</td><td>$64+16=80$</td><td>$64\div80=80\%$</td><td>相同</td></tr>
+<tr><td>1000</td><td>$8000+16=8016$</td><td>$\approx99.8\%$</td><td>高得多</td></tr></table>
+<p>代价是必须保证收发时钟一致，设备更复杂。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 404
+const ST = [
+ { b: '① 起点', t: '连发 0x41、0x42，B 从哪一位起算一个字节？', n: '串行传输只在线上送 0 和 1，字节之间没有间隔标记；B 需要一个可靠的起点。' },
+ { b: '② 切错', t: '从第 2 位起切，0x41 读成 0x82', n: '正确切法是前 8 位 01000001＝0x41；若 B 从第 2 位起 8 位一组，读到 10000010＝0x82。' },
+ { b: '③ 异步', t: '每个字节前加起始位 0、后加停止位 1', n: '空闲时线上保持 1；1→0 的跳变就是新字节开始的信号；一个字节 10 位，其中 8 位是数据。' },
+ { b: '④ 取样', t: '从跳变起每隔一格取一次样', n: 'B 的网卡从跳变起每隔一格取样：数满 8 位数据、1 位停止位，回到空闲等下一次跳变。' },
+ { b: '⑤ 同步', t: '连续发，收发双方靠同一个时钟对齐', n: '字节紧挨着发，不加起止位；上沿的竖线是时钟节拍；开头同步头、结尾同步尾 01111110，各只付一次。' },
+ { b: '⑥ 比例', t: '异步 80%；同步看字节数，超过 8 个字节才更高', n: '发 n 个字节同步要多花 16 位：n＝3 是 60%，n＝8 是 80%，n＝1000 约 99.8%；代价是收发时钟必须一致。' }
+];
+const bc = b => b === '1' ? P.A : P.B, Yp = P.Y, GY = P.W, PUp = P.U;
+const BITS16 = '0100000101000010';
+function draw(a0, K) {
+  const at = a0 + 1;
+  // ---- R_a：线上 16 位 ----
+  G(at <= 2 ? 2 : 1, () => {
+    K.rect(0, 0, 700, 122, { f: C.BOX, s: C.BORD, rx: 10, sw: 1.4 });
+    T(K, 12, 24, '线上连续送来的 16 位（A 连发 0x41、0x42）', { size: 17, c: 'b' });
+    const cw = 41, x0 = 22;
+    [...BITS16].forEach((b, i) => N21.cell(K, x0 + i * cw, 34, cw - 3, 28, b, bc(b), { size: 16, dy: 6, rx: 3 }));
+    if (at >= 2) {
+      K.line(`M${x0} 68v6H${x0 + 8 * cw - 3}v-6`, { c: C.GRd, w: 2 }); T(K, x0 + 4 * cw, 86, '正确：前 8 位＝0x41', { a: 'middle', size: 15, c: 'b', fill: C.GRd });
+      K.line(`M${x0 + 8 * cw} 68v6H${x0 + 16 * cw - 3}v-6`, { c: C.GRd, w: 2 }); T(K, x0 + 12 * cw, 86, '后 8 位＝0x42', { a: 'middle', size: 15, c: 'b', fill: C.GRd });
+      K.rect(x0 + cw - 3, 30, 8 * cw - 1, 36, { f: 'none', s: C.RD, sw: 3, rx: 5, dash: '7 4' });
+      K.line(`M${x0 + cw} 92v6H${x0 + 9 * cw - 3}v-6`, { c: C.RD, w: 2.4 }); T(K, x0 + 5 * cw, 113, 'B 从第 2 位起切：10000010＝0x82', { a: 'middle', size: 15, c: 'b', fill: C.RD });
+    } else { T(K, 350, 98, '字节之间没有分隔，B 不知道从哪一位起算', { a: 'middle', size: 16, c: 'b', fill: C.RD }); }
+  });
+  // ---- R_b：异步 ----
+  const cw = 22, ya = 160;
+  G(at < 3 ? 0 : (at <= 4 ? 2 : 1), () => {
+    K.rect(0, 126, 700, 102, { f: '#fbf5e8', s: C.BORD, rx: 10, sw: 1.4 });
+    T(K, 12, 148, '异步：每个字节自带起止位', { size: 17, c: 'b', fill: C.ORd }); T(K, 688, 148, '10 位里 8 位是数据（80%）', { a: 'end', size: 16, c: 'b', fill: C.RD });
+    const idle = (x, n) => { for (let i = 0; i < n; i++) N21.cell(K, x + i * cw, ya, cw - 1, 24, '1', GY, { size: 15, dy: 6, rx: 3 }); };
+    const frame = (x, byte, lab) => { N21.cell(K, x, ya, cw - 1, 24, '0', Yp, { size: 15, dy: 6, rx: 3 }); [...byte].forEach((b, i) => N21.cell(K, x + (i + 1) * cw, ya, cw - 1, 24, b, bc(b), { size: 15, dy: 6, rx: 3 })); N21.cell(K, x + 9 * cw, ya, cw - 1, 24, '1', Yp, { size: 15, dy: 6, rx: 3 });
+      T(K, x + cw / 2, ya + 44, '起', { a: 'middle', size: 15 }); T(K, x + 5 * cw, ya + 44, '数据 ' + lab, { a: 'middle', size: 15, c: 'b' }); T(K, x + 9.5 * cw, ya + 44, '止', { a: 'middle', size: 15 }); };
+    const f1 = 12 + 2 * cw, f2 = f1 + 10 * cw + 3 * cw;
+    idle(12, 2); frame(f1, '01000001', '0x41'); idle(f1 + 10 * cw, 3); frame(f2, '01000010', '0x42'); idle(f2 + 10 * cw, 3);
+    T(K, f1 + 11.5 * cw, ya + 44, '空闲＝1', { a: 'middle', size: 15, fill: C.MUT }); T(K, 12 + cw, ya + 44, '空闲', { a: 'middle', size: 15, fill: C.MUT });
+    K.arrow(`M${f1 - 2} ${ya + 60}V${ya + 28}`, { c: C.RD, w: 2.4 });
+    if (at === 3) T(K, f1 + 8, ya + 66, '1→0 跳变：新字节开始', { size: 15, c: 'b', fill: C.RD });
+    if (at === 4) { for (let i = 0; i < 10; i++) { const cx = f1 + (i + 0.5) * cw; K.line(`M${cx} ${ya - 3}V${ya + 24}`, { c: C.RD, w: 1.2, dash: '2 3' }); N21.dot(K, cx, ya + 12, 3.2, C.RD, '#fff', 1.2); }
+      T(K, f1 + 8, ya + 66, '从跳变起每隔一格取样 10 次：起始位、8 位数据、停止位', { size: 15, c: 'b', fill: C.RD }); }
+  });
+  // ---- R_c：同步 ----
+  G(at < 5 ? 0 : (at === 5 ? 2 : 1), () => {
+    K.rect(0, 230, 700, 80, { f: C.BOX, s: C.BORD, rx: 10, sw: 1.4 });
+    T(K, 12, 252, '同步：连续发，共用时钟（上沿竖线＝节拍）', { size: 17, c: 'b', fill: C.BLd }); T(K, 688, 252, '头尾只付一次', { a: 'end', size: 16, c: 'b', fill: C.GRd });
+    const cs = 16.5, ys = 272; let xs = 14;
+    for (let i = 0; i <= 40; i++) K.line(`M${xs + i * cs} ${ys - 12}v8`, { c: C.MUT, w: 1.4 });
+    const run = (s, c, lab) => { [...s].forEach((b, i) => N21.cell(K, xs + i * cs, ys, cs - 1, 22, b, c || bc(b), { size: 15, dy: 6, rx: 2 })); T(K, xs + s.length * cs / 2, ys + 40, lab, { a: 'middle', size: 15, c: 'b' }); xs += s.length * cs; };
+    run('01111110', PUp, '同步头'); run('01000001', null, '0x41'); run('01000010', null, '0x42'); run('01000011', null, '0x43'); run('01111110', PUp, '同步尾');
+  });
+  // ---- R_d：有效比例 ----
+  G(at === 6 ? 2 : 0, () => {
+    K.rect(0, 316, 700, 88, { f: '#fbf5e8', s: C.BORD, rx: 10, sw: 1.4 });
+    const bars = [['异步 每字节 10 位', 8, 2, '80%'], ['同步 n＝3：40 位', 24, 16, '60%'], ['同步 n＝8：80 位', 64, 16, '80%'], ['同步 n＝1000：8016 位', 8000, 16, '99.8%']];
+    bars.forEach(([l, d, o, pct], i) => { const y = 324 + i * 20, w = 300; T(K, 12, y + 15, l, { size: 15 });
+      K.rect(190, y, w * d / (d + o), 17, { f: P.G[0], s: P.G[1], sw: 1.6, rx: 2 }); K.rect(190 + w * d / (d + o), y, w * o / (d + o), 17, { f: P.R[0], s: P.R[1], sw: 1.6, rx: 2 });
+      T(K, 504, y + 15, pct, { size: 16, c: 'b', fill: C.INK }); });
+    T(K, 570, 344, '绿＝数据位', { size: 15, fill: C.GRd }); T(K, 570, 364, '红＝起止位／头尾', { size: 15, fill: C.RD });
+  });
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

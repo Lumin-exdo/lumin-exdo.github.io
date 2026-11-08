@@ -1,0 +1,189 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>带宽：频率范围的宽度与数据速率</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>带宽的两个意思：Hz 与 b/s，以及与频分复用的关系</h1><small>同一条电话线：频率范围的宽度（Hz）、切成三路、每路能送的数据速率（b/s）。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 404" role="img" aria-label="带宽：频率范围的宽度与数据速率"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>“带宽”的两种含义</h2><span class="tag">Hz 与 b/s</span></summary><div class="body">
+<table><tr><th></th><th>频率带宽（模拟通信）</th><th>数据速率（计算机网络）</th></tr>
+<tr><td>说的是</td><td>信道能通过的频率范围的宽度：最高频率−最低频率</td><td>线路能传输数据的能力：最大数据传输速率</td></tr>
+<tr><td>单位</td><td>赫兹（Hz）</td><td>比特每秒（b/s）</td></tr>
+<tr><td>例</td><td>电话线 $3300-300=3000$ Hz</td><td>家里的“千兆宽带”＝1 Gb/s</td></tr>
+<tr><td>本讲中的记号</td><td>$W$</td><td>极限数据传输速率 $2W\log_2V$、$W\log_2(1+S/N)$</td></tr></table>
+<p>两者的关系就是极限容量：Hz 的带宽越大，b/s 的上限越高。“千兆宽带”里的“宽带”和“带宽”都是第二种，与 Hz 无关。</p>
+</div></details>
+<details class="note c-or"><summary><h2>频率带宽 $W$ 到底指哪一段</h2><span class="tag">就是图里蓝条的宽度</span></summary><div class="body">
+<p>$W$ 是信道<b>通过</b>的最高频率与最低频率之差，不是信号本身的频率，也不是传输距离。电话线通过 300～3300 Hz，$W=3000$ Hz。奈氏准则里的“理想低通”指通过 0～$W$ 的信道，宽度同样是 $W$：本讲按 0～3000 Hz 算，与 300～3300 Hz 宽度相同。</p>
+</div></details>
+<details class="note c-gr"><summary><h2>把一段频率分着用：频分复用</h2><span class="tag">每份几 kb/s</span></summary><div class="body">
+<p>3000 Hz 切成三份，每份 1000 Hz，各传一路。设信噪比 30 dB（倍数 1000），每份香农极限 $1000\times\log_21001\approx9.97$ kb/s，三份合计约 29.9 kb/s，与整条线 $3000\times\log_21001\approx29.9$ kb/s 相同：切开用不增加总容量，好处是多路互不干扰。每一路各是一路频带传输，叫法见左栏 5。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 404
+const ST = [
+ { b: '① 频率带宽', t: '线能通过的频率范围的宽度，单位 Hz', n: '电话线只让 300～3300 Hz 的信号通过，宽度 3300−300＝3000 Hz：这是第一种“带宽”，说的是线的频率范围。' },
+ { b: '② 分着用', t: '频分复用：把这段范围切成三份，各传一路', n: '3000 Hz 切成三份，每份 1000 Hz，各传一路，互不干扰；这种“多路共用一条线”的做法，有的教材叫宽带传输。' },
+ { b: '③ 每份能送多快', t: '由奈氏准则、香农定理给出', n: '设信噪比 30 dB，香农：每份最多约 $1000\\log_2 1001\\approx10$ kb/s；三份合计约 30 kb/s，正是整条线的极限 29.9 kb/s。' },
+ { b: '④ 另一种带宽', t: '“千兆宽带”的带宽是 b/s，不是 Hz', n: '第二种“带宽”是数据速率，单位 b/s：线能送多少数据。Hz 越宽，b/s 的上限越高；实际速率不得超过它。' }
+];
+const FX = f => 40 + f * 0.15;   // Hz → x
+const BANDS = [[300, 1300, P.G, '路 1'], [1300, 2300, P.B, '路 2'], [2300, 3300, P.A, '路 3']];
+function draw(a0, K) {
+  const at = a0 + 1;
+  // 频率轴
+  K.line(`M${FX(0)} 100H${FX(4000)}`, { c: C.MUT, w: 1.8 });
+  [0, 1000, 2000, 3000, 4000].forEach(f => { K.line(`M${FX(f)} 100v6`, { c: C.MUT, w: 1.4 }); T(K, FX(f), 124, f === 4000 ? '4000 Hz' : (f ? f + '' : '0'), { a: 'middle', size: 15, c: 'mono', fill: C.MUT }); });
+  [300, 3300].forEach(f => { K.line(`M${FX(f)} 36V104`, { c: C.BL, w: 1.4, dash: '4 3' }); T(K, FX(f), 32, f + ' Hz', { a: 'middle', size: 15, c: 'b mono', fill: C.BLd }); });
+  G(at === 1 ? 2 : 1, () => {
+    if (at === 1) { K.rect(FX(300), 44, FX(3300) - FX(300), 44, { f: C.BLb, s: C.BL, sw: 2.4, rx: 4 }); T(K, FX(1800), 72, '能通过的频率范围', { a: 'middle', size: 17, c: 'b', fill: C.BLd });
+      K.line(`M${FX(300)} 140v8H${FX(3300)}v-8`, { c: C.BLd, w: 2.4 }); T(K, FX(1800), 172, '频率带宽 ＝ 3300 − 300 ＝ 3000 Hz', { a: 'middle', size: 17, c: 'b', fill: C.BLd }); }
+  });
+  G(at >= 2 ? (at === 2 ? 2 : 1) : 0, () => {
+    BANDS.forEach(([a, b, p, l]) => { K.rect(FX(a) + 1, 44, FX(b) - FX(a) - 2, 44, { f: p[0], s: p[1], sw: 2.4, rx: 4 }); T(K, FX((a + b) / 2), 72, l, { a: 'middle', size: 17, c: 'b', fill: p[2] });
+      K.line(`M${FX(a) + 2} 140v8H${FX(b) - 2}v-8`, { c: p[1], w: 2.2 }); T(K, FX((a + b) / 2), 172, '1000 Hz', { a: 'middle', size: 16, c: 'b', fill: p[2] }); });
+    if (at === 2) { T(K, 40, 214, '频分复用：把线能通过的频率范围切成几份，每份传一路', { size: 17, c: 'b', fill: C.GRd }); T(K, 40, 244, '各路用各自频率的载波，每一路都是一路频带传输', { size: 16, fill: C.INK }); T(K, 40, 274, '有的教材把这种多路共用的做法叫“宽带传输”', { size: 16, fill: C.INK }); }
+  });
+  G(at >= 3 ? (at === 3 ? 2 : 1) : 0, () => {
+    BANDS.forEach(([a, b, p]) => { K.arrow(`M${FX((a + b) / 2)} 182V204`, { c: p[1], w: 2.4 }); K.rect(FX((a + b) / 2) - 70, 206, 140, 62, { f: p[0], s: p[1], sw: 2, rx: 6 });
+      ArqDraw.tex(K, FX((a + b) / 2), 232, '$1000\\log_2 1001$', { a: 'middle', size: 15, w: 140 }); ArqDraw.tex(K, FX((a + b) / 2), 258, '$\\approx10$ kb/s', { a: 'middle', size: 16, w: 140, bold: 1 }); });
+    K.rect(FX(300), 280, FX(3300) - FX(300), 54, { f: C.YLb, s: C.YL, sw: 2.2, rx: 8 });
+    T(K, FX(1800), 304, '三路合计约 30 kb/s', { a: 'middle', size: 17, c: 'b', fill: C.INK }); ArqDraw.tex(K, FX(1800), 326, '＝整条线：$3000\\log_2 1001\\approx29.9$ kb/s', { a: 'middle', size: 15, w: 440 });
+  });
+  G(at === 4 ? 2 : 0, () => {
+    K.rect(0, 340, 700, 60, { f: '#fffdf8', s: C.RD, sw: 2.2, rx: 10 });
+    T(K, 14, 366, '“千兆宽带”＝ 1 Gb/s：', { size: 17, c: 'b', fill: C.RD }); T(K, 232, 366, '单位是 b/s，说的是线能送多少数据，不是 Hz', { size: 16, c: 'b', fill: C.INK });
+    T(K, 14, 390, 'Hz 的带宽（频率范围）越宽 → b/s 的带宽（数据速率上限）越高：奈氏准则、香农定理，见第六部分', { size: 15, fill: C.MUT });
+  });
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

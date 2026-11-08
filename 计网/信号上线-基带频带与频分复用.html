@@ -1,0 +1,218 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>信号上线：基带、频带与频分复用</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>信号怎样放上线：基带传输、频带传输、频分复用</h1><small>同样发 1010：网线放方波；电话线先调制到载波；电视线几路各占一段频率。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 404" role="img" aria-label="信号上线：基带、频带与频分复用"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>三种放上线的办法，各是什么</h2><span class="tag">基带 ／ 频带 ／ 频分复用</span></summary><div class="body">
+<table><tr><th>名称</th><th>做法</th><th>线上是什么</th><th>典型场合</th><th>书上的叫法</th></tr>
+<tr><td><b>基带传输</b></td><td>基带信号是信源发出的、没经过调制的原始电信号，直接放上线：1 高电平，0 低电平</td><td>直接的电压（方波），占整条带宽，从 0 Hz 起</td><td>短距离：局域网、计算机内部。常用编码见 2.1b</td><td>基带传输</td></tr>
+<tr><td><b>频带传输</b></td><td>先调制：把基带信号搭载到一个高频载波上，整体搬到信道能通过的那一段</td><td>一路载波（图中 1800 Hz，幅度大 1、小 0）</td><td>远距离、无线：拨号上网、Wi-Fi。调制方式见 2.1b</td><td><b>宽带传输</b>（调制后的信号叫宽带信号）</td></tr>
+<tr><td><b>频分复用</b></td><td>把线能通过的频率范围分成几段，每段上各做一路频带传输</td><td>三路载波，各占一段频率</td><td>有线电视线：看电视的同时上网</td><td>书中无；另一些教材也叫“宽带传输”（书外补充）</td></tr></table>
+<p>王道教材（2027 版）说的“宽带传输”就是第二行：把基带信号调制到高频载波上形成宽带信号，用它传输叫宽带传输，也叫频带传输。第三行是另一些教材（传统语境）里“宽带传输”的意思，书里没有这个含义。</p>
+</div></details>
+<details class="note c-rd"><summary><h2>同一个名字“宽带传输”，指两件事</h2><span class="tag">第二行 与 第三行 的关系</span></summary><div class="body">
+<ol class="steps"><li><div><b>第二行（频带传输）</b>：一路信号，靠一个载波上线。宽带信号＝调制到载波上的信号。</div></li>
+<li><div><b>第三行（频分复用）</b>：同一条线上同时放几路，每路各自是第二行那样的一路频带传输，只是载波频率互不相同。</div></li>
+<li><div>所以第三行是建在第二行之上的：没有“把信号搬到载波上”，就没法把几路并排放进不同的频率段。区别是路数：一路对多路。</div></li></ol>
+<p>读到“宽带传输”时，看上下文：讲调制、载波、基带信号的，指第二行；讲一条线分成多个信道、多路并行的，指第三行。本节用频带传输、频分复用两个不会混的名字。</p>
+</div></details>
+<details class="note c-rd"><summary><h2>电话线为什么不能直接发方波</h2><span class="tag">0～300 Hz 被挡掉</span></summary><div class="body">
+<ol class="steps"><li><div>电话线只让 300～3300 Hz 的信号通过（图中右边的蓝条）。</div></li>
+<li><div>方波里有很低的频率成分：连发 <code>1111…</code>，线上是一段保持不变的 3 V，不变的电压就是 0 Hz；<code>1010</code> 的方波也含有从 0 Hz 起的一大片频率（虚线框，右端敞开）。</div></li>
+<li><div>0～300 Hz 被挡掉（红色），波形就坏了。所以要先调制，把信号搬进 300～3300 Hz。B 看每一格里载波幅度的大小，还原出 1010。</div></li></ol>
+</div></details>
+<details class="note c-gr"><summary><h2>信道的两种分类，图中各标在哪</h2><span class="tag">数字／模拟，有线／无线</span></summary><div class="body">
+<p>按信道上传的信号形式分：<b>数字信道</b>（网线直接放高低电平）、<b>模拟信道</b>（电话线、有线电视线上放连续起伏的波）。按传输介质分：<b>有线信道</b>、<b>无线信道</b>。两种分类互相独立：本图三行都是有线信道，一行数字、两行模拟；Wi-Fi 是无线的模拟信道，用频带传输。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 404
+const ST = [
+ { b: '① 基带', t: '不调制，高低电平直接放上线', n: '基带信号是信源发出的、没经过调制的原始电信号：1 是高电平、0 是低电平，占整条带宽，从 0 Hz 起。' },
+ { b: '② 电话线', t: '电话线只让 300～3300 Hz 的信号通过', n: '方波含有从 0 Hz 起的很宽一片频率（虚线框，右端敞开）；0～300 Hz 被电话线挡掉，波形就坏了。' },
+ { b: '③ 频带', t: '先调制：把比特搬到 1800 Hz 的载波上', n: '比特 1 用大幅度、比特 0 用小幅度；频率仍是 1800 Hz，落在 300～3300 Hz 里，电话线放得下。' },
+ { b: '④ 频分', t: '一条线上同时放三路，各占一段频率', n: '有线电视线把能通过的频率范围分成几段：电视、下行、上行各占一段，各用不同频率的载波，互不干扰。' },
+ { b: '⑤ 小结', t: '同一个名字，指两件事', n: '第二行（一路靠载波上线）和第三行（多路共用一条线）在不同教材里都被叫作“宽带传输”；本节用频带传输、频分复用区分。' }
+];
+const bits = '1010', wx = 12, wc = 68, fx = 346, fw = 300;
+const RY = [0, 134, 268];
+const bcell = y => [...bits].forEach((b, i) => N21.cell(K0, wx + i * wc, y, wc - 4, 22, b, b === '1' ? P.A : P.B, { size: 15, dy: 6 }));
+let K0;
+function axis(K, yy, ticks) { K.line(`M${fx} ${yy}H${fx + fw}`, { c: C.MUT, w: 1.6 }); ticks.forEach(([f, l, a]) => { K.line(`M${fx + f * fw / 4} ${yy}v6`, { c: C.MUT, w: 1.4 }); T(K, fx + f * fw / 4, yy + 22, l, { a: a || 'middle', size: 15, c: 'mono', fill: C.MUT }); }); }
+function rowBox(K, ri, title, col, cap1, cap2) {
+  const y = RY[ri];
+  K.rect(0, y + 2, 700, 128, { f: ri % 2 ? '#fbf5e8' : C.BOX, s: C.BORD, rx: 10, sw: 1.4 });
+  T(K, 12, y + 24, title, { size: 18, c: 'b', fill: col });
+  T(K, 12, y + 122, cap1, { size: 15, fill: C.MUT }); T(K, fx, y + 122, cap2, { size: 15, fill: C.MUT });
+}
+function draw(a0, K) {
+  K0 = K; const at = a0 + 1;
+  // ---- 行 1：基带 ----
+  G(at === 1 ? 2 : 1, () => {
+    const y = RY[0]; rowBox(K, 0, '基带传输：机房网线，数字信道', C.ORd, '高电平＝1，低电平＝0', '没经过调制，直接放上线');
+    bcell(y + 34); K.line(N21.square('1010', wx, y + 106, wc, 40, 0), { c: C.INK, w: 3.2 });
+    K.rect(fx, y + 34, fw, 32, { f: C.ORb, s: C.OR, rx: 4, sw: 2 }); T(K, fx + fw / 2, y + 54, '整条带宽，从 0 Hz 起', { a: 'middle', size: 16, c: 'b', fill: C.ORd });
+    axis(K, y + 76, [[0, '0', 'start'], [4, '频率 →', 'end']]);
+  });
+  // ---- 行 2：电话线（方波被挡 → 调制） ----
+  G(at < 2 ? 0 : (at <= 3 ? 2 : 1), () => {
+    const y = RY[1]; rowBox(K, 1, '频带传输：电话线，模拟信道', C.BLd, at === 2 ? '直接放方波：低频部分被挡' : '调制：搬到 1800 Hz 载波上', '虚线框＝方波含有的频率；红＝被挡');
+    bcell(y + 34);
+    if (at === 2) K.line(N21.square('1010', wx, y + 106, wc, 40, 0), { c: C.INK, w: 3.2, dash: '' });
+    else K.line(N21.path(t => { const i = Math.min(3, Math.floor(t / wc)), A = bits[i] === '1' ? 1 : 0.3; return A * Math.sin(2 * Math.PI * t / 11); }, 0, 272, 300, t => wx + t, v => y + 90 - 20 * v), { c: C.INK, w: 2.4 });
+    K.rect(fx, y + 34, 0.3 * fw / 4, 32, { f: C.RDb, s: C.RD, rx: 0, sw: 2 });
+    K.rect(fx + 0.3 * fw / 4, y + 34, 3 * fw / 4, 32, { f: C.BLb, s: C.BL, rx: 0, sw: 2 }); T(K, fx + 1.8 * fw / 4, y + 54, '300～3300 Hz', { a: 'middle', size: 16, c: 'b', fill: C.BLd });
+    K.rect(fx + 3.3 * fw / 4, y + 34, 0.7 * fw / 4, 32, { f: '#f1ebdd', s: C.LINE, rx: 0, sw: 1.4 });
+    if (at === 2) { K.line(`M${fx + fw + 10} ${y + 30}H${fx - 3}V${y + 70}H${fx + fw + 10}`, { c: C.INK, w: 1.8, dash: '6 4' }); T(K, fx + 2, y + 26, '被挡', { size: 15, c: 'b', fill: C.RD }); }
+    if (at === 3) { K.line(`M${fx + 1.8 * fw / 4} ${y + 28}V${y + 34}`, { c: C.RD, w: 2.4 }); T(K, fx + 1.8 * fw / 4, y + 24, '载波 1800 Hz', { a: 'middle', size: 15, c: 'b', fill: C.RD }); }
+    axis(K, y + 76, [[0, '0'], [1, '1k'], [2, '2k'], [3, '3k'], [4, '4k Hz', 'end']]);
+  });
+  // ---- 行 3：频分复用 ----
+  G(at < 4 ? 0 : (at === 4 ? 2 : 1), () => {
+    const y = RY[2]; rowBox(K, 2, '频分复用：有线电视线，模拟信道', C.GRd, '三路波的频率各不相同', '各占一段频率（示意，不标刻度）');
+    [[C.PU, 8, '电视'], [C.GR, 12, '下行'], [C.OR, 20, '上行']].forEach(([c, f, l], i) => { K.line(N21.path(t => Math.sin(2 * Math.PI * t / f), 0, 240, 300, t => wx + t, v => y + 56 + i * 26 - 9 * v), { c, w: 2.2 }); T(K, wx + 252, y + 61 + i * 26, l, { size: 15, c: 'b', fill: [C.PU, C.GRd, C.ORd][i] }); });
+    K.rect(fx, y + 34, fw, 32, { f: '#f1ebdd', s: C.BORD, rx: 4, sw: 1.2 });
+    [[0.2, 1.3, C.PUb, C.PU, '#53388a', '电视'], [1.4, 2.7, C.GRb, C.GR, C.GRd, '下行'], [2.8, 3.8, C.ORb, C.OR, C.ORd, '上行']].forEach(([a0_, a1, b, s, d, l]) => { K.rect(fx + a0_ * fw / 4, y + 34, (a1 - a0_) * fw / 4, 32, { f: b, s, rx: 4, sw: 2 }); T(K, fx + (a0_ + a1) * fw / 8, y + 54, l, { a: 'middle', size: 15, c: 'b', fill: d }); });
+    axis(K, y + 76, [[0, '0', 'start'], [4, '频率 →', 'end']]);
+  });
+  // ---- 第 5 幕：命名 ----
+  G(at === 5 ? 2 : 0, () => {
+    const tag = (x, y, w, l1, pal) => { K.rect(x, y, w, 28, { f: pal[0], s: pal[1], rx: 8, sw: 2.6 }); T(K, x + 10, y + 20, l1, { size: 15, c: 'b', fill: pal[2] }); };
+    tag(318, RY[1] + 6, 378, '书上称“宽带传输”（宽带信号）：一路怎样上线', P.B);
+    tag(318, RY[2] + 6, 378, '另一些教材也称“宽带传输”：每一路＝频带传输', P.G);
+        K.arrow(`M${686} ${RY[2] + 6}V${RY[1] + 36}`, { c: C.RD, w: 3 });
+    tag(318, RY[0] + 6, 378, '基带传输：不调制，直接放电压（对照）', P.A);
+  });
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

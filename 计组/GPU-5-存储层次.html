@@ -1,0 +1,39 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>H100 的存储层次</title></head><body>
+<header><h1>H100 的存储层次：离运算通道越近，越小、越快</h1><small>每一行是一层存储。左边画它在哪（同一块 H100 上的位置），中间三根条用对数刻度画容量、读一次要等多久、全芯片合计带宽。延迟按 1 个周期 ≈ 0.5 ns 换算，是实测量级。</small><nav id="steps"></nav></header>
+<div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 640" role="img" aria-label="寄存器、共享内存、L2、HBM、主机内存五层的位置、容量、延迟和带宽对数条形图"><g id="draw"></g></svg></div><footer id="note"></footer>
+<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+const steps=[
+ {b:'① 五层存储',t:'从寄存器到主机内存：每往外一层，大十几倍到上千倍，慢几倍到上千倍',n:'容量条：寄存器堆每个 SM 256 KB、132 个 SM 合计约 33 MB；共享内存/L1 也是每 SM 256 KB；L2 50 MB；HBM 80 GB；主机内存几百 GB。延迟条：寄存器 1 个周期，共享内存约 30 个周期，L2 约 300–600 个周期，HBM 约 700 个周期，主机内存经 PCIe 要微秒级。'},
+ {b:'② 谁能看见',t:'谁能看见这一层：决定了线程之间怎样交换数据',n:'寄存器只属于一个线程；共享内存属于一个线程块（块里的线程都在同一个 SM 上）；L2 和 HBM 全部线程都能读写。所以同一个块里的线程可以通过共享内存交换数据、互相等待；不同块之间只能写进 L2/HBM 再读出来，慢得多。第 6.6 节的分块和第 7 节的 FlashAttention 都靠“块内共享内存”这一层。'}
+];
+const L=[
+ {n:'寄存器',w:'每个线程自己的',cap:[256e3,'每 SM 256 KB'],lat:[1,'1 个周期'],bw:[400e12,'约 400 TB/s'],c:['#ece5f8','#7a5bb0'],who:'只有这个线程'},
+ {n:'共享内存 / L1',w:'每个 SM 里',cap:[256e3,'每 SM 256 KB'],lat:[30,'约 30 个周期 ≈ 15 ns'],bw:[33e12,'约 33 TB/s'],c:['#e3f2e6','#3e8c55'],who:'同一个线程块的线程'},
+ {n:'L2 缓存',w:'芯片中间',cap:[50e6,'50 MB'],lat:[450,'约 300–600 个周期'],bw:[12e12,'约 12 TB/s'],c:['#efe8f8','#7a5bb0'],who:'所有线程'},
+ {n:'HBM 显存',w:'芯片旁的 5 个堆栈',cap:[80e9,'80 GB'],lat:[700,'约 700 个周期 ≈ 350 ns'],bw:[3.35e12,'3.35 TB/s'],c:['#fde6cc','#c4861e'],who:'所有线程'},
+ {n:'主机内存',w:'主板上，经 PCIe',cap:[512e9,'几百 GB'],lat:[4000,'微秒级'],bw:[64e9,'PCIe 约 64 GB/s'],c:['#eaf1fb','#3d6fae'],who:'GPU 线程不能直接用'}];
+const lg=Math.log10;
+SvgStep.start({steps,draw(k,K){
+ const X0=430,W=160,G=18;
+ const bar=(x,v,lo,hi,c)=>{const w=Math.max(6,(lg(v)-lg(lo))/(lg(hi)-lg(lo))*W);return w;};
+ ['容量','读一次的延迟','全芯片带宽'].forEach((t,i)=>K.text(X0+i*(W+G+12),40,t,{c:'sm b'}));
+ K.text(30,40,'哪一层、在哪',{c:'sm b'});
+ L.forEach((l,j)=>{const y=56+j*112;
+  K.rect(20,y,966,100,{f:j%2?'#fbfaf7':'#fff',s:'#e2dccf',rx:8});
+  // location mini-diagram
+  K.rect(30,y+12,120,76,{f:'#f6f3ec',s:'#b0aaa0',rx:6});
+  const hot=['#7a5bb0','#3e8c55','#7a5bb0','#c4861e','#3d6fae'][j];
+  // draw tiny chip: SM squares, L2 bar, HBM sides, host off-chip
+  K.rect(48,y+22,84,56,{f:'#fff',s:'#9a9387',rx:3});
+  for(let i=0;i<6;i++)K.rect(52+(i%3)*26,y+26+Math.floor(i/3)*28,22,20,{f:j<=1&&i===0?hot:'#e1f0e4',s:'#9fbfa6',sw:.8,rx:2});
+  K.rect(52,y+48,76,4,{f:j===2?hot:'#d9cfee',s:'none'});
+  K.rect(34,y+24,10,52,{f:j===3?hot:'#f6dcc0',s:'#c4861e',sw:.6});K.rect(136,y+24,10,52,{f:j===3?hot:'#f6dcc0',s:'#c4861e',sw:.6});
+  if(j===4){K.rect(30,y+12,120,76,{f:'none',s:hot,sw:2.2,rx:6,dash:'5 4'});}
+  K.text(162,y+30,l.n,{c:'b',fill:hot});K.text(162,y+54,l.w+(j===4?'（虚线：芯片外）':''),{c:'sm',size:13});
+  if(k===1){K.text(162,y+80,'谁能看见：'+l.who,{c:'sm b',size:13,fill:'#1667c4'});}
+  const cols=[[l.cap,1e5,1e12],[l.lat,0.5,1e4],[l.bw,1e10,1e15]];
+  cols.forEach(([[v,t],lo,hi],i)=>{const x=X0+i*(W+G+12);K.rect(x,y+30,W,22,{f:'#f3f1ec',s:'#e2dccf',rx:3});K.rect(x,y+30,bar(x,v,lo,hi),22,{f:l.c[0],s:l.c[1],sw:1.4,rx:3});K.text(x,y+76,t,{c:'sm',size:13});});
+ });
+ K.text(X0,622,'三根条都是对数刻度：长一格 ≈ 大 10 倍。延迟条越短越快，带宽条越长越快。',{c:'sm mut',size:13});
+}});
+</script></body></html>

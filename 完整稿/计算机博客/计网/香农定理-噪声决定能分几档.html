@@ -1,0 +1,220 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>香农定理：噪声决定能分几档</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>香农定理：噪声决定每个码元能分几档，能带几位</h1><small>同样每秒 6000 个码元：噪声越大，一档越高，排得下的档数越少，每个码元带的位数越少。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 400" role="img" aria-label="香农定理：噪声决定能分几档"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>三种噪声下的档数、位数、数据率</h2><span class="tag">$W=3000$ Hz，6000 码元／秒</span></summary><div class="body">
+<table><tr><th></th><th>噪声小</th><th>噪声中</th><th>噪声大</th></tr>
+<tr><td>信噪比 $S/N$</td><td>1000</td><td>63</td><td>15</td></tr>
+<tr><td>电压之比 $\sqrt{1+S/N}$</td><td>$\sqrt{1001}\approx31.6$</td><td>$\sqrt{64}=8$</td><td>$\sqrt{16}=4$</td></tr>
+<tr><td>每码元位数 $\log_2V$</td><td>4.98</td><td>3</td><td>2</td></tr>
+<tr><td>数据率</td><td>$6000\times4.98\approx29.9$ kb/s</td><td>18 kb/s</td><td>12 kb/s</td></tr></table>
+</div></details>
+<details class="note c-or"><summary><h2>功率怎样变成电压</h2><span class="tag">信号 1 mW、噪声 1 µW</span></summary><div class="body">
+<p>$S/N=1\text{ mW}\div1\text{ µW}=1000$，收到的功率是 1001 份。功率与电压的平方成正比（2 V 加在 1 Ω 上是 4 W，4 V 是 16 W），电压范围是噪声抖动范围的 $\sqrt{1001}\approx31.6$ 倍。这是帮助理解的直观讲法，不是严格推导。</p>
+</div></details>
+<details class="note c-gr"><summary><h2>分贝换算</h2><span class="tag">$S/N=10^{\text{dB}/10}$</span></summary><div class="body">
+<table><tr><th>分贝</th><th>0</th><th>3</th><th>10</th><th>20</th><th>30</th><th>40</th><th>90</th></tr>
+<tr><td>倍数</td><td>1</td><td>约 2</td><td>10</td><td>100</td><td>1000</td><td>10000</td><td>$10^9$</td></tr></table>
+<p>代入香农公式的必须是倍数。63 约 18 dB，15 约 11.8 dB。例：30 dB、3000 Hz：$3000\times\log_21001\approx29.9$ kb/s。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 400
+const ST = [
+ { b: '① 小', t: '梯子排得下 32 档', n: '电压范围一样高；噪声把一个电压抖到红括号那么高，一格至少要这么高，红点（几次收到的电压）才落在自己的格里。' },
+ { b: '② 中', t: '一格高得多，只排得下 8 档', n: '噪声抖动的范围变大，同样高的电压范围里只排得下 8 档。' },
+ { b: '③ 大', t: '只排得下 4 档', n: '噪声更大，一格更高，同样高的电压范围里只排得下 4 档；档分得更细，噪声一抖就读成旁边一档。' },
+ { b: '④ 功率', t: '信噪比 1000：电压范围是抖动范围的 31.6 倍', n: 'S/N＝1 mW÷1 µW＝1000，收到的功率是 1001 份；功率与电压的平方成正比，电压范围是抖动范围的 $\\sqrt{1001}\\approx31.6$ 倍。' },
+ { b: '⑤ 三种', t: '档数、每码元位数、数据率', n: '$V\\approx\\sqrt{1+S/N}$：31.6、8、4 档，每个码元 4.98、3、2 位，一秒 6000 个码元就是 29.9、18、12 kb/s。' },
+ { b: '⑥ 公式', t: '代回奈氏式：$W\\log_2(1+S/N)$', n: '带宽受限且有高斯白噪声的信道，极限数据传输速率 $W\\log_2(1+S/N)$；速率不超过它，理论上可以任意低的误码率。' },
+ { b: '⑦ 分贝', t: '信噪比的分贝记法：代入前先换回倍数', n: 'dB＝$10\\log_{10}(S/N)$，倍数 $S/N=10^{\\text{dB}/10}$；30 dB＝1000 倍，63 约 18 dB，15 约 11.8 dB。' }
+];
+const COLS = [
+  { V: 32, name: '噪声小', sn: 'S/N＝1000（30 dB）', smp: [[5, .3], [13, -.25], [22, .1], [28, -.3]], labs: [0, 16, 31], bn: 10, l1: '$V\\approx\\sqrt{1001}\\approx31.6$', l2: '$\\log_2 31.6\\approx4.98$ 位', l3: '$6000\\times4.98\\approx29.9$ kb/s', pal: P.G },
+  { V: 8, name: '噪声中', sn: 'S/N＝63（约 18 dB）', smp: [[1, .25], [3, -.3], [6, .1]], labs: [0, 7], bn: 4, l1: '$V\\approx\\sqrt{64}=8$ 档', l2: '$\\log_28=3$ 位', l3: '$6000\\times3=18$ kb/s', pal: P.B },
+  { V: 4, name: '噪声大', sn: 'S/N＝15（约 11.8 dB）', smp: [[0, .3], [2, -.3]], labs: [0, 3], bn: 2, l1: '$V\\approx\\sqrt{16}=4$ 档', l2: '$\\log_24=2$ 位', l3: '$6000\\times2=12$ kb/s', pal: P.A }];
+const LT = 70, HH = 170, cw = 233;
+function ladder(K, p, pi, vis) {
+  const px = pi * cw, cellX = px + 36, cellW = 100, h = HH / p.V;
+  T(K, px + 4, 40, p.name, { size: 18, c: 'b' }); T(K, px + 4, 60, p.sn, { size: 15, c: 'b', fill: C.INK });
+  for (let n = 0; n < p.V; n++) { const y = LT + (p.V - 1 - n) * h; K.rect(cellX, y, cellW, h, { f: n % 2 ? '#fdf0df' : '#eaf1fa', s: '#bdb09a', sw: .8, rx: 0 }); }
+  K.line(`M${cellX} ${LT}H${cellX + cellW}M${cellX} ${LT + HH}H${cellX + cellW}`, { c: C.INK, w: 2 });
+  p.labs.forEach(n => T(K, cellX + cellW + 6, LT + (p.V - 1 - n) * h + h / 2 + 5, '第 ' + n + ' 档', { size: 15, fill: C.MUT }));
+  p.smp.forEach(([n, off]) => { const y = LT + (p.V - 1 - n) * h + h / 2 + off * h; N21.dot(K, cellX + cellW / 2 + off * 36, y, 4.8, C.RD, '#fff', 1.2); });
+  const by = LT + (p.V - 1 - p.bn) * h;
+  K.line(`M${cellX - 16} ${by}h10M${cellX - 11} ${by}V${by + h}M${cellX - 16} ${by + h}h10`, { c: C.RD, w: 3 }); K.rect(cellX, by, cellW, h, { f: 'none', s: C.RD, sw: 2.4, rx: 0 });
+}
+function draw(a0, K) {
+  const at = a0 + 1;
+  T(K, 0, 16, '同一条线：W＝3000 Hz，一秒 2W＝6000 个码元；三架梯子一样高＝电压范围，一格＝一档', { size: 15, fill: C.MUT });
+  COLS.forEach((p, pi) => G(at <= 3 ? (at < pi + 1 ? 0 : (at === pi + 1 ? 2 : 1)) : 1, () => ladder(K, p, pi, 1)));
+  if (at <= 3) {
+    T(K, 0, 272, '红括号＝噪声把一个电压抖到的范围＝一档的高；红点＝几次收到的电压', { size: 16, c: 'b', fill: C.RD });
+    T(K, 0, 304, ['噪声小：一格很矮，梯子上排得下 32 格', '噪声中：一格高得多，只排得下 8 格', '噪声大：一格更高，只排得下 4 格'][at - 1], { size: 17, c: 'b', fill: C.INK });
+    T(K, 0, 334, '一格至少要有噪声抖动范围那么高，几次收到的电压才落在自己那一格里，读得出档号。', { size: 16, fill: C.INK });
+  }
+  if (at === 4) {
+    K.rect(0, 258, 700, 142, { f: '#fffdf8', s: C.BORD, rx: 10, sw: 1.4 });
+    const s = 120, x0 = 30, y0 = 268; K.rect(x0, y0, s, s, { f: C.YLb, s: C.YL, sw: 2.2, rx: 3 }); K.rect(x0, y0, s / 31.6, s / 31.6, { f: C.RD, s: C.RD, sw: 1, rx: 0 });
+    T(K, x0 + s + 14, y0 + 20, '大方块＝收到的功率：信号 1000 份＋噪声 1 份＝1001 份（面积）', { size: 15.5, c: 'b' });
+    T(K, x0 + s + 14, y0 + 44, '红小方块（左上角）＝噪声功率 1 份', { size: 15.5, c: 'b', fill: C.RD });
+    T(K, x0 + s + 14, y0 + 70, '功率与电压的平方成正比（2 V 加在 1 Ω 上 4 W，4 V 就是 16 W），', { size: 15.5, fill: C.INK });
+    T(K, x0 + s + 14, y0 + 94, '所以边长（电压范围）之比是', { size: 15.5, c: 'b', fill: C.GRd }); ArqDraw.tex(K, x0 + s + 214, y0 + 94, '$\\sqrt{1001}\\approx31.6$', { size: 16, w: 160, bold: 1, fill: C.GRd });
+    T(K, x0 + s + 14, y0 + 118, '抖动范围占 1 格，电压范围就约有 31.6 格', { size: 15.5, c: 'b', fill: C.GRd });
+    K.line(`M${x0 - 8} ${y0}v${s}`, { c: C.INK, w: 1.8 }); T(K, x0 - 14, y0 + s / 2 + 5, '', {});
+  }
+  if (at === 5) {
+    COLS.forEach((p, pi) => { const px = pi * cw; K.line(`M${px + cw - 6} 262V380`, { c: '#e3d9c4', w: 1.2 });
+      ArqDraw.tex(K, px + 4, 290, p.l1, { size: 16, w: 224, fill: pi === 0 ? C.RD : C.INK }); ArqDraw.tex(K, px + 4, 326, p.l2, { size: 16, w: 224 }); ArqDraw.tex(K, px + 4, 362, p.l3, { size: 17, w: 224, bold: 1, fill: pi === 0 ? C.RD : C.INK }); });
+    T(K, 0, 390, '一秒 6000 个码元不变：噪声越大，一档越高，每个码元带的位数越少。', { size: 15, fill: C.MUT });
+  }
+  if (at === 6) {
+    K.rect(0, 258, 700, 142, { f: '#fffdf8', s: C.BORD, rx: 10, sw: 1.4 });
+    [[14, 188, '奈氏准则', '$2W\\log_2V$', P.G], [262, 196, '代入 V', '$V=\\sqrt{1+S/N}$', P.Y], [520, 168, '香农定理', '$W\\log_2(1+S/N)$', P.A]].forEach(([x, w, l, f, p]) => { K.rect(x, 274, w, 68, { f: p[0], s: p[1], sw: 2.2, rx: 8 }); T(K, x + w / 2, 298, l, { a: 'middle', size: 16, c: 'b', fill: p[2] }); ArqDraw.tex(K, x + w / 2, 328, f, { a: 'middle', size: 17, w: w - 6 }); });
+    K.arrow('M204 308H258', { c: C.MUT, w: 2.6 }); K.arrow('M462 308H516', { c: C.MUT, w: 2.6 });
+    ArqDraw.tex(K, 350, 372, '$2W\\log_2\\sqrt{1+S/N}=2W\\cdot\\tfrac12\\log_2(1+S/N)=W\\log_2(1+S/N)$', { a: 'middle', size: 17, w: 680 });
+    T(K, 350, 392, '（以上档数讲法是帮助理解的直观讲法，不是严格推导）', { a: 'middle', size: 15, fill: C.MUT });
+  }
+  if (at === 7) {
+    K.rect(0, 258, 700, 142, { f: '#fffdf8', s: C.BORD, rx: 10, sw: 1.4 });
+    const DX = d => 40 + d * 12.6;   // 0～40 dB
+    K.line(`M${DX(0)} 318H${DX(40)}`, { c: C.MUT, w: 2 });
+    [[0, '1'], [3, '约 2'], [10, '10'], [20, '100'], [30, '1000'], [40, '10000']].forEach(([d, m]) => { K.line(`M${DX(d)} 312v12`, { c: C.INK, w: 2 }); T(K, DX(d), 342, d + ' dB', { a: 'middle', size: 15, c: 'b mono', fill: C.BLd }); T(K, DX(d), 300, '×' + m, { a: 'middle', size: 15, c: 'b', fill: C.ORd }); });
+    [[10 * Math.log10(15), 'S/N＝15 ≈ 11.8 dB', 372], [10 * Math.log10(63), 'S/N＝63 ≈ 18 dB', 392]].forEach(([d, l, y]) => { N21.dot(K, DX(d), 318, 5.5, C.RD, '#fff', 2); T(K, DX(d) + 10, y, l, { size: 15, c: 'b', fill: C.RD }); K.line(`M${DX(d)} 324V${y - 14}`, { c: C.RD, w: 1.2, dash: '3 3' }); });
+    ArqDraw.tex(K, 640, 300, '$90\\text{ dB}=10^9$', { a: 'middle', size: 15, w: 110 }); T(K, 640, 322, '倍数后跟 9 个 0', { a: 'middle', size: 15, fill: C.MUT });
+    T(K, 640, 372, '代入香农公式', { a: 'middle', size: 15, c: 'b', fill: C.RD }); T(K, 640, 390, '必须用倍数', { a: 'middle', size: 15, c: 'b', fill: C.RD });
+  }
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

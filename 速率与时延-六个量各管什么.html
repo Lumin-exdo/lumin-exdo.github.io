@@ -1,0 +1,242 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>速率与时延：六个量各管什么</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>速率与时延：传播速度、码元速率、比特率、发送时延、传播时延、信道极限</h1><small>同一根 1000 m 的线上，各个“速”和“时延”各是谁的量：介质的、发送端的，还是信道的。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 404" role="img" aria-label="速率与时延：六个量各管什么"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>六个量一览：谁决定、衡量谁的能力</h2><span class="tag">场景：1000 m 线、100 Mb/s</span></summary><div class="body">
+<table><tr><th>量</th><th>含义</th><th>由谁决定</th><th>衡量谁的能力</th><th>本例数值</th></tr>
+<tr><td>传播速度</td><td>信号在介质里前进多快</td><td>介质</td><td>介质</td><td>铜线约 $2\times10^8$ m/s</td></tr>
+<tr><td>传播时延</td><td>信号走完这段线的时间＝距离÷传播速度</td><td>介质、距离</td><td>线路的长度</td><td>$1000\div(2\times10^8)=5$ µs</td></tr>
+<tr><td>码元速率</td><td>每秒发多少码元（波特）</td><td>发送端选择，不超过 $2W$</td><td>发送端</td><td>50 MBaud</td></tr>
+<tr><td>比特率＝数据传输速率＝发送速率</td><td>每秒发多少比特</td><td>发送端选择：码元速率×每码元位数</td><td>发送端（上限由信道定）</td><td>$50\times2=100$ Mb/s</td></tr>
+<tr><td>发送时延＝传输时延</td><td>把一个数据的全部比特推上线的时间＝数据长度÷发送速率</td><td>数据长度、发送速率</td><td>发送端</td><td>$12000\div100\text{ M}=120$ µs</td></tr>
+<tr><td>信道极限</td><td>信道所能达到速率的上限</td><td>频率带宽 $W$、信噪比</td><td>信道本身</td><td>奈氏 100 MBaud，香农约 498 Mb/s</td></tr></table>
+</div></details>
+<details class="note c-or"><summary><h2>发送时延与传播时延不要混</h2><span class="tag">两段时间，各算各的</span></summary><div class="body">
+<p>1500 B＝12000 位。发送时延是“推”的时间，发送速率提到 1 Gb/s 就缩到 12 µs；传播时延是“走”的时间，换成更快的发送速率也还是 5 µs。信号 1 µs 后在 100 Mb/s 和 1 Gb/s 的线上都走到 200 m 处：区别只是每秒放上线多少位。</p>
+</div></details>
+<details class="note c-gr"><summary><h2>“带宽”在这里指哪种</h2><span class="tag">见左栏 7</span></summary><div class="body">
+<p>“信道极限”由频率带宽（Hz）算出，写成 b/s 时人们也把它叫带宽。发送速率选定后不得超过它：选的 100 Mb/s 低于 498 Mb/s，也低于奈氏式在每码元 2 位时给出的 $2\times50\text{ M}\times2=200$ Mb/s，都没超。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 404
+const ST = [
+ { b: '① 速度', t: '信号在介质里前进多快，由介质决定', n: '铜线里约 2×10^8 m/s：100 Mb/s 和 1 Gb/s 的线上，信号 1 µs 后都走到 200 m；区别只是每秒放上线多少位。' },
+ { b: '② 速率', t: '发送端选每秒发多少码元、每码元几位', n: '发送端选 50 MBaud、每码元 2 位，比特率＝发送速率＝100 Mb/s；接收端按同样的节拍取样。示意值。' },
+ { b: '③ 时延', t: '推完一个数据要多久，和走完这段线要多久', n: '1500 B＝12000 位，发送时延＝12000÷100 Mb/s＝120 µs；传播时延＝1000 m÷(2×10^8 m/s)＝5 µs，与发送速率无关。' },
+ { b: '④ 极限', t: '信道的能力给出上限，收发两端的选择不得超过', n: '信道频率带宽 W＝50 MHz：奈氏上限 2W＝100 MBaud；信噪比 30 dB 时香农上限约 498 Mb/s。选定的 50 MBaud、100 Mb/s 都没超。' },
+ { b: '⑤ 一览', t: '每个量由谁决定、衡量谁的能力', n: '传播速度、传播时延看介质与距离；码元速率、比特率、发送时延看发送端的选择；信道极限看信道本身。' }
+];
+const WX = m => 94 + m * 0.52;
+function endpoints(K, y) {
+  H.box(K, 0, y - 32, 84, 64, ['A', '发送端'], [C.YLb, C.YL, C.INK], { size: 16 }); H.box(K, 616, y - 32, 84, 64, ['B', '接收端'], [C.YLb, C.YL, C.INK], { size: 16 });
+}
+function wire(K, y, lab, col, withRuler) {
+  endpoints(K, y); K.line(`M${WX(0)} ${y}H${WX(1000)}`, { c: C.MUT, w: 5 });
+  T(K, WX(at_ === 1 ? 760 : 500), y - 26, lab, { a: 'middle', size: 16, c: 'b', fill: col });
+  if (withRuler) { for (let m = 0; m <= 1000; m += 200) { K.line(`M${WX(m)} ${y + 8}v8`, { c: C.MUT, w: 1.4 }); T(K, WX(m), y + 34, m === 1000 ? '1000 m' : String(m), { a: 'middle', size: 15, c: 'mono', fill: C.MUT }); } }
+}
+let at_ = 0;
+function draw(a0, K) {
+  const at = a0 + 1; at_ = at;
+  if (at === 1) {
+    [[52, '100 Mb/s 的线', P.B, 5, 100], [168, '1 Gb/s 的线', P.A, 20, 1000]].forEach(([y, l, p, n, bits]) => {
+      wire(K, y, l, p[2], true);
+      const w = (WX(200) - WX(0)) / n; for (let i = 0; i < n; i++) K.rect(WX(0) + i * w + 1, y - 11, w - 2, 22, { f: p[0], s: p[1], sw: 1.4, rx: 2 });
+      K.line(`M${WX(200)} ${y - 22}V${y + 22}`, { c: C.RD, w: 3 }); T(K, WX(200) + 8, y + 62, '1 µs 后信号前沿都走到 200 m', { size: 15, c: 'b', fill: C.RD });
+      T(K, WX(200) + 8, y - 26, '1 µs 内放上线 ' + bits + ' 位', { size: 15, c: 'b', fill: p[2] });
+    });
+    T(K, 0, 266, '传播速度：信号在介质里每秒前进多少米，约 2×10^8 m/s', { size: 17, c: 'b', fill: C.RD });
+    T(K, 0, 298, '它由介质决定（铜线、光纤各不同），与发送端每秒发多少位无关；', { size: 16, fill: C.INK });
+    T(K, 0, 324, '只影响传播时延＝线长÷传播速度。1000 m 的线：1000÷(2×10^8)＝5 µs。', { size: 16, fill: C.INK });
+    T(K, 0, 360, '衡量的是介质（信道）的性质，不是发送端或接收端的能力。', { size: 16, c: 'b', fill: C.GRd });
+    return;
+  }
+  wire(K, 56, '一根 1000 m 的线（示意）', C.MUT, at !== 4);
+  if (at === 2) {
+    [...'1001110010'].forEach((b, i) => { N21.cell(K, WX(300) + i * 14, 44, 12, 24, '', b === '1' ? P.A : P.B, { rx: 2 }); });
+    const bx = (x, w, l1, l2, p) => { K.rect(x, 150, w, 76, { f: p[0], s: p[1], sw: 2.4, rx: 10 }); T(K, x + w / 2, 182, l1, { a: 'middle', size: 19, c: 'b', fill: p[2] }); T(K, x + w / 2, 210, l2, { a: 'middle', size: 15, fill: p[2] }); };
+    bx(10, 214, '50 MBaud', '码元速率：每秒 5000 万个', P.G); T(K, 236, 196, '×', { a: 'middle', size: 28, c: 'b' });
+    bx(252, 160, '2 位', '每码元位数（4 档）', P.B); T(K, 426, 196, '＝', { a: 'middle', size: 28, c: 'b' });
+    bx(442, 248, '100 Mb/s', '比特率＝数据传输速率＝发送速率', P.A);
+    T(K, 0, 266, '这三个量都是发送端选的：每秒推多少码元、每码元带几位，决定每秒推多少位上线。', { size: 16, c: 'b', fill: C.INK });
+    T(K, 0, 296, '接收端要用同样的节拍取样（每个码元 1/50 000 000 s＝20 ns 取一次）才读得对；', { size: 16, fill: C.INK });
+    T(K, 0, 322, '“发送速率”“数据传输速率”“比特率”指同一个量：发送端每秒送上线的位数。', { size: 16, fill: C.INK });
+    T(K, 0, 358, '它们衡量的是收发两端的选择，上限由信道给出（第 ④ 步）。', { size: 16, c: 'b', fill: C.GRd });
+  }
+  if (at === 3) {
+    const X0 = 40, TX = t => X0 + t * 4.6, y1 = 172, y2 = 250;
+    K.line(`M${X0} 306H${TX(130)}`, { c: C.MUT, w: 1.6 }); [0, 5, 25, 50, 75, 100, 120, 125].forEach(t => { K.line(`M${TX(t)} 306v6`, { c: C.MUT, w: 1.4 }); });
+    [0, 25, 50, 75, 100, 125].forEach(t => T(K, TX(t), 332, String(t), { a: 'middle', size: 15, c: 'mono', fill: C.MUT })); T(K, 0, 332, 'µs', { size: 15, fill: C.MUT });
+    K.rect(TX(0), y1 - 24, TX(120) - TX(0), 36, { f: P.A[0], s: P.A[1], sw: 2.4, rx: 4 });
+    T(K, TX(60), y1 + 2, 'A 把 12000 位推上线：发送时延 120 µs', { a: 'middle', size: 16, c: 'b', fill: P.A[2] });
+    K.rect(TX(5), y2 - 24, TX(125) - TX(5), 36, { f: P.B[0], s: P.B[1], sw: 2.4, rx: 4 });
+    T(K, TX(65), y2 + 2, 'B 收到这 12000 位：5 µs 起，到 125 µs 收完', { a: 'middle', size: 16, c: 'b', fill: P.B[2] });
+    K.line(`M${TX(0)} ${y1 + 12}V${y2 - 24}`, { c: C.RD, w: 1.6, dash: '4 3' }); K.line(`M${TX(5)} ${y1 + 12}V${y2 - 24}`, { c: C.RD, w: 1.6, dash: '4 3' });
+    K.line(`M${TX(0)} 211H${TX(5)}`, { c: C.RD, w: 3.4 }); T(K, TX(5) + 10, 216, '传播时延 5 µs：第一位走完 1000 m', { size: 15, c: 'b', fill: C.RD });
+    T(K, 0, 366, '发送时延＝数据长度÷发送速率（取决于发送端）；传播时延＝线长÷传播速度（取决于介质）。', { size: 16, c: 'b', fill: C.INK });
+    T(K, 0, 394, '每个码元（或比特）多久到另一头，是传播时延。', { size: 15, fill: C.MUT });
+  }
+  if (at === 4) {
+    const g = (y, title, max, wall, wallLab, used, usedLab, unit, col) => {
+      const X0 = 40, W = 520, X = v => X0 + v * W / max;
+      T(K, 0, y - 22, title, { size: 16, c: 'b' }); K.rect(X(wall), y - 10, X(max) - X(wall), 34, { f: C.RDb, s: 'none', rx: 0 });
+      K.rect(X0, y, X(used) - X0, 24, { f: col[0], s: col[1], sw: 2.4, rx: 3 }); T(K, X0 + 8, y + 18, usedLab, { size: 15, c: 'b', fill: col[2] });
+      K.line(`M${X(wall)} ${y - 12}V${y + 28}`, { c: C.RD, w: 3 }); T(K, X(wall) + 6, y + 16, wallLab, { size: 15, c: 'b', fill: C.RD });
+      K.line(`M${X0} ${y + 28}H${X(max)}`, { c: C.MUT, w: 1.4 }); [0, 0.5, 1].forEach(f => { K.line(`M${X(max * f)} ${y + 28}v5`, { c: C.MUT, w: 1.2 }); T(K, X(max * f), y + 50, String(Math.round(max * f)), { a: 'middle', size: 15, c: 'mono', fill: C.MUT }); }); T(K, X(max) + 30, y + 50, unit, { size: 15, fill: C.MUT });
+    };
+    g(176, '码元速率（发送端选）与奈氏上限 2W＝100 MBaud（信道定）', 120, 100, '上限 100', 50, '选了 50', 'MBaud', P.G);
+    g(286, '比特率（发送端选）与香农上限（信道定，30 dB）', 600, 498, '上限约 498', 100, '选了 100', 'Mb/s', P.A);
+    T(K, 0, 372, '信道的能力（W、噪声）给出上限；收发两端选的速率只能在上限之内。', { size: 16, c: 'b', fill: C.GRd });
+    T(K, 0, 394, '“带宽”：Hz 说信道通过的频率范围，b/s 说信道能支持的最高数据速率。', { size: 15, fill: C.MUT });
+  }
+  if (at === 5) {
+    K.rect(0, 0, 700, 400, { f: '#fffdf8', s: C.BORD, rx: 10, sw: 1.6 });
+    const cols = [[0, 176, '量'], [176, 62, '单位'], [238, 170, '由谁决定'], [408, 170, '衡量谁的能力'], [578, 122, '本例数值']];
+    const rows = [
+      [['传播速度'], ['m/s'], ['介质'], ['介质：信号前进多快'], ['2×10^8 m/s']],
+      [['传播时延'], ['s'], ['线长÷传播速度'], ['介质和距离'], ['5 µs']],
+      [['码元速率'], ['Baud'], ['发送端选，', '不超过 2W'], ['发送端：每秒', '发多少码元'], ['50 MBaud']],
+      [['比特率＝数据传输', '速率＝发送速率'], ['b/s'], ['码元速率×每码元', '位数，发送端选'], ['发送端：每秒送', '上线多少位'], ['100 Mb/s']],
+      [['发送时延', '（传输时延）'], ['s'], ['数据长度÷发送速率'], ['发送端：推完一个', '数据要多久'], ['120 µs']],
+      [['信道的极限', '（Hz 带宽、香农）'], ['Hz', 'b/s'], ['信道本身：', 'W、噪声'], ['信道：最多', '能送多快'], ['100 MBaud', '498 Mb/s']]];
+    const y0 = 6, hh = 30, rh = 60;
+    cols.forEach(([x, w, t]) => { K.rect(x, y0, w, hh, { f: '#fbf3df', s: C.BORD, sw: 1.2, rx: 0 }); T(K, x + w / 2, y0 + 21, t, { a: 'middle', size: 15.5, c: 'b' }); });
+    rows.forEach((r, i) => { const y = y0 + hh + i * rh; const pal = [P.R, P.R, P.A, P.A, P.A, P.G][i];
+      cols.forEach(([x, w], j) => { K.rect(x, y, w, rh, { f: j === 0 ? pal[0] : (i % 2 ? '#fbf5e8' : C.BOX), s: C.BORD, sw: 1, rx: 0 });
+        r[j].forEach((l, k) => T(K, x + 6, y + (r[j].length > 1 ? 26 + k * 22 : 36), l, { size: 15, c: j === 0 ? 'b' : '', fill: j === 0 ? pal[2] : C.INK })); }); });
+  }
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

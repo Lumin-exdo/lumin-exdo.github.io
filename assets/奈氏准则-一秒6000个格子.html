@@ -1,0 +1,351 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>奈氏准则：一秒 6000 个格子，6000 格读得对、7000 格读不对</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>奈氏准则：为什么每秒最多 2W 个码元</h1><small>一条 0～3000 Hz 的线：最快的波决定有多少个位置，每个码元发特定形状的波，6000 格读得对，7000 格读不对。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 404" role="img" aria-label="奈氏准则：一秒 6000 个格子，6000 格读得对、7000 格读不对"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>3000 Hz 线上最快的波</h2><span class="tag">$W=3000$ Hz</span></summary><div class="body">
+<table><tr><th>量</th><th>值</th><th>说明</th></tr>
+<tr><td>最快的波</td><td>3000 Hz 正弦</td><td>每秒 3000 个来回，每个来回 1/3000 s</td></tr>
+<tr><td>每个来回的位置</td><td>一个高点、一个低点</td><td>各取一个值</td></tr>
+<tr><td>每秒的位置数</td><td>$3000\times2=6000$</td><td>即 $2W$</td></tr>
+<tr><td>每格时长</td><td>$1/6000$ s≈167 µs</td><td>一格＝一个码元</td></tr></table>
+<p>想让格子更密，就要有每秒超过 3000 个来回的波，这条线不让它通过。</p>
+</div></details>
+<details class="note c-bl"><summary><h2>一个码元单独发出：中间高，两边起伏的波</h2><span class="tag">$\mathrm{sinc}(x)=\sin(\pi x)/(\pi x)$</span></summary><div class="body">
+<p>这个波在自己的格子中心最高（比特 1 时高度为 1），两边一上一下地起伏、慢慢变小。它的频率成分全部落在 0～3000 Hz 内，所以这条线能原样让它通过。它在距峰值 1/6000 s 的整数倍处恰好为 0：也就是另外各格的中心（空心点）。只有这些点是 0，点与点之间并不为 0。</p>
+<p>这个形状有一个来历：假设某一格的中心瞬间送进一个尖脉冲（只有一个点的高度，别处为 0），尖脉冲里含有各种高频，被这条只通过 0～3000 Hz 的线滤掉高频以后，剩下的正是这个波。每格各送一个尖脉冲，滤掉高频后各自变成这样一个波，多个码元的波形就是这些波相加。零点的位置由这条线的 $W$ 决定，不会因为你把格子排得更密而移动，左栏 10 里 7000 格读不对就源自这一点。</p>
+</div></details>
+<details class="note c-gr"><summary><h2>交替的 ±1 叠起来就是 3000 Hz 正弦</h2><span class="tag">$\sum(-1)^k\,\mathrm{sinc}(\tau-k)=\cos\pi\tau$</span></summary><div class="body">
+<p>每格发一个上面的波，高点（1）高度取 +1，低点（0）高度取 −1，交替为 +1、−1、+1……，所有波加起来恰好是 $\cos\pi\tau$（$\tau$ 以格为单位），也就是第 1 幕里最快的 3000 Hz 正弦（红虚线）。所以第 1 幕的最快波，和每格一个波叠加，是同一条线的两种看法；6000 个格子正是这条线最密的排法。图中 6 条细线是窗口内的 6 个波，红虚线把窗口外的格子也算进去。</p>
+</div></details>
+<details class="note c-or"><summary><h2>1010 与 1101 在波上是什么样</h2><span class="tag">高点＝1，低点＝0</span></summary><div class="body">
+<p>1010 对应 高、低、高、低：每格都翻转，叠出来正好是最快的 3000 Hz 波（上一张卡片）。1101 对应 上、上、下、上：前两格都是“高”，中间没有低点，这一段起伏更慢，频率更低，仍在 0～3000 Hz 内，线能通过。图中的 110100 是同一类：每格发一个波，高度 +1／−1，相加得到下面这条线，每格中心恰好经过自己的值。所以不是每格都要翻转才占用带宽；翻转最频繁时才碰到 3000 Hz 这个上限。</p>
+</div></details>
+<details class="note c-rd"><summary><h2>方块波为什么不行：边沿超过最高频率</h2><span class="tag">陡边含高频</span></summary><div class="body">
+<p>把 110100 画成方块（虚线），每个翻转处有垂直的边沿，垂直的边是很多高频成分叠出来的，其中含有高于 3000 Hz 的部分。线把它们挡掉，边沿变缓，并在前后格里留下尾巴，这是码间串扰。图中红线是方块过线以后的样子，格子中心读到的是 +0.97、+0.85、−0.73、+0.73、−0.85、−0.97，而不是发出的 ±1。</p>
+<p>和前面“尖脉冲滤掉高频”的比较：尖脉冲只占一个点，滤出的波在每个格子中心恰好读回自己的值；方块占满一整格，过线后形状相近，但中心读数已被邻格的尾巴拉偏。因此“高低高低”不发方块，而是每个码元发一个特定形状的波（第 2 幕）：频率成分全在 0～3000 Hz 内，在别的格子中心恰好是 0。</p>
+</div></details>
+<details class="note c-bl"><summary><h2>6000 格：每个中心上，别人的波都是 0</h2><span class="tag">零点在 167 µs 的整数倍</span></summary><div class="body">
+<p>一个码元的波在自己的格子中心最高（±1），在距峰值 $1/6000$ s 的整数倍处为 0。格子也是每 $1/6000$ s 一格，所以别的格子的中心正好落在它的零点上：每格读到的只有自己的值。第 3 格中心：自己 −1，其余 5 个波各为 0，读 −1。</p>
+</div></details>
+<details class="note c-rd"><summary><h2>7000 格：中心不在零点上</h2><span class="tag">逐项相加</span></summary><div class="body">
+<p>格子缩到 $1/7000$ s≈143 µs，但每个波的形状不变：形状由信道的 0～3000 Hz 限制决定，不能更快，所以零点仍在 167 µs 的整数倍上。只是把这些波平移、排得更密再相加，格子中心就不在零点上。第 1 格中心上，邻格的波的值是 $\mathrm{sinc}(6j/7)$（$j$ 为间隔格数）：</p>
+<table><tr><th>间隔 $j$</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr>
+<tr><td>值 $\mathrm{sinc}(6j/7)$</td><td>+0.161</td><td>−0.145</td><td>+0.121</td><td>−0.091</td><td>+0.058</td><td>−0.027</td></tr></table>
+<p>这六个邻格依次发 +1、−1、+1、+1、−1、−1，与上面各值相乘后加上自己的 +1：读到 $1-0.161-0.145-0.121-0.091-0.058-0.027\approx$ +0.40，不是 +1。每个波在别处不是 0，加起来的和在这个中心就不是 0：“每个波在别处为 0”只在 6000 格成立。</p>
+</div></details>
+<details class="note c-or"><summary><h2>7000 格：每格读到什么</h2><span class="tag">偏离 ±1</span></summary><div class="body">
+<p>7 格依次读到 +0.40、−0.26、+0.18、−0.15、+0.18、−0.26、+0.40，离发出的 ±1 很远，再有一点噪声就读反。所以每秒码元数超过 $2W$，码间串扰就消不掉。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 404
+const F9 = (() => {
+const ST = [
+ { b: '①最快', t: '线上最快的波：3000 Hz 正弦', n: '3000 Hz＝每秒 3000 个来回；每个来回一个高点、一个低点，共 6000 个位置／秒，每格 1/6000 s≈167 µs。' },
+ { b: '②单码', t: '一个码元单独发出的波：中间高，两边起伏', n: '它的频率成分全在 0～3000 Hz，能通过；在另外各格的中心恰好是 0（空心点）。形状由线决定，格子排密了也不变。' },
+ { b: '③叠加', t: '每格发一个这样的波，高低交替叠起来就是第 1 幕的正弦', n: '高点＝1、低点＝0，波的高度 +1、−1 交替；6 个波相加（红虚线）正好是 3000 Hz 正弦。' },
+ { b: '④高低串', t: '任意一串码元：每格一个波，相加', n: '110100 的前四格“上上下上”＝1101；两个“上”相邻是更慢的变化，仍在 0～3000 Hz 内。' },
+ { b: '⑤方块', t: '直接发方块波，线滤掉高于 3000 Hz 的成分，就是这样', n: '边沿变缓、拖出尾巴，格心读到 0.97、0.85、−0.73…，不再是 ±1；所以不发方块，改发幕 2 的波。' }
+];
+const ORDER = [1, 4, 5, 2, 3]; // 第 a0+1 幕画原来的第几个分支
+
+const X0 = 22, TX = t => X0 + t * 0.66, T6 = 1000 / 6, CEN = k => (k + 0.5) * T6;
+const sinc = x => x === 0 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x);
+const SEQ = [1, 1, -1, 1, -1, -1];
+const Si = (() => { const c = new Map(); return x => { const key = Math.round(x * 1e4); if (c.has(key)) return c.get(key); const n = 400, h = x / n; let s = 0; for (let i = 0; i <= n; i++) { const u = i * h, f = u === 0 ? 1 : Math.sin(u) / u; s += f * (i === 0 || i === n ? 1 : i % 2 ? 4 : 2); } const r = s * h / 3; c.set(key, r); return r; }; })();
+const lp = t => SEQ.reduce((a, v, k) => { const tau = (t - CEN(k)) / T6; return a + v * (Si(Math.PI * (tau + .5)) - Si(Math.PI * (tau - .5))) / Math.PI; }, 0);
+function cells(K, y0, h, n) { for (let i = 0; i < 6; i++) K.rect(TX(i * T6), y0, T6 * 0.66, h, { f: i % 2 ? '#eaf1fa' : '#fdf0df', s: 'none', rx: 0 }); }
+function axis(K) { const y = 350; K.line(`M${TX(0)} ${y}H${TX(1000)}`, { c: C.MUT, w: 1.6 }); [0, 250, 500, 750, 1000].forEach(t => { K.line(`M${TX(t)} ${y}v6`, { c: C.MUT, w: 1.4 }); T(K, TX(t), y + 24, String(t), { a: t === 1000 ? 'end' : 'middle', size: 15, c: 'mono', fill: C.MUT }); }); T(K, TX(1000) + 4, y + 24, 'µs', { size: 15, fill: C.MUT }); }
+function draw(a0, K) {
+  const at = ORDER[a0], cyA = 112, cyB = 284, sc = 46, YA = v => cyA - sc * v, YB = v => cyB - sc * v;
+  axis(K);
+  const wave = (f, Y, col, w, dash) => K.line(N21.path(f, 0, 1000, 330, TX, Y), { c: col, w, dash });
+  const dots = (Y, vals, cen) => vals.forEach((v, i) => N21.dot(K, TX(cen(i)), Y(v), 5.5, v > 0 ? C.OR : C.BL, '#fff', 2));
+  if (at === 1 || at === 2 || at === 5) {
+    G(at === 2 ? 1 : 2, () => {
+      cells(K, 40, 146, 6); K.line(`M${TX(0)} ${cyA}H${TX(1000)}`, { c: C.LINE, w: 1.4 });
+      const sine = t => Math.sin(2 * Math.PI * 0.003 * t); wave(sine, YA, C.INK, 3);
+      dots(YA, [1, -1, 1, -1, 1, -1], CEN);
+      [...'101010'].forEach((b, i) => { T(K, TX(CEN(i)), i % 2 ? YA(-1) + 26 : YA(1) - 12, at === 1 ? (i % 2 ? '低' : '高') : b, { a: 'middle', size: 16, c: 'b', fill: i % 2 ? C.BLd : C.ORd }); });
+      if (at === 1) { T(K, 12, 36, '这条线能通过 0～3000 Hz：最快的波每秒 3000 个来回', { size: 16, c: 'b', fill: C.RD }); }
+    });
+  }
+  if (at === 1) {
+    T(K, 12, 226, '3000 个来回／秒 × 每个来回 2 个位置（一高一低）＝ 6000 个位置／秒', { size: 16, c: 'b' });
+    T(K, 12, 256, '1 ms＝1000 µs 里有 3 个来回、6 个位置；每格 1/6000 s ≈ 167 µs', { size: 16, fill: C.INK });
+    T(K, 12, 286, '想让格子更密，就要有每秒超过 3000 个来回的波，这条线不让它通过', { size: 16, fill: C.INK });
+  }
+  if (at === 2) {
+    T(K, 12, 36, '101010：高＝1、低＝0，正是最快的 3000 Hz 波', { size: 16, c: 'b', fill: C.ORd });
+    G(2, () => {
+      cells(K, 218, 126, 6); K.line(`M${TX(0)} ${cyB}H${TX(1000)}`, { c: C.LINE, w: 1.4 });
+      wave(t => SEQ.reduce((a, v, k) => a + v * sinc((t - CEN(k)) / T6), 0), YB, C.INK, 3);
+      dots(YB, SEQ, CEN); SEQ.forEach((v, i) => T(K, TX(CEN(i)), v > 0 ? YB(1) - 12 : YB(-1) + 26, v > 0 ? '1' : '0', { a: 'middle', size: 16, c: 'b', fill: v > 0 ? C.ORd : C.BLd }));
+      T(K, 12, 208, '110100：相邻两个“上”＝一段更慢的变化，频率更低，仍在 0～3000 Hz 内', { size: 16, c: 'b', fill: C.GRd });
+    });
+  }
+  if (at === 3) {
+    cells(K, 60, 250, 6); K.line(`M${TX(0)} 190H${TX(1000)}`, { c: C.LINE, w: 1.4 });
+    const Y3 = v => 190 - 70 * v;
+    K.line(SEQ.map((v, k) => (k ? `V${Y3(v)}` : `M${TX(0)} ${Y3(v)}`) + `H${TX((k + 1) * T6)}`).join(''), { c: C.MUT, w: 2.4, dash: '7 5' });
+    wave(lp, Y3, C.RD, 3.2);
+    T(K, 12, 40, '虚线：直接发方块波 110100　红线：滤掉高于 3000 Hz 之后，不再穿过彩点', { size: 16, c: 'b', fill: C.RD });
+    SEQ.forEach((v, i) => K.el('circle', { cx: TX(CEN(i)), cy: Y3(v), r: 6, fill: '#fff', stroke: v > 0 ? C.OR : C.BL, 'stroke-width': 2.4 }));
+    SEQ.forEach((v, i) => N21.dot(K, TX(CEN(i)), Y3(lp(CEN(i))), 5, C.RD, '#fff', 1.6));
+    T(K, TX(CEN(1)) - 6, 300, '边沿变缓，前后拖着一上一下的尾巴', { a: 'middle', size: 16, c: 'b', fill: C.RD });
+    T(K, TX(1000), 334, '空心圈＝发出的值　红点＝格心实际读到 +0.97、+0.85、−0.73、+0.73、−0.85、−0.97，不是 ±1', { a: 'end', size: 15, fill: C.INK });
+  }
+  if (at === 4) {
+    const c = 2, YP = v => 160 - 82 * v;
+    cells(K, 46, 160, 6); K.line(`M${TX(0)} 160H${TX(1000)}`, { c: C.LINE, w: 1.4 });
+    wave(t => sinc((t - CEN(c)) / T6), YP, C.BL, 3.6);
+    N21.dot(K, TX(CEN(c)), YP(1), 6, C.BL, '#fff', 2);
+    [0, 1, 3, 4, 5].forEach(j => K.el('circle', { cx: TX(CEN(j)), cy: 160, r: 6, fill: '#fff', stroke: C.BLd, 'stroke-width': 2.4 }));
+    T(K, 12, 30, '一个码元（比特 1）单独发出时的波形：在自己的格子中心最高', { size: 16, c: 'b', fill: C.BLd });
+    T(K, TX(CEN(c)) + 10, YP(1) + 4, '＝1', { size: 16, c: 'b', fill: C.BLd });
+    T(K, TX(CEN(5)) , 206, '空心点：另外 5 格中心都是 0', { a: 'end', size: 15, c: 'b', fill: C.BLd });
+    T(K, 12, 250, '＝在这一格中心送进一个尖脉冲，滤掉高于 3000 Hz 的成分后剩下的波', { size: 15, fill: C.INK });
+    // 频率成分
+    const fy = 280; K.line(`M${TX(0)} ${fy + 40}H${TX(1000)}`, { c: C.MUT, w: 1.6 });
+    const FX = f => TX(40) + f * 0.12; [0, 1000, 2000, 3000, 4000].forEach(f => { K.line(`M${FX(f)} ${fy + 40}v6`, { c: C.MUT, w: 1.4 }); T(K, FX(f), fy + 66, f === 4000 ? '4000 Hz' : String(f), { a: 'middle', size: 15, c: 'mono', fill: C.MUT }); });
+    K.rect(FX(0), fy, FX(3000) - FX(0), 40, { f: C.BLb, s: C.BL, sw: 2.2, rx: 3 }); T(K, FX(1500), fy + 26, '这个波的频率成分：0～3000 Hz，都能通过', { a: 'middle', size: 16, c: 'b', fill: C.BLd });
+    K.rect(FX(3000), fy, FX(4000) - FX(3000), 40, { f: '#f1ebdd', s: C.LINE, sw: 1.4, rx: 0 }); T(K, FX(3500), fy + 26, '无', { a: 'middle', size: 15, fill: C.MUT });
+  }
+  if (at === 5) {
+    G(2, () => {
+      cells(K, 218, 126, 6); K.line(`M${TX(0)} ${cyB}H${TX(1000)}`, { c: C.LINE, w: 1.4 });
+      for (let k = 0; k < 6; k++) wave(t => (k % 2 ? -1 : 1) * sinc((t - CEN(k)) / T6), YB, k % 2 ? C.BL : C.OR, 1.5);
+      const sum = t => { let a = 0; for (let k = -60; k < 66; k++) a += (k % 2 ? -1 : 1) * sinc((t - CEN(k)) / T6); return a; };
+      wave(sum, YB, C.RD, 3.2, '7 5');
+      T(K, 12, 208, '每格一个这样的波（±1 交替），6 条细线；红虚线＝窗口外的格子也算上的叠加', { size: 15, c: 'b', fill: C.RD });
+    });
+    T(K, 12, 36, '上排：最快的 3000 Hz 正弦；虚线对准它', { size: 16, c: 'b', fill: C.INK });
+    [0, 1, 2, 3, 4, 5].forEach(i => K.line(`M${TX(CEN(i))} ${YA(i % 2 ? -1 : 1) + (i % 2 ? 6 : -6)}V${YB(i % 2 ? -1 : 1) + (i % 2 ? -6 : 6)}`, { c: '#bdb09a', w: 1.2, dash: '3 4' }));
+  }
+}
+return { ST, draw };
+})();
+const F10 = (() => {
+const ST = [
+ { b: '⑥零点', t: '只在特定位置为 0，其余位置有值', n: '一个码元的波在自己的格子中心最高；只在距峰值 1/6000 s 的整数倍处为 0（空心点），其余位置有值（尾巴）。' },
+ { b: '⑦单格', t: '第 3 格中心：自己 −1，其余 5 个波都是 0', n: '第 3 格中心上，自己的波是 −1，另外 5 个波在这里恰好都经过 0，加起来读到 −1。' },
+ { b: '⑧每格', t: '每个格子中心读到的就是自己的值', n: '每个格子中心都对准另外各波的零点；+1、+1、−1、+1、−1、−1 读出来一个不差。' },
+ { b: '⑨7000', t: '格子排密了，每个波的形状不变，零点仍在 167 µs 的整数倍', n: '信道只让 0～3000 Hz 通过，波的形状因此固定，不能更快；只是把这些波平移、挤进 143 µs 一格再相加，格心就不在零点上。' },
+ { b: '⑩求和', t: '第 1 格中心：自己 +1，加上 6 个邻波的尾巴', n: '邻波在此的值＝单位尾巴×邻格的值，加起来 1−0.161−0.145−0.121−0.091−0.058−0.027≈+0.40，不是 +1。' },
+ { b: '⑪偏离', t: '每格读到的都偏离 ±1', n: '读到 +0.40、−0.26、+0.18、−0.15、+0.18、−0.26、+0.40，离发出的 ±1 很远，再有一点噪声就读反了。' }
+];
+const X0 = 22, TX = t => X0 + t * 0.66, T6 = 1000 / 6, T7 = 1000 / 7, CY = 142, SC = 56, Y = v => CY - SC * v;
+const sinc = x => x === 0 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x);
+const SEQ6 = [1, 1, -1, 1, -1, -1], SEQ7 = [1, -1, 1, -1, 1, -1, 1];
+const c6 = k => (k + .5) * T6, c7 = k => (k + .5) * T7;
+const fmt = (v, d = 2) => (v < 0 ? '−' : '+') + Math.abs(v).toFixed(d);
+const pul = (c, a) => t => a * sinc((t - c) / T6);
+function drawCells(K, n, T, y0 = 62, h = 160) { for (let i = 0; i < n; i++) K.rect(TX(i * T), y0, T * 0.66, h, { f: i % 2 ? '#eaf1fa' : '#fdf0df', s: 'none', rx: 0 }); }
+function axis(K) { const y = 374; K.line(`M${TX(0)} ${y}H${TX(1000)}`, { c: C.MUT, w: 1.6 }); [0, 250, 500, 750, 1000].forEach(t => { K.line(`M${TX(t)} ${y}v6`, { c: C.MUT, w: 1.4 }); T(K, TX(t), y + 24, String(t), { a: t === 1000 ? 'end' : 'middle', size: 15, c: 'mono', fill: C.MUT }); }); T(K, TX(1000) + 4, y + 24, 'µs', { size: 15, fill: C.MUT }); }
+function sent(K, seq, cen, n) { seq.forEach((v, i) => N21.cell(K, TX(cen(i)) - 22, 34, 44, 24, fmt(v, 0), v > 0 ? P.A : P.B, { size: 15, dy: 6, rx: 3 })); T(K, 0, 28, '', {}); }
+function wave(K, f, col, w, dash) { K.line(N21.path(f, 0, 1000, 330, TX, Y), { c: col, w, dash }); }
+function draw(a0, K) {
+  const at = a0 + 1;
+  const six = at <= 3, N = six ? 6 : 7, TT = six ? T6 : T7, cen = six ? c6 : c7, seq = six ? SEQ6 : SEQ7;
+  drawCells(K, N, TT); K.line(`M${TX(0)} ${CY}H${TX(1000)}`, { c: C.LINE, w: 1.4 });
+  if (at !== 1 && at !== 5) { sent(K, seq, cen, N); }
+  if (at !== 5) axis(K);
+  if (at === 1) {
+    const k = 2; wave(K, pul(c6(k), 1), C.BL, 3.6);
+    for (let j = -2; j <= 3; j++) { if (j === 0) continue; const t = c6(k) + j * T6; if (t > 0 && t < 1000) K.el('circle', { cx: TX(t), cy: CY, r: 6, fill: '#fff', stroke: C.BLd, 'stroke-width': 2.4 }); }
+    N21.dot(K, TX(c6(k)), Y(1), 6, C.BL, '#fff', 2); T(K, TX(c6(k)) + 10, Y(1) + 4, '峰值＝1', { size: 15, c: 'b', fill: C.BLd });
+    for (let i = 0; i <= 6; i++) { const t = c6(k) + (i - k) * T6; if (t >= 0 && t <= 1000) { K.line(`M${TX(t)} ${CY + 70}v10`, { c: C.BLd, w: 1.6 }); } }
+    T(K, 12, 36, '一个码元单独发出时的波形（粗蓝线）', { size: 16, c: 'b', fill: C.BLd });
+    T(K, 12, 252, '空心点：距峰值 1/6000 s ≈ 167 µs 的整数倍处，值恰好是 0', { size: 16, c: 'b', fill: C.BLd });
+    T(K, 12, 282, '只有这些点是 0。点与点之间，波形不是 0（图里的起伏尾巴）', { size: 16, fill: C.INK });
+    T(K, 12, 312, '“其他位置都是 0”说的只是这些点，不是整条线都是 0', { size: 16, c: 'b', fill: C.RD });
+  }
+  if (at === 2 || at === 3) {
+    SEQ6.forEach((a, k) => wave(K, pul(c6(k), a), k === 2 && at === 2 ? C.BL : (a > 0 ? C.OR : C.BL), k === 2 && at === 2 ? 3.6 : 1.4));
+    const sum = t => SEQ6.reduce((s, a, k) => s + a * sinc((t - c6(k)) / T6), 0);
+    if (at === 3) wave(K, sum, C.INK, 3);
+    if (at === 2) {
+      const t0 = c6(2); K.line(`M${TX(t0)} 64V224`, { c: C.RD, w: 2.4, dash: '5 4' });
+      SEQ6.forEach((a, k) => { const v = a * sinc((t0 - c6(k)) / T6); if (k === 2) N21.dot(K, TX(t0), Y(v), 6.5, C.BL, '#fff', 2); else K.el('circle', { cx: TX(t0), cy: Y(0), r: 5.5, fill: '#fff', stroke: C.BLd, 'stroke-width': 2.2 }); });
+      // 求和行
+      T(K, 12, 258, '第 3 格中心上，6 个波各自的值：', { size: 16, c: 'b', fill: C.RD });
+      SEQ6.forEach((a, k) => { const v = a * sinc((c6(2) - c6(k)) / T6); N21.cell(K, 20 + k * 78, 270, 70, 34, k === 2 ? '−1' : '0', k === 2 ? P.B : P.W, { size: 17, dy: 6, rx: 4, hot: k === 2 }); T(K, 55 + k * 78, 324, '波 ' + (k + 1), { a: 'middle', size: 15, fill: C.MUT }); });
+      T(K, 500, 292, '加起来 ＝ −1', { size: 20, c: 'b', fill: C.RD }); T(K, 500, 322, '读到的正是自己', { size: 16, fill: C.RD });
+    }
+    if (at === 3) {
+      SEQ6.forEach((a, k) => { N21.dot(K, TX(c6(k)), Y(a), 6, a > 0 ? C.OR : C.BL, '#fff', 2.2); T(K, TX(c6(k)), a > 0 ? Y(a) - 12 : Y(a) + 26, fmt(a, 0), { a: 'middle', size: 15, c: 'b mono', fill: a > 0 ? C.ORd : C.BLd }); });
+      T(K, 12, 258, '黑线＝6 个波加起来；每个格子中心都从发出的值上穿过', { size: 16, c: 'b', fill: C.INK });
+      T(K, 12, 290, '每个中心对准另外各波的零点，所以读到的只有自己的值', { size: 16, fill: C.INK });
+      T(K, 12, 320, '读出：+1、+1、−1、+1、−1、−1，和发出的一样', { size: 16, c: 'b', fill: C.GRd });
+    }
+  }
+  if (at === 4) {
+    const k = 1; wave(K, pul(c7(k), 1), C.BL, 3.4);
+    for (let j = -1; j <= 6; j++) { if (j === 0) continue; const t = c7(k) + j * T6; if (t > 0 && t < 1000) K.el('circle', { cx: TX(t), cy: CY, r: 5, fill: '#fff', stroke: C.BLd, 'stroke-width': 2.2 }); }
+    [0, 2, 3, 4, 5, 6].forEach(j => { const v = sinc((c7(j) - c7(k)) / T6); N21.dot(K, TX(c7(j)), Y(v), 5.5, C.RD, '#fff', 1.8); HT(K, TX(c7(j)), Y(v) + (v > 0 ? -12 : 24), fmt(v, 3), { a: 'middle', size: 15, c: 'b mono', fill: C.RD }); });
+    T(K, 12, 252, '蓝线：第 2 格的波，空心点＝它的零点（仍在 167 µs 的整数倍处）', { size: 16, c: 'b', fill: C.BLd });
+    T(K, 12, 282, '红点：其余格子的中心（143 µs 的整数倍）落在这个波上的值，都不是 0', { size: 16, c: 'b', fill: C.RD });
+    T(K, 12, 312, '零点由信道的 W 定，与你把格子排多密无关', { size: 16, fill: C.INK });
+  }
+  if (at === 5) {
+    wave(K, t => 0, C.LINE, 0);
+    SEQ7.forEach((a, k) => wave(K, pul(c7(k), a), k === 0 ? C.OR : '#cfc5b3', k === 0 ? 3.2 : 1.4));
+    const t0 = c7(0); K.line(`M${TX(t0)} 64V224`, { c: C.RD, w: 2.4, dash: '5 4' });
+    const rows = [['单位尾巴', j => fmt(sinc(6 * j / 7), 3).replace('+1.000', '1')], ['邻格发的值', j => fmt(SEQ7[j], 0)], ['贡献', j => fmt(SEQ7[j] * sinc(6 * j / 7), 3).replace('+1.000', '+1')]];
+    let tot = 0; for (let j = 0; j < 7; j++) tot += SEQ7[j] * sinc(6 * j / 7);
+    rows.forEach(([lab, f], ri) => { const y = 240 + ri * 34; T(K, 8, y + 23, lab, { size: 15, c: 'b' });
+      for (let j = 0; j < 7; j++) N21.cell(K, 100 + j * 70, y, 66, 30, f(j), ri === 2 ? (j === 0 ? P.A : P.R) : P.N, { size: 15, dy: 5.5, rx: 3 }); });
+    T(K, 100 + 7 * 70 + 6, 300, '', {});
+    T(K, 8, 362, '加起来：1 − 0.161 − 0.145 − 0.121 − 0.091 − 0.058 − 0.027 ＝ ' + fmt(tot, 2) + '（本该是 +1）', { size: 17, c: 'b', fill: C.RD });
+    K.rect(100, 240 + 68 - 2, 70, 36, { f: 'none', s: C.OR, sw: 2.4, rx: 4 });
+    T(K, 12, 36, '只看第 1 格中心（红虚线）：7 个波在这一点的值', { size: 16, c: 'b', fill: C.RD });
+    SEQ7.forEach((a, k) => { const v = a * sinc((t0 - c7(k)) / T6); N21.dot(K, TX(t0), Y(v), k === 0 ? 6.5 : 5, k === 0 ? C.OR : C.RD, '#fff', 1.8); });
+  }
+  if (at === 6) {
+    const sum = t => SEQ7.reduce((s, a, k) => s + a * sinc((t - c7(k)) / T6), 0);
+    SEQ7.forEach((a, k) => wave(K, pul(c7(k), a), a > 0 ? C.OR : C.BL, 1.2));
+    wave(K, sum, C.RD, 3.2);
+    SEQ7.forEach((a, k) => { K.el('circle', { cx: TX(c7(k)), cy: Y(a), r: 6, fill: '#fff', stroke: a > 0 ? C.OR : C.BL, 'stroke-width': 2.4 }); const v = sum(c7(k)); N21.dot(K, TX(c7(k)), Y(v), 5, C.RD, '#fff', 1.6); HT(K, TX(c7(k)), Y(v) + (v > 0 ? 24 : -12), fmt(v, 2), { a: 'middle', size: 15, c: 'b mono', fill: C.RD }); });
+    T(K, 12, 252, '空心圈＝发出的 ±1　红点＝线上实际量到的', { size: 16, c: 'b', fill: C.RD });
+    T(K, 12, 284, '最大偏差：第 1 格发 +1，读到 +0.40；第 2 格发 −1，读到 −0.26', { size: 16, fill: C.INK });
+    T(K, 12, 314, '加上一点噪声，就有格子被读反：7000 个格子超出了这条线的承受能力', { size: 16, c: 'b', fill: C.RD });
+  }
+}
+return { ST, draw };
+})();
+const ST = [...F9.ST, ...F10.ST];
+const draw = (a0, K) => a0 < F9.ST.length ? F9.draw(a0, K) : F10.draw(a0 - F9.ST.length, K);
+(() => { const st = document.createElement('style'); st.textContent = 'nav#steps button{padding:4px 2px!important;font-size:12px!important}nav#steps{gap:3px!important}nav#steps>div{gap:3px!important}'; document.head.appendChild(st); })();
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

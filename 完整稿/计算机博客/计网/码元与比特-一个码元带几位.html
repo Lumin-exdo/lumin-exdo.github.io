@@ -1,0 +1,219 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>码元与比特：一个码元带几位</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>码元与比特：同样每秒 6000 个码元，每个码元带几位</h1><small>三行都是每秒 6000 个码元，只是每格分的档数不同；最后一幕把波特与比特的五道算法列成表。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 404" role="img" aria-label="码元与比特：一个码元带几位"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>怎样从电压档数得到位数</h2><span class="tag">$V$ 档 → $\log_2V$ 位</span></summary><div class="body">
+<table><tr><th>电压档数 $V$</th><th>每个码元带几位</th><th>怎么来的</th><th>6 格带走的比特</th><th>6000 Baud 时的数据率</th></tr>
+<tr><td>2</td><td>1 位</td><td>两档只能区分 0、1：$\log_22=1$</td><td>前 6 位</td><td>$6000\times1=6000$ b/s</td></tr>
+<tr><td>4</td><td>2 位</td><td>档号 00、01、10、11：$\log_24=2$</td><td>前 12 位</td><td>$6000\times2=12$ kb/s</td></tr>
+<tr><td>16</td><td>4 位</td><td>档号 0000～1111：$\log_216=4$</td><td>全部 24 位</td><td>$6000\times4=24$ kb/s</td></tr></table>
+<p>三行码元速率相同，都是 6000 波特（与每个码元分几档无关）；比特率不同，等于码元速率乘每个码元的位数。</p>
+</div></details>
+<details class="note c-or"><summary><h2>五道反向与采样率的算法</h2><span class="tag">先写已知，再一步一步算</span></summary><div class="body">
+<table><tr><th>题</th><th>已知</th><th>第 1 步</th><th>第 2 步</th><th>答</th></tr>
+<tr><td>1</td><td>2400 b/s，4 个相位</td><td>每码元 $\log_24=2$ 位</td><td>$2400\div2$</td><td>1200 Baud</td></tr>
+<tr><td>2</td><td>64 kb/s，4 个有效离散值</td><td>每码元 2 位</td><td>$64\text{ k}\div2$</td><td>32 kBaud</td></tr>
+<tr><td>3</td><td>8 相位×每相位 2 种幅度，1200 Baud</td><td>状态 $8\times2=16$，4 位</td><td>$1200\times4$</td><td>4800 b/s</td></tr>
+<tr><td>4</td><td>1000 Baud，要 4 kb/s</td><td>每码元 $4000\div1000=4$ 位</td><td>$2^4$</td><td>16 种取值</td></tr>
+<tr><td>5</td><td>每 $1/8$ s 采样一次，16 种状态</td><td>采样率 8 Hz，码元速率 8 Baud；每码元 4 位</td><td>$8\times4$</td><td>32 b/s</td></tr></table>
+</div></details>
+<details class="note c-rd"><summary><h2>档数能不能一直加到 64、256</h2><span class="tag">见左栏 11</span></summary><div class="body">
+<p>这里只限制每秒能送几个码元（见左栏 9、10），没限制每个码元分几档。无噪声的理想线路上档数可无限加；实际线路有噪声，档分得越细相邻两档电压差越小，噪声一抖就读成旁边一档。能分清多少档由噪声决定，见左栏 11。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 404
+const ST = [
+ { b: '① 2 档', t: '每格带 1 位', n: '每秒 6000 个码元（6000 Baud），每格 1/6000 s；电压分 0、1 两档，6 格依次带走 0、1、1、0、1、0，共 6 位：6000 b/s。' },
+ { b: '② 4 档', t: '每格带 2 位', n: '码元速率不变，电压分 4 档，档号写成 2 位二进制：6 格带走 01、10、10、11、00、11，共 12 位：12 kb/s。' },
+ { b: '③ 16 档', t: '每格带 4 位', n: '16 档每格带 $\\log_2 16=4$ 位：6 格带走 0110、1011、0011、1001、0101、1110，共 24 位，正好是整串：24 kb/s。' },
+ { b: '④ 波特', t: '同样 6000 Baud，比特率相差 4 倍', n: '比特率＝码元速率×每码元的位数 $\\log_2 V$：二进制 6000 b/s，4 档 12 kb/s，16 档 24 kb/s。' },
+ { b: '⑤ 反算', t: '已知三个量中的两个，求第三个', n: '例 1、2 已知比特率求波特率；例 3 已知波特率求比特率；例 4 求每个码元要有几种取值；例 5 用采样率数码元。' }
+];
+const S = '011010110011100101011110', sx = 70, sw = 100, nS = 6;
+const ROWS = [
+  { V: 2, k: 1, top: 22, h: 104, cy: 50, lv: 88, step: 28, pal: P.B, head: '2 档 · 每格 1 位：6 格带走前 6 位', res: '6000 × 1 ＝ 6000 b/s' },
+  { V: 4, k: 2, top: 130, h: 124, cy: 158, lv: 194, step: 17, pal: P.G, head: '4 档 · 每格 2 位：6 格带走前 12 位', res: '6000 × 2 ＝ 12 kb/s' },
+  { V: 16, k: 4, top: 258, h: 140, cy: 290, lv: 322, step: 4.6, pal: P.A, head: '16 档 · 每格 4 位：6 格带走全部 24 位', res: '6000 × 4 ＝ 24 kb/s' }];
+function rowDraw(K, r, ri) {
+  const { V, k, top, h, cy, lv, step, pal } = r, lvH = (V - 1) * step;
+  K.rect(0, top, 700, h, { f: ri % 2 ? '#fbf5e8' : C.BOX, s: C.BORD, rx: 10, sw: 1.4 });
+  T(K, 12, top + 22, r.head, { size: 17, c: 'b', fill: pal[2] }); T(K, 688, top + 22, r.res, { a: 'end', size: 17, c: 'b', fill: pal[2] });
+  K.line(`M${sx - 8} ${lv - 6}V${lv + lvH + 6}`, { c: pal[1], w: 2.5 });
+  for (let n = 0; n < V; n++) { const y = lv + (V - 1 - n) * step; K.line(`M${sx - 14} ${y}H${sx - 4}`, { c: pal[1], w: 1.6 }); K.line(`M${sx} ${y}H${sx + nS * sw}`, { c: '#e3d9c4', w: 1, dash: '2 4' });
+    if (V < 16 || n % 5 === 0 || n === 15) T(K, sx - 18, y + 5, n.toString(2).padStart(k, '0'), { a: 'end', size: 15, c: 'mono', fill: pal[2] }); }
+  T(K, 8, cy + 18, '档号', { size: 15, fill: C.MUT });
+  for (let i = 0; i <= nS; i++) K.line(`M${sx + i * sw} ${cy}V${lv + lvH + 6}`, { c: '#cfc7b8', w: 1, dash: '4 4' });
+  let d = '';
+  for (let i = 0; i < nS; i++) {
+    const bs = S.slice(i * k, i * k + k), n = parseInt(bs, 2), y = lv + (V - 1 - n) * step, cx = sx + i * sw + sw / 2;
+    N21.cell(K, sx + i * sw + 10, cy, sw - 20, 26, bs, pal, { size: 16, dy: 6 });
+    K.line(`M${cx} ${cy + 28}V${y - 5}`, { c: pal[1], w: 1.2, dash: '3 3' });
+    d += (i ? 'L' : 'M') + (sx + i * sw) + ' ' + y + 'H' + (sx + (i + 1) * sw);
+    if (i < nS - 1) { const n2 = parseInt(S.slice((i + 1) * k, (i + 1) * k + k), 2); d += 'V' + (lv + (V - 1 - n2) * step); }
+  }
+  K.line(d, { c: pal[1], w: 3 });
+  for (let i = 0; i < nS; i++) { const n = parseInt(S.slice(i * k, i * k + k), 2); N21.dot(K, sx + i * sw + sw / 2, lv + (V - 1 - n) * step, 5.5, pal[1], '#fff', 2); }
+}
+function draw(a0, K) {
+  const at = a0 + 1;
+  if (at <= 4) {
+    T(K, 0, 16, '24 位比特串 ' + S + '；每格 1/6000 s，画前 6 格', { size: 15, fill: C.MUT });
+    ROWS.forEach((r, ri) => G(at === 4 ? 2 : (at < ri + 1 ? 0 : (at === ri + 1 ? 2 : 1)), () => rowDraw(K, r, ri)));
+    if (at === 4) { ROWS.forEach(r => { K.rect(500, r.top + 4, 192, 26, { f: 'none', s: C.RD, sw: 2.4, rx: 6 }); });
+    }
+    return;
+  }
+  // 第 5 幕：五道反向算法
+  const cols = [[0, 40, '例'], [40, 232, '已知'], [272, 220, '每个码元带几位'], [492, 108, '算式'], [600, 100, '答']];
+  const rows = [
+    ['1', ['比特率 2400 b/s', '4 个相位'], '$\\log_2 4=2$ 位', '$2400\\div2$', '1200 Baud'],
+    ['2', ['比特率 64 kb/s', '每码元 4 个有效离散值'], '$\\log_2 4=2$ 位', '$64\\,\\text{k}\\div2$', '32 kBaud'],
+    ['3', ['波特率 1200 Baud', '8 种相位×2 种幅度的 QAM'], ['$8\\times2=16$ 种', '$\\log_2 16=4$ 位'], '$1200\\times4$', '4800 b/s'],
+    ['4', ['波特率 1000 Baud，要 4 kb/s', '求每个码元的取值数'], '$4000\\div1000=4$ 位', '$2^4$', '16 种'],
+    ['5', ['每 1/8 s 采样一次', '共 16 种状态'], ['采样率 8 Hz＝8 Baud', '$\\log_2 16=4$ 位'], '$8\\times4$', '32 b/s']];
+  const y0 = 8, hh = 34, rh = 70;
+  K.rect(0, y0, 700, hh + rh * 5, { f: C.BOX, s: C.BORD, rx: 10, sw: 1.6 });
+  cols.forEach(([x, w, t]) => { K.rect(x, y0, w, hh, { f: '#fbf3df', s: C.BORD, sw: 1.2, rx: 0 }); T(K, x + w / 2, y0 + 23, t, { a: 'middle', size: 16, c: 'b' }); });
+  rows.forEach((r, i) => {
+    const y = y0 + hh + i * rh;
+    cols.forEach(([x, w]) => K.rect(x, y, w, rh, { f: i % 2 ? '#fbf5e8' : C.BOX, s: C.BORD, sw: 1, rx: 0 }));
+    T(K, 20, y + 40, r[0], { a: 'middle', size: 18, c: 'b', fill: C.OR });
+    T(K, 48, y + 28, r[1][0], { size: 15, c: 'b' }); T(K, 48, y + 52, r[1][1], { size: 15 });
+    [].concat(r[2]).forEach((t, j, a) => ArqDraw.tex(K, 284, y + (a.length > 1 ? 30 + j * 26 : 42), t, { size: 15, w: 206 })); ArqDraw.tex(K, 504, y + 42, r[3], { size: 15, w: 94 });
+    T(K, 650, y + 42, r[4], { a: 'middle', size: 16, c: 'b', fill: C.RD });
+  });
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

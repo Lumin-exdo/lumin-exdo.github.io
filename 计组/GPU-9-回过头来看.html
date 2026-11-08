@@ -1,0 +1,42 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>回过头来看</title></head><body>
+<header><h1>回过头来看：程序的每一层住在芯片的哪一层</h1><small>以 relu(x) 为例。外框是硬件，框里紫色标签是程序里的东西；每一层旁边写着这一层能直接用的存储。点各步从外往里放大。</small><nav id="steps"></nav></header>
+<div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 640" role="img" aria-label="GPU 包含 SM，SM 包含分区，分区包含通道；kernel、线程块、warp、线程分别落在其中，对应 HBM/L2、共享内存、寄存器"><g id="draw"></g></svg></div><footer id="note"></footer>
+<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+const steps=[
+ {b:'① 整块 GPU',t:'一个 kernel 占用整块 GPU；它的 65 536 个线程块由 132 个 SM 轮流接手',n:'kernel 的输入 x 和输出 y 在 HBM 里，L2 是所有 SM 共用的缓存。不同线程块可能在不同 SM 上，它们之间交换数据只能经过 L2/HBM。'},
+ {b:'② 一个 SM',t:'一个 SM 同时住最多 8 个 256 线程的块；块内线程共用共享内存',n:'同一个块的线程都在这个 SM 上，可以通过共享内存交换数据，也可以用 __syncthreads() 互相等待。这就是分块矩阵乘和 FlashAttention 要用“块”的原因。'},
+ {b:'③ 一个分区',t:'一个分区的调度器带着 16 个 warp，每周期给其中一个发一条指令',n:'warp 的 32 个线程同时执行同一条指令；分支发散时用活动掩码分几遍走。warp 没有自己专属的一层存储。'},
+ {b:'④ 一条通道',t:'线程 k 在第 k mod 32 条通道上算，用寄存器堆里自己的那份寄存器',n:'寄存器是离通道最近、最快的一层。性能问题大多归结为：数据有没有放在足够近的一层。分块把数据从 HBM 提到共享内存，融合把中间结果留在寄存器里，低精度和重算减少要搬的字节，合并访存让每次搬运不浪费。'}
+];
+const PG='#7a5bb0';
+const tag=(K,x,y,t,on)=>{K.rect(x,y,t.length*14+20,28,{f:on?'#e9e0fa':'#f6f2fd',s:PG,sw:on?2.2:1,rx:14});K.text(x+10,y+19,t,{c:'sm b',size:14,fill:PG});};
+const mem=(K,x,y,w,t,c,on)=>{K.rect(x,y,w,30,{f:c[0],s:c[1],sw:on?2.2:1,rx:4});K.text(x+10,y+20,t,{c:'sm b',size:13});};
+SvgStep.start({steps,draw(k,K){
+ // GPU
+ K.rect(14,14,972,612,{f:'#f2f7ef',s:'#3e8c55',sw:k===0?3:1.6,rx:12});K.text(28,40,'整块 GPU（H100）',{c:'b'});
+ tag(K,190,20,'一个 kernel：relu，启动约 2–5 µs',k===0);
+ mem(K,28,52,460,'HBM 80 GB：x、y 都在这里',['#fde6cc','#c4861e'],k===0);mem(K,500,52,470,'L2 50 MB：所有 SM 共用',['#efe8f8','#7a5bb0'],k===0);
+ tag(K,28,92,'grid：65 536 个线程块，排队等 SM',k===0);
+ // SM row
+ for(let s=0;s<7;s++){const x=28+s*42;K.rect(x,132,36,40,{f:'#e1f0e4',s:'#9fbfa6',rx:3});}K.text(330,158,'…… 共 132 个 SM，下面放大 SM 0',{c:'sm',size:13});
+ // SM 0
+ K.rect(28,184,944,428,{f:'#fbfdf9',s:'#3e8c55',sw:k===1?3:1.6,rx:10});K.text(42,208,'SM 0',{c:'b'});
+ tag(K,110,190,'住着 8 个线程块（块 0、132、264……）',k===1);
+ mem(K,42,226,560,'共享内存 / L1 256 KB：同一个块的线程共用',['#e3f2e6','#3e8c55'],k===1);
+ K.text(616,246,'块之间交换数据 → 只能经 L2/HBM',{c:'sm',size:13});
+ // partitions: 0 large, 1-3 as small stubs
+ [1,2,3].forEach((p,i)=>{const y=268+i*112;K.rect(724,y,234,100,{f:'#fff',s:'#d1cbbf',rx:8});K.text(736,y+24,'分区 '+p,{c:'sm b'});
+  for(let w=0;w<8;w++)K.rect(736+w*26,y+38,22,16,{f:'#f6f2fd',s:PG,sw:.6,rx:2});
+  for(let l=0;l<16;l++)K.rect(736+l*13,y+64,10,16,{f:'#fff',s:'#d39a92',sw:.6,rx:1});K.text(946,y+24,'同分区 0',{a:'end',c:'sm mut',size:12});});
+ const x=42,on=true;
+ K.rect(x,268,668,330,{f:'#fffdf6',s:'#c4861e',sw:k===2?3:1.4,rx:8});K.text(x+12,292,'分区 0',{c:'sm b'});
+ tag(K,x+80,276,'16 个 warp',k===2);
+ for(let w=0;w<16;w++){K.rect(x+12+w*40,316,36,24,{f:w===0?'#f6c96b':'#f6f2fd',s:PG,sw:.8,rx:3});K.text(x+30+w*40,333,'W'+w,{a:'middle',c:'sm mono',size:11});}
+ K.text(x+12,364,'调度器每周期挑一个 warp 发一条指令（黄色 W0 本周期被选中）；warp 没有专属的一层存储',{c:'sm',size:13});
+ K.text(x+12,394,'W0 的 32 个线程 → 32 条运算通道（一条指令同时执行）',{c:'sm b',size:13});
+ for(let i=0;i<32;i++){K.rect(x+12+i*20,404,17,30,{f:i===3?'#f7b6ab':'#fff',s:'#b8473a',sw:i===3&&k===3?2.2:.8,rx:2});K.text(x+20+i*20,452,i%4===0||i===3||i===31?String(i):'',{a:'middle',c:'sm mono',size:10});}
+ tag(K,x+12,466,'线程 3 → 通道 3',k===3);
+ mem(K,x+12,510,640,'寄存器堆里线程 3 自己的寄存器：i = 3，x[3] = 5，y[3] = 5',['#ece5f8','#7a5bb0'],k===3);
+ K.text(x+12,570,'线程 k 用第 k mod 32 条通道；它的寄存器一直留在寄存器堆里，换 warp 时不搬走',{c:'sm',size:13});
+}});
+</script></body></html>

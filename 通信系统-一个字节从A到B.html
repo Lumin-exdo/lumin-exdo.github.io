@@ -1,0 +1,306 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>通信系统：字节 0x41 从 A 到 B</title>
+<style>header{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:8px 16px 2px!important}
+header h1{flex-basis:100%;font-size:19px!important;margin:0!important}
+header small{flex-basis:100%;font-size:13px!important;line-height:1.45!important}
+nav#steps{margin:4px 0 0!important}nav#steps>div{flex-basis:auto!important;margin-top:0!important}
+nav#steps button{padding:4px 6px!important;font-size:13.5px!important}
+.figure-fit-controls{font-size:13px}.figure-fit-controls button{padding:3px 7px}
+footer#note{padding:3px 18px 6px!important;min-height:0!important;font-size:14px!important;line-height:1.5!important}
+.notes{max-width:1180px;margin:6px auto 30px;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.nhint{color:#6f624f;font-size:14px;margin:4px 0}
+.note{background:#fffdf8;border:1px solid #e3d9c4;border-radius:10px;padding:14px 20px}
+.note summary{cursor:pointer;list-style:none}.note summary h2{display:inline;font-size:19px;margin:0}
+.note summary::before{content:'▾ ';color:#9a8b70}.note:not([open]) summary::before{content:'▸ '}
+.note p,.note li{font-size:15.5px;line-height:1.7;margin:6px 0}
+.note table{border-collapse:collapse;margin:8px 0;font-size:15px}
+.note td,.note th{border:1px solid #e2d3a6;padding:4px 9px;vertical-align:top;line-height:1.5;text-align:left}
+.note th{background:#fbf3df}
+.note code{font-family:Consolas,"DejaVu Sans Mono",monospace;background:#f6efe0;padding:0 3px;border-radius:3px}
+
+/* 2.1a 各图页面的图下说明：按场景分成彩色卡片，默认收起；步骤做成带编号的小卡片。沿用 .notes / .note 类名 */
+footer#note{color:#4a4338;font-size:14.5px!important;line-height:1.5!important;padding:2px 18px 5px!important}
+footer#note b{color:#87501a}
+.note{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85;padding:0!important;border:1px solid var(--bd)!important;border-left:6px solid var(--c)!important;background:#fffdf8;overflow:hidden}
+.note.c-bl{--c:#3e79a7;--bg:#e8f1fb;--bd:#c6dbf0;--d:#174a85}
+.note.c-or{--c:#c0732a;--bg:#fdeed9;--bd:#f0d1a7;--d:#87501a}
+.note.c-gr{--c:#358267;--bg:#e4f4ea;--bd:#bfe0cd;--d:#225c43}
+.note.c-rd{--c:#b4352a;--bg:#fde8e4;--bd:#f1c0b9;--d:#8a2219}
+.note.c-pu{--c:#7a5bb0;--bg:#efe9fa;--bd:#d6c9ee;--d:#53388a}
+.note.c-yl{--c:#c9a227;--bg:#fff5cc;--bd:#ecd98a;--d:#7a6210}
+.note>summary{padding:9px 16px;background:var(--bg);display:flex;align-items:center;gap:8px}
+.note>summary::-webkit-details-marker{display:none}
+.note[open]>summary{border-bottom:1px solid var(--bd)}
+.note summary::before{color:var(--c)!important}
+.note summary h2{color:var(--d);font-size:18px!important}
+.note summary .tag{margin-left:auto;font-size:13px;color:var(--d);background:#fff;border:1px solid var(--c);border-radius:999px;padding:0 9px;white-space:nowrap}
+.note .body{padding:4px 18px 12px}
+.note th{background:var(--bg)!important;border-color:var(--bd)!important;color:var(--d)}
+.note td{border-color:var(--bd)!important}
+.note td.hot,.note tr.hot td{background:var(--bg);font-weight:700;color:var(--d)}
+.steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.steps>li{counter-increment:st;display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:15.5px;line-height:1.65}
+.steps>li::before{content:"第 " counter(st) " 步";flex:none;font-weight:700;font-size:13.5px;color:#fff;background:var(--c);border-radius:6px;padding:1px 8px;margin-top:2px;white-space:nowrap}
+.steps>li>div{min-width:0}
+.steps .ans{font-weight:700;color:var(--d)}
+.note .sub{display:block;font-size:14px;color:#6f624f}
+
+html.emb header h1,html.emb header small{display:none}
+header{padding:4px 16px 0!important}nav#steps{margin:2px 0 0!important}
+.scroll{padding:0 4px 2px!important}
+html.emb .figure-fit-controls{margin:0!important;padding:1px 6px 0!important;gap:5px!important;min-height:0!important}
+html.emb .figure-fit-controls button{padding:0 7px!important;line-height:1.3!important;font-size:12.5px!important}
+html.emb .figure-fit-controls span,html.emb .figure-fit-controls output{font-size:12.5px!important}
+html.emb .figure-fit-controls input{height:12px;margin:0}</style>
+</head><body>
+<script>if(self!==top||/emb/.test(location.search))document.documentElement.classList.add('emb');</script>
+<header><h1>通信系统：字节 0x41 从 A 到 B</h1><small>上面一排是通信系统的五个部件，下面是示波器：每一幕看其中一个部件处的电压。</small><nav id="steps"></nav></header>
+<div class="scroll" data-page-scroll><svg viewBox="0 0 700 404" role="img" aria-label="通信系统：字节 0x41 从 A 到 B"><g id="draw"></g></svg></div><footer id="note"></footer>
+<div class="notes">
+<p class="nhint">详细说明按内容分成几张卡片，点标题展开，再点收起。</p>
+<details class="note c-bl"><summary><h2>五个部件：谁在哪、做什么</h2><span class="tag">信源→信道→信宿</span></summary><div class="body">
+<table><tr><th>部件</th><th>在哪、谁负责</th><th>这一例里做的事</th></tr>
+<tr><td>信源</td><td>笔记本 A 的内存和 CPU</td><td>产生字节 0x41（十进制 65，字母 A 在 ASCII 表里排第 65 位），交给网卡</td></tr>
+<tr><td>发送变换器</td><td>A 里的网卡或调制解调器（硬件）</td><td>每个比特换成一格电压，依次发出：1＝3 V，0＝0 V（示意值）</td></tr>
+<tr><td>信道</td><td>网线本身</td><td>只负责把电压送到对岸，不认识比特是什么</td></tr>
+<tr><td>噪声源</td><td>线上和各个部件里的干扰电压</td><td>图里画成信道上方的一个红框；实际是信道上的噪声和分散在通信系统各处的噪声的集中表示</td></tr>
+<tr><td>接收变换器</td><td>B 里的网卡或调制解调器</td><td>在每一格的正中央量一次电压，和中线 1.5 V 比</td></tr>
+<tr><td>信宿</td><td>服务器 B 的内存</td><td>收到 <code>01000001</code>，还原成字节 0x41</td></tr></table>
+<p>顶部三个方框：信息（字母 A 的意思）→ 数据（比特串 01000001，是信息的载体）→ 信号（线上的电压起伏，是数据的电气表现）。实际的通信系统大多是双向的：B 也能按同样的路径回信。一条双向通信线路包含一个发送信道和一个接收信道，所以<b>信道不等于电路</b>（见左栏 ②）。</p>
+</div></details>
+<details class="note c-or"><summary><h2>0x41 的 8 位怎样逐格画成电压</h2><span class="tag">0100 0001 → 电压曲线</span></summary><div class="body">
+<p>0x41：十六进制的 4 是 <code>0100</code>，1 是 <code>0001</code>，合起来 <code>01000001</code>。图中“A 的网卡”下面的波形，每个比特占一格，宽度相同：</p>
+<table><tr><th>格</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr>
+<tr><td>比特</td><td>0</td><td class="hot">1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td class="hot">1</td></tr>
+<tr><td>电压</td><td>0 V</td><td class="hot">3 V</td><td>0 V</td><td>0 V</td><td>0 V</td><td>0 V</td><td>0 V</td><td class="hot">3 V</td></tr>
+<tr><td>跳变</td><td>—</td><td>开头升</td><td>开头落</td><td colspan="4">保持 0 V，连续 5 格（第 3～7 格）</td><td>开头升</td></tr></table>
+<p>共 3 次跳变。每个比特占的这一小段波形就是一个<b>码元</b>（图中红括号标出的一格）：用一个固定时长的信号波形表示一个 $k$ 进制符号，这个波形叫码元，这段固定时长叫<b>码元宽度</b>（也叫信号周期）。本图每个码元只有 3 V、0 V 两种可能，是二进制码元，带 1 个比特；一个码元能带几个比特，取决于它有几种可能的波形，见左栏 ⑤。</p>
+</div></details>
+<details class="note c-gr"><summary><h2>B 怎样读：取样、比中线、判 0 或 1</h2><span class="tag">小噪声下全读对</span></summary><div class="body">
+<ol class="steps">
+<li><div>在每一格的正中央量一次线上电压（图中“B 的网卡”下面的 8 个圆点；量电压叫<b>取样</b>）。</div></li>
+<li><div>把量到的电压和中线 1.5 V（3 V 与 0 V 的正中间，绿色虚线）比较。</div></li>
+<li><div>高于中线判为 1，低于中线判为 0。</div></li>
+</ol>
+<p>“网线”下面灰线是发出的电压，红线是线上实际的电压，红线与灰线的差就是噪声：边沿变斜，高低电平上下抖动，这里最多偏离约 0.3 V。8 个取样点全在中线的正确一侧（第 2 格量到 3.0 V、第 8 格量到 2.8 V，高于 1.5 V；其余 6 格量到 $-0.2$～$0.3$ V，低于 1.5 V），读出 <code>01000001</code>，与发出的完全相同。只要接收端能从失真的波形里认出原来的信号，失真就不影响通信质量。</p>
+</div></details>
+<details class="note c-rd"><summary><h2>噪声怎样把一位翻错</h2><span class="tag">第 5 格：+1.9 V 越过 1.5 V</span></summary><div class="body">
+<p>判决线离高电平、低电平各 1.5 V，这 1.5 V 是每个比特能承受的噪声余量。图中“噪声更大时”把同样的 <code>01000001</code> 再发一遍，8 个取样点的噪声电压是 $+0.7,-0.9,+1.1,-0.6,+1.9,+0.5,-1.0,-1.2$ V：</p>
+<table><tr><th>格</th><th>发出</th><th>噪声</th><th>线上取样值</th><th>与 1.5 V 比</th><th>读成</th></tr>
+<tr><td>1</td><td>0 V</td><td>$+0.7$</td><td>0.7 V</td><td>低于</td><td>0</td></tr>
+<tr><td>2</td><td>3 V</td><td>$-0.9$</td><td>2.1 V</td><td>高于</td><td>1</td></tr>
+<tr><td>3</td><td>0 V</td><td>$+1.1$</td><td>1.1 V</td><td>低于</td><td>0</td></tr>
+<tr><td>4</td><td>0 V</td><td>$-0.6$</td><td>$-0.6$ V</td><td>低于</td><td>0</td></tr>
+<tr class="hot"><td>5</td><td>0 V</td><td>$+1.9$</td><td>1.9 V</td><td>高于</td><td>1（读错）</td></tr>
+<tr><td>6</td><td>0 V</td><td>$+0.5$</td><td>0.5 V</td><td>低于</td><td>0</td></tr>
+<tr><td>7</td><td>0 V</td><td>$-1.0$</td><td>$-1.0$ V</td><td>低于</td><td>0</td></tr>
+<tr><td>8</td><td>3 V</td><td>$-1.2$</td><td>1.8 V</td><td>高于（只剩 0.3 V 余量）</td><td>1</td></tr></table>
+<p>只有第 5 格越过了余量，B 读到 <code>01001001</code>＝0x49，是字母 I，不是 A。噪声越大、信号越弱、距离越远、介质越差，取样点离中线越近；码元速率越高、每格越短，线上电压越来不及变到位，失真越严重。</p>
+</div></details>
+<details class="note c-yl"><summary><h2>模拟与数字、信道的两种分类</h2><span class="tag">图最下一排</span></summary><div class="body">
+<p>数据和信号都分两类：<b>模拟</b>的取值是连续的（话筒把语音变成的电压，可以是范围内的任意值）；<b>数字</b>的取值是离散的（本图只有 3 V、0 V 两档）。信道按信道上传的信号形式分：传模拟信号的<b>模拟信道</b>、传数字信号的<b>数字信道</b>；按介质分：<b>有线信道</b>（双绞线、同轴电缆、光纤）和<b>无线信道</b>（空气中的电磁波，如 Wi-Fi）。哪些信道传哪种信号，见左栏 ④。</p>
+</div></details>
+
+</div>
+<script src="../OS/figure-fit.js"></script><script src="../OS/svgstep.js"></script><script src="svgsize.js"></script><script src="net21.js"></script><script src="arq-draw.js"></script><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><script>
+/* 计网 2.1a 各图共用（接在 net21.js 之后；N21 里已有配色与小格子）。
+   场景：笔记本 A 经一根网线把字母 A（字节 0x41）发给机房里的服务器 B。
+   每张图是多幕（SvgStep.start）：每幕一个视觉重点；之前的幕里画过的内容淡化（G 的 vis=1），之后才出现的内容不画（vis=0）。 */
+
+const H = (() => {
+  const C = N21.C;
+  const P = { A: [C.ORb, C.OR, C.ORd], B: [C.BLb, C.BL, C.BLd], G: [C.GRb, C.GR, C.GRd], R: [C.RDb, C.RD, '#8a2219'], Y: [C.YLb, C.YL, '#7a6210'], U: [C.PUb, C.PU, '#53388a'], N: ['#fffdf8', '#a79e8e', C.INK], W: ['#f4f1ea', '#c9bfae', '#8a8478'] };
+  const tw = (s, z = 15) => [...String(s)].reduce((a, ch) => a + (ch.charCodeAt(0) > 255 ? z : z * 0.58), 0);
+  const T = (K, x, y, s, o = {}) => K.text(x, y, s, Object.assign({ size: 15 }, o));
+  /* 圆角块，里面 1～3 行居中字：lines 可为字符串或 [字符串,…]；pal 为 P.x */
+  function box(K, x, y, w, h, lines, pal, o = {}) {
+    pal = pal || P.N; lines = [].concat(lines);
+    K.rect(x, y, w, h, { f: o.fill || pal[0], s: o.hot ? '#1667c4' : pal[1], sw: o.hot ? 3 : (o.sw || 1.6), rx: o.rx ?? 6, dash: o.dash, op: o.op });
+    const lh = o.lh || 19, y0 = y + h / 2 - (lines.length - 1) * lh / 2 + 5.5;
+    lines.forEach((s, i) => T(K, x + w / 2, y0 + i * lh, s, { a: 'middle', size: o.size || 15, c: (o.b ?? (i === 0 && lines.length > 1) ? 'b' : '') + (o.mono ? ' mono' : ''), fill: o.tc || pal[2] }));
+  }
+  /* 标题条＋内容框：返回内容区顶 */
+  function panel(K, x, y, w, h, title, pal) {
+    pal = pal || P.N; K.rect(x, y, w, h, { f: C.BOX, s: pal[1], sw: 1.6, rx: 9 });
+    if (title) T(K, x + 10, y + 22, title, { size: 16, c: 'b', fill: pal[2] });
+  }
+  /* 一排字节格：labels 数组，每格宽 w，每格色可按函数 */
+  function row(K, x, y, labels, w, h, colf, o = {}) {
+    labels.forEach((s, i) => { const c = colf ? colf(i, s) : P.N; N21.cell(K, x + i * (w + (o.gap || 0)), y, w, h, s, c, { size: o.size || 15, dy: o.dy ?? 5.5, c: o.c ?? 'mono b', hot: o.hot && o.hot(i), rx: o.rx ?? 3 }); });
+  }
+  /* 报文段小条：items=[[标签,值,调色]…]，居中在 cx；返回 [x,宽] */
+  function chip(K, cx, cy, items, o = {}) {
+    const ws = items.map(it => Math.max(o.minw || 40, tw(it[1], o.size || 15) + 14, tw(it[0], 15) + 10)), W = ws.reduce((a, b) => a + b + 3, -3), h = o.h || 42;
+    let x = cx - W / 2; const x0 = x;
+    K.rect(x - 4, cy - h / 2 - 4, W + 8, h + 8, { f: '#fffdf8', s: o.col || '#d9c7a8', sw: o.bad ? 2.4 : 1.4, rx: 8 });
+    items.forEach((it, i) => {
+      const p = it[2] || P.N;
+      K.rect(x, cy - h / 2, ws[i], h, { f: p[0], s: p[1], sw: it[3] ? 2.6 : 1.3, rx: 4 });
+      T(K, x + ws[i] / 2, cy - h / 2 + 15, it[0], { a: 'middle', size: 15, fill: C.MUT });
+      T(K, x + ws[i] / 2, cy - h / 2 + h - 8, it[1], { a: 'middle', size: o.size || 15, c: 'mono b', fill: p[2] });
+      x += ws[i] + 3;
+    });
+    return [x0 - 4, W + 8];
+  }
+  /* 圆形序号章 */
+  function badge(K, x, y, n, c) { c = c || C.OR; K.circle(x, y, 12, { f: c, s: c, sw: 1 }); T(K, x, y + 5.5, n, { a: 'middle', c: 'b', fill: '#fff' }); }
+  /* 大括号式标注：横向括号，文字在括号下方（down=true）或上方 */
+  function brace(K, x1, x2, y, s, col, o = {}) {
+    const d = o.up ? -1 : 1;
+    K.line(`M${x1} ${y - 6 * d}V${y}H${x2}V${y - 6 * d}`, { c: col || C.MUT, w: 1.8 });
+    T(K, (x1 + x2) / 2, y + (o.up ? -9 : 20), s, { a: 'middle', size: o.size || 15, c: 'b', fill: col || C.MUT });
+  }
+  const hx = (v, n) => v.toString(16).toUpperCase().padStart(n * 2, '0').match(/../g);
+  return { C, P, tw, T, box, panel, row, chip, badge, brace, hx };
+})();
+const { C, P, T, tw, hx } = H;
+
+/* 启动：每画一幕后让 MathJax 排版图里的 TeX；两栏页发来 {net53step:[幕,步]} 就切到第几步 */
+const go = (ST, draw) => SvgStep.start({ steps: ST, draw: (a, K) => { draw(a, K); setTimeout(() => { if (window.ArqDraw) ArqDraw.typeset(); }, 0); } });
+
+addEventListener('message', e => {
+  const d = e.data && e.data.net53step; if (!d) return;
+  const t = d[1] || d[0];
+  const bs = [...document.querySelectorAll('nav#steps button')].filter(b => !/上一步|下一步/.test(b.textContent));
+  if (bs[t - 1]) bs[t - 1].click();
+});
+/* 可见性：本幕 at 与对象出现的幕 i（或 [i,j]：第 i 幕出现、到第 j 幕仍是焦点）。0＝还没出现，不画；1＝已讲过，淡化；2＝本幕的重点 */
+const lv = (at, i, j) => at < i ? 0 : (at <= (j ?? i) ? 2 : 1);
+/* 画一组元素；vis=0 不画，1 淡化（透明度 .34，字与线都变浅，位置不动） */
+function G(vis, fn) {
+  if (!vis) return;
+  const g = document.getElementById('draw'), n = g.childNodes.length;
+  fn();
+  if (vis === 1) for (let i = n; i < g.childNodes.length; i++) g.childNodes[i].setAttribute('opacity', 0.34);
+}
+/* 带底色晕的字（压在线上时用） */
+const HT = (K, x, y, s, o = {}) => { const t = K.text(x, y, s, o); t.style.stroke = o.halo || '#fffdf8'; t.style.strokeWidth = '4px'; t.style.paintOrder = 'stroke'; return t; };
+
+//VB: 700 404
+const ST = [
+ { b: '① 三层', t: '同一件事的三个层面', n: '字母 A 是信息；存成比特串 01000001 是数据；线上的电压是信号。' },
+ { b: '② 部件', t: '信源、两个变换器、信道、信宿，另有噪声源', n: 'A 的 CPU 是信源，A 的网卡是发送变换器，网线是信道，B 的网卡是接收变换器，B 的内存是信宿。' },
+ { b: '③ 变电压', t: '1 发 3 V、0 发 0 V，一格是一个码元', n: '电压值是示意值。每个比特占的一小段波形叫码元；8 格里电压在第 2、3、8 格的开头跳变，共 3 次。' },
+ { b: '④ 噪声', t: '线上电压＝发出的电压＋噪声', n: '灰线是 A 的网卡发出的，红线是线上实际的；两线之差就是噪声，这里最多偏离约 0.3 V。' },
+ { b: '⑤ 取样', t: '每格正中量一次，和 1.5 V 比', n: '绿色虚线是 1.5 V 中线；8 个取样点都在正确一侧，高于判 1，低于判 0，读出 01000001。' },
+ { b: '⑥ 读错', t: '+1.9 V 的噪声越过了 1.5 V 的余量', n: '第 5 格发 0 V，噪声 +1.9 V，量到 1.9 V，高于 1.5 V，B 读成 1：01001001＝0x49，是字母 I。' },
+ { b: '⑦ 数模', t: '信号分两类，信道按两个标准各分两类', n: '本例的电压只有 3 V、0 V 两档，是数字信号；话筒输出的电压可取任意值，是模拟信号。' }
+];
+const BITS = '01000001', NV = [0.7, -0.9, 1.1, -0.6, 1.9, 0.5, -1.0, -1.2];
+const bc = b => b === '1' ? P.A : P.B;
+const val = u => { const i = Math.min(7, Math.max(0, Math.floor(u))), f = u - i, s = x => x * x * (3 - 2 * x); let v = +BITS[i];
+  if (f < 0.14 && i > 0) { const p = +BITS[i - 1]; v = p + (v - p) * s(0.5 + f / 0.28); } else if (f > 0.86 && i < 7) { const n = +BITS[i + 1]; v = v + (n - v) * s((f - 0.86) / 0.28); } return v; };
+const nz = u => 0.4 * (0.11 * Math.sin(u * 4.1) + 0.09 * Math.sin(u * 9.7 + 1) + 0.06 * Math.sin(u * 15.3 + 2));
+const nn = u => { const t = u - 0.5, k = Math.min(6, Math.max(0, Math.floor(t))), f = Math.min(1, Math.max(0, t - k)), s = (1 - Math.cos(Math.PI * f)) / 2;
+  return NV[k] * (1 - s) + NV[k + 1] * s + 0.28 * Math.sin(2 * Math.PI * u) + 0.18 * Math.sin(4 * Math.PI * u); };
+const X0 = 56, CW = 75, X = u => X0 + u * CW, Y = v => 340 - 22 * v;
+const volt = u => 3 * val(u);
+const PART = [['信源', '笔记本 A', '内存和 CPU', P.Y], ['发送变换器', 'A 的网卡', '3 V＝1，0 V＝0', P.A], ['信道', '网线', '只送电压', P.R], ['接收变换器', 'B 的网卡', '每格取样判决', P.B], ['信宿', '服务器 B', '内存里是 0x41', P.Y]];
+const px = i => i * 146;
+function chain(K, at, hot) {
+  PART.forEach((p, i) => {
+    G(at === 1 ? 0 : (at === 2 ? 2 : (hot.includes(i) ? 2 : 1)), () => {
+      H.box(K, px(i), 76, 114, 28, p[0], p[3], { b: true, size: 15 });
+      H.box(K, px(i), 108, 114, 70, [p[1], p[2]], P.N, { b: false, size: 15, lh: 22 });
+      if (i < 4) K.arrow(`M${px(i) + 116} 92H${px(i) + 144}`, { c: C.MUT, w: 2.4 });
+    });
+  });
+  G(at === 1 ? 0 : (at === 2 || hot.includes(2) ? 2 : 1), () => {   // 噪声源
+    K.rect(px(2) + 7, 44, 100, 26, { f: C.RDb, s: C.RD, sw: 2, rx: 7 }); T(K, px(2) + 57, 63, '噪声源', { a: 'middle', c: 'b', fill: C.RD });
+    K.arrow(`M${px(2) + 57} 71V75`, { c: C.RD, w: 3 });
+  });
+}
+function chips(K, at) {
+  const cs = [['信息', '字母 A 的意思', [C.YLb, C.YL, C.INK]], ['数据', '比特串 01000001', P.B], ['信号', '线上的电压起伏', P.A]];
+  G(at === 1 ? 2 : 1, () => {
+    cs.forEach((c, i) => { const x = i * 245;
+      K.rect(x, 0, 210, 40, { f: c[2][0], s: c[2][1], rx: 8, sw: 2 });
+      T(K, x + 105, 17, c[0], { a: 'middle', size: 16, c: 'b', fill: c[2][2] }); T(K, x + 105, 35, c[1], { a: 'middle', size: 15, fill: c[2][2] });
+      if (i < 2) K.arrow(`M${x + 214} 20H${x + 242}`, { c: C.MUT, w: 2.4 });
+    });
+  });
+}
+function scopeTitle(K, s, col, fromX) {
+  T(K, 0, 207, s, { size: 16, c: 'b', fill: col });
+  if (fromX != null) K.arrow(`M${fromX} 180V190`, { c: col, w: 2.4 });
+}
+function bitRow(K, y, bits, bad) { [...bits].forEach((b, i) => N21.cell(K, X(i) + 3, y, CW - 6, 22, b, bad && bad.includes(i) ? [C.RDb, C.RD, C.RD] : bc(b), { size: 15, dy: 6, rx: 3, sw: bad && bad.includes(i) ? 3 : 1.6 })); }
+function grid(K) { for (let i = 0; i <= 8; i++) K.line(`M${X(i)} 250V${Y(-1.3)}`, { c: '#d6cdbb', w: 1, dash: '3 4' });
+  [[3, '3 V'], [1.5, '1.5 V'], [0, '0 V']].forEach(([v, s]) => { if (v !== 1.5 || ATM > 4) K.line(`M${X0 - 4} ${Y(v)}H${X(8)}`, { c: v === 1.5 ? C.GR : '#cfc7b8', w: v === 1.5 ? 2 : 1, dash: v === 1.5 ? '7 5' : '3 4' }); if (v !== 1.5 || ATM > 4) T(K, X0 - 8, Y(v) + 5, s, { a: 'end', size: 15, c: 'mono', fill: v === 1.5 ? C.GRd : C.MUT }); }); }
+let ATM = 0;
+function draw(a0, K) {
+  const at = a0 + 1; ATM = at;
+  chips(K, at);
+  const hot = [null, [], [], [1], [2], [3], [2, 3], [2]][at];
+  chain(K, at, hot);
+  if (at === 1) {   // 0x41 → 比特串
+    const cy = 226;
+    N21.cell(K, 6, cy, 96, 44, '字母 A', [C.YLb, C.YL, C.INK], { size: 18, dy: 7 });
+    K.arrow(`M106 ${cy + 22}H160`, { c: C.MUT, w: 2.4 }); T(K, 133, cy + 14, 'ASCII', { a: 'middle', size: 15, fill: C.MUT }); T(K, 133, cy + 42, '第 65 位', { a: 'middle', size: 15, fill: C.MUT });
+    N21.cell(K, 166, cy, 70, 44, '65', P.G, { size: 20, dy: 7 });
+    K.arrow(`M240 ${cy + 22}H294`, { c: C.MUT, w: 2.4 }); T(K, 267, cy + 14, '十六进制', { a: 'middle', size: 15, fill: C.MUT });
+    N21.cell(K, 300, cy, 96, 44, '0x41', P.G, { size: 20, dy: 7 });
+    T(K, 412, cy + 14, '十六进制每一位', { size: 15, fill: C.MUT }); T(K, 412, cy + 38, '对应 4 个比特', { size: 15, fill: C.MUT });
+    [['4', '0100', 0], ['1', '0001', 4]].forEach(([h, b, o]) => {
+      N21.cell(K, X(o) + CW * 1.5 - 18, 292, 36, 28, h, P.G, { size: 18, dy: 7 });
+      K.arrow(`M${X(o) + CW * 2} 322V340`, { c: C.MUT, w: 2 });
+    });
+    bitRow(K, 344, BITS);
+    K.line(`M${X(0)} 374v6H${X(8)}v-6`, { c: C.BLd, w: 2 }); T(K, X(4), 398, '一个字节 ＝ 8 个比特 ＝ 这个字母的数据', { a: 'middle', size: 16, c: 'b', fill: C.BLd });
+  }
+  if (at === 2) {   // 双向
+    K.line(`M${px(4) + 57} 180V222H${px(0) + 57}V184`, { c: C.MUT, w: 2.2, dash: '6 5' }); K.arrow(`M${px(0) + 57} 200V184`, { c: C.MUT, w: 2.2 });
+    T(K, 350, 248, '实际的通信系统大多是双向的：B 也能沿同样的路径给 A 回信', { a: 'middle', size: 16, c: 'b', fill: C.MUT });
+    T(K, 350, 292, '本例只画 A→B 一个方向', { a: 'middle', size: 16, fill: C.MUT });
+    T(K, 350, 330, '信道只负责把电压送到对岸，不认识比特是什么', { a: 'middle', size: 16, c: 'b', fill: C.RD });
+    T(K, 350, 366, '噪声源是线上和各部件里的干扰电压的集中表示，不是一个独立的部件', { a: 'middle', size: 15, fill: C.RD });
+  }
+  if (at >= 3 && at <= 6) {
+    const ttl = ['', '', '', '示波器：A 的网卡发出的电压（每格一个码元）', '示波器：灰线＝发出的电压，红线＝线上实际的电压', '示波器：B 的网卡在每格正中取样，和 1.5 V 中线比', '噪声大时的线上电压：同样发 01000001'][at];
+    scopeTitle(K, ttl, [0, 0, 0, P.A[2], C.RD, P.B[2], C.RD][at], [0, 0, 0, px(1) + 57, px(2) + 57, px(3) + 57, px(3) + 57][at]);
+    bitRow(K, 222 + 0, BITS); grid(K);
+    if (at === 3) {
+      K.line(N21.path(volt, 0, 8, 320, X, Y), { c: C.INK, w: 3.2 });
+      K.line(`M${X(1)} ${Y(-0.5)}v6H${X(2)}v-6`, { c: C.RD, w: 2.2 }); HT(K, X(1.5), Y(-0.5) + 24, '一格＝一个码元', { a: 'middle', size: 15, c: 'b', fill: C.RD });
+      [[1, '①'], [2, '②'], [7, '③']].forEach(([u, s]) => { N21.dot(K, X(u), Y(1.5), 11, C.RD, C.RD, 1); T(K, X(u), Y(1.5) + 5.5, s, { a: 'middle', size: 15, c: 'b', fill: '#fff' }); });
+      T(K, X0, 398, '①第 2 格开头升到 3 V　②第 3 格开头落回 0 V，保持 5 格　③第 8 格开头再升', { size: 15, fill: C.INK });
+    }
+    if (at === 4) {
+      K.line(N21.path(volt, 0, 8, 320, X, Y), { c: '#b9b09f', w: 2.4 });
+      K.line(N21.path(u => volt(u) + 3 * nz(u), 0, 8, 480, X, Y), { c: C.RD, w: 2.6 });
+      [[1.5, 0.3], [4.5, 0.3]].forEach(([u]) => { const v = volt(u), e = 3 * nz(u); K.arrow(`M${X(u)} ${Y(v)}V${Y(v + e) + (e > 0 ? 4 : -4)}`, { c: C.RD, w: 2 }); });
+      T(K, X0, 398, '红线与灰线的差＝噪声：边沿变斜，高低电平上下抖动，最多偏离约 0.3 V', { size: 15, fill: C.RD });
+    }
+    if (at === 5) {
+      K.line(`M${X0 - 4} ${Y(1.5)}H${X(8)}`, { c: C.GR, w: 2, dash: '7 5' }); 
+      K.line(N21.path(u => volt(u) + 3 * nz(u), 0, 8, 480, X, Y), { c: C.RD, w: 2.2 });
+      const got = [];
+      [...BITS].forEach((b, k) => { const u = k + .5, v = volt(u) + 3 * nz(u), r = v > 1.5 ? '1' : '0'; got.push(r);
+        K.line(`M${X(u)} ${Y(v)}V${376}`, { c: '#cfc7b8', w: 1, dash: '2 3' }); N21.dot(K, X(u), Y(v), 5.5, bc(b)[1], '#fff', 1.6); });
+      T(K, 0, 392, 'B 读出', { size: 15, c: 'b' }); got.forEach((r, i) => N21.cell(K, X(i) + 3, 376, CW - 6, 22, r, bc(r), { size: 15, dy: 6, rx: 3 }));
+      N21.cell(K, X(8) + 4, 376, 0, 0, '', P.N);
+    }
+    if (at === 6) {
+      T(K, 698, 207, '读成 01001001＝0x49＝字母 I，不是 A', { a: 'end', size: 15, c: 'b', fill: C.RD });
+      K.line(N21.path(u => volt(u), 0, 8, 320, X, Y), { c: '#cdc5b4', w: 2 });
+      K.line(N21.path(u => volt(u) + nn(u), 0, 8, 480, X, Y), { c: C.RD, w: 2.2 });
+      const got = [];
+      [...BITS].forEach((b, k) => { const u = k + .5, v = volt(u) + NV[k], r = v > 1.5 ? '1' : '0', bad = r !== b; got.push(r);
+        N21.dot(K, X(u), Y(v), bad ? 7 : 5, bad ? C.RD : bc(b)[1], '#fff', bad ? 2.4 : 1.6);
+        HT(K, X(u), Y(v) + (v > 1.5 || v < 0 ? -11 : 21), v.toFixed(1) + ' V', { a: 'middle', size: 15, c: 'b mono', fill: bad ? C.RD : C.INK }); });
+      T(K, 0, 392, 'B 读出', { size: 15, c: 'b' }); got.forEach((r, i) => N21.cell(K, X(i) + 3, 376, CW - 6, 22, r, r !== BITS[i] ? [C.RDb, C.RD, C.RD] : bc(r), { size: 15, dy: 6, rx: 3, sw: r !== BITS[i] ? 3.2 : 1.6 }));
+    }
+  }
+  if (at === 7) {
+    const sig = (x, t, cap, c, f) => { K.rect(x, 198, 340, 88, { f: C.BOX, s: C.BORD, rx: 8, sw: 1.6 }); T(K, x + 10, 222, t, { size: 16, c: 'b', fill: c[2] }); T(K, x + 10, 244, cap, { size: 15, fill: C.MUT });
+      K.line(N21.path(f, 0, 8, 160, u => x + 90 + u * 30, v => 278 - 26 * v), { c: c[1], w: 3 }); };
+    sig(0, '数字信号', '取值离散：3 V、0 V 两档', P.A, val);
+    sig(358, '模拟信号', '取值连续：范围内任意值', P.B, u => 0.55 + Math.sin(u * 1.1) * 0.3 + Math.sin(u * 2.9) * 0.15);
+    T(K, 0, 318, '信道按信号形式分', { size: 15, c: 'b', fill: C.RD }); H.box(K, 160, 292, 262, 42, ['数字信道', '传数字信号：网线放高低电平'], P.A, { size: 15, lh: 20 }); H.box(K, 436, 292, 264, 42, ['模拟信道', '传模拟信号：电话线放调制后的波'], P.B, { size: 15, lh: 20 });
+    T(K, 0, 366, '信道按传输介质分', { size: 15, c: 'b', fill: C.RD }); H.box(K, 160, 340, 262, 42, ['有线信道', '双绞线、同轴电缆、光纤'], P.G, { size: 15, lh: 20 }); H.box(K, 436, 340, 264, 42, ['无线信道', '空气中的电磁波，如 Wi-Fi'], P.Y, { size: 15, lh: 20 });
+    T(K, 0, 400, '两种分类互相独立：Wi-Fi 是无线的模拟信道，机房网线是有线的数字信道。', { size: 15, fill: C.MUT });
+  }
+}
+go(ST, draw);
+
+setTimeout(()=>{ArqDraw.typeset();},300);window.addEventListener('load',()=>setTimeout(()=>ArqDraw.typeset(),800));
+</script></body></html>

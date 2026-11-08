@@ -1,0 +1,484 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GPU 入门：从一次 ReLU 到 FlashAttention</title><style>.stage img{-webkit-user-drag:none;user-select:none}
+.stage,.stage *{user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;font:15.5px/1.8 system-ui,'Microsoft YaHei',sans-serif;color:#1f2933}
+body{--lw:54%}
+.wrap{display:grid;grid-template-columns:var(--lw) 8px minmax(0,1fr);height:100vh}
+.left{display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fbfdff}
+.tabs{padding:8px;border-bottom:1px solid #e5e9ef;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tb{padding:7px 13px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:999px;cursor:pointer;font:inherit;font-size:13.5px}
+.tb.cur{background:#1d5e78;border-color:#1d5e78;color:#fff}
+.figbar{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid #eef2f6;background:#fff}
+.figbar .name{font-size:13px;color:#4b6b7f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.figbar a.open{margin-left:auto;font:inherit;font-size:13px;color:#1d5e78;border:1px solid #9dbfd4;background:#eef6fb;border-radius:999px;padding:5px 12px;text-decoration:none;white-space:nowrap}
+.figbar a.open:hover{background:#e2eff8;border-color:#1d5e78}
+.figzoom{display:flex;align-items:center;gap:4px;margin-left:auto;white-space:nowrap}
+.figzoom[hidden]{display:none}
+.figzoom button{font:inherit;font-size:12px;line-height:1.3;color:#1d5e78;border:1px solid #9dbfd4;background:#eef6fb;border-radius:5px;padding:4px 6px;cursor:pointer}
+.figzoom button.cur{background:#1d5e78;color:#fff;border-color:#1d5e78}
+.figzoom output{min-width:38px;text-align:center;font-size:12px;color:#4b6b7f}
+.stage{flex:1;min-height:0;position:relative}
+.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+.stage img{position:absolute;top:0;left:0;right:0;margin:0 auto;max-width:100%;max-height:100%;object-fit:contain;background:#fff}
+#bar{cursor:col-resize;background:#e3eaf2;touch-action:none}
+#bar:hover,#bar.drag{background:#7fa8c4}
+.right{overflow-x:hidden;overflow-y:auto;min-width:0;padding:22px 30px 60px;box-sizing:border-box;background:#fff}
+.right h1{font-size:24px;line-height:1.4;margin:6px 0 14px}
+.right h2{font-size:20px;margin:30px 0 10px;padding-top:14px;border-top:1px solid #e5e9ef}
+.right h3{font-size:17px;margin:22px 0 8px}
+.right img{max-width:100%;height:auto}
+.right table{display:block;overflow-x:auto;border-collapse:collapse;max-width:100%;margin:10px 0;font-size:14.5px}
+.right td,.right th{border:1px solid #d8dee6;padding:5px 9px;vertical-align:top}
+.right th{background:#f3f6f9}
+.right mjx-container[display="true"]{display:block;max-width:100%;overflow-x:auto;overflow-y:hidden}
+.right pre{overflow:auto;background:#f8fafc;padding:10px 12px;border-radius:6px;font-size:13.5px;line-height:1.6}
+.right code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;background:#f1f5f9;padding:1px 4px;border-radius:4px}
+.right pre code{background:none;padding:0}
+.right pre code.hljs{background:none;padding:0}
+.right blockquote{margin:12px 0;padding:8px 14px;background:#f6f9fc;border-left:4px solid #9dbfd4}
+@media (max-width:1000px){html,body{overflow:auto}.wrap{grid-template-columns:1fr;height:auto}#bar{display:none}.left{height:62vh;position:sticky;top:0;z-index:2;border-bottom:2px solid #cbd5e1}.right{height:auto}}
+.ref{margin:12px 0;padding:8px 12px;background:#eef6fb;border-left:4px solid #1d5e78;border-radius:6px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.ref:hover{background:#e2eff8}
+.ref .go{font-weight:700;color:#1d5e78}
+.ref .open{margin-left:auto;font-size:12.5px;color:#4b6b7f;border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:3px 10px;text-decoration:none;white-space:nowrap}
+.ref .open:hover{background:#f1f7fb;border-color:#7fa8c4}
+.tip{background:#fff8e6;border:1px solid #f0d68a;border-radius:8px;padding:8px 12px;margin:0 0 14px;font-size:14px}
+.left{background:#f3efe4}.tabs{background:#f3efe4}.tb{background:#fbf8f1;border-color:#d8cfbb}.figbar{background:#f8f4ea;border-bottom-color:#e4dccb}.stage{background:#f3efe4}#bar{background:#e4dccb}#bar:hover,#bar.drag{background:#b9a57c}.right{background:#fbf8f2;color:#2a251e}.right th{background:#f0e9da}.right pre{background:#f3eee3}.right code{background:#eee7d8}.right blockquote{background:#f4eee2;border-left-color:#c8b282}.ref{background:#e9f0ee}.ref:hover{background:#dde9e6}.tip{background:#fbf0d6;border-color:#e6cf93}</style><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/github.min.css"><script defer src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script><script>addEventListener("DOMContentLoaded",function(){if(window.hljs){hljs.configure({cssSelector:"pre code[class*=language-]"});hljs.highlightAll();}});</script></head><body>
+<div class="wrap">
+<div class="left" id="L"><div class="tabs"><button class="tb" onclick="pick(0)" id="b0">① CPU 核心与 SM：晶体管花在哪（可交互）</button><button class="tb" onclick="pick(1)" id="b1">② 一块 H100：芯片平面、数据的路、HBM 侧视（可交互）</button><button class="tb" onclick="pick(2)" id="b2">③ H100 整颗芯片（NVIDIA 原图）</button><button class="tb" onclick="pick(3)" id="b3">④ 一个 SM 的内部（NVIDIA 原图）</button><button class="tb" onclick="pick(4)" id="b4">⑤ 一次 ReLU kernel（可交互）</button><button class="tb" onclick="pick(5)" id="b5">⑥ 存储层次（可交互）</button><button class="tb" onclick="pick(6)" id="b6">⑦ 屋顶线</button><button class="tb" onclick="pick(7)" id="b7">⑧ 低精度</button><button class="tb" onclick="pick(8)" id="b8">⑨ 融合与重算</button><button class="tb" onclick="pick(9)" id="b9">⑩ 合并访存与 bank 冲突</button><button class="tb" onclick="pick(10)" id="b10">⑪ 分块矩阵乘（可交互）</button><button class="tb" onclick="pick(11)" id="b11">⑫ 实测：方阵乘法的速度（原图）</button><button class="tb" onclick="pick(12)" id="b12">⑬ 对齐、tile 与 wave 量化</button><button class="tb" onclick="pick(13)" id="b13">⑭ FlashAttention 论文图 1（原图）</button><button class="tb" onclick="pick(14)" id="b14">⑮ FlashAttention（可交互）</button><button class="tb" onclick="pick(15)" id="b15">⑯ 回过头来看（可交互）</button></div>
+<div class="figbar"><span class="name" id="figname"></span><span class="figzoom" id="figzoom" hidden><button id="fitarea" onclick="imageMode('area')">适应图区</button><button id="fitwidth" onclick="imageMode('width')">适应宽度</button><button onclick="imageZoom(-1)" aria-label="缩小图片">−</button><output id="zoompercent">100%</output><button onclick="imageZoom(1)" aria-label="放大图片">＋</button></span><a class="open" id="figopen" href="#" target="_blank" title="在新页面独享打开这张图（快捷键 o）">⧉ 单独打开这张</a></div>
+<div class="stage"><iframe id="f0" title="① CPU 核心与 SM：晶体管花在哪（可交互）" style="display:none"></iframe><iframe id="f1" title="② 一块 H100：芯片平面、数据的路、HBM 侧视（可交互）" style="display:none"></iframe><img draggable="false" id="f2" alt="③ H100 整颗芯片（NVIDIA 原图）" style="display:none"><img draggable="false" id="f3" alt="④ 一个 SM 的内部（NVIDIA 原图）" style="display:none"><iframe id="f4" title="⑤ 一次 ReLU kernel（可交互）" style="display:none"></iframe><iframe id="f5" title="⑥ 存储层次（可交互）" style="display:none"></iframe><img draggable="false" id="f6" alt="⑦ 屋顶线" style="display:none"><img draggable="false" id="f7" alt="⑧ 低精度" style="display:none"><img draggable="false" id="f8" alt="⑨ 融合与重算" style="display:none"><img draggable="false" id="f9" alt="⑩ 合并访存与 bank 冲突" style="display:none"><iframe id="f10" title="⑪ 分块矩阵乘（可交互）" style="display:none"></iframe><img draggable="false" id="f11" alt="⑫ 实测：方阵乘法的速度（原图）" style="display:none"><img draggable="false" id="f12" alt="⑬ 对齐、tile 与 wave 量化" style="display:none"><img draggable="false" id="f13" alt="⑭ FlashAttention 论文图 1（原图）" style="display:none"><iframe id="f14" title="⑮ FlashAttention（可交互）" style="display:none"></iframe><iframe id="f15" title="⑯ 回过头来看（可交互）" style="display:none"></iframe></div></div>
+<div id="bar" title="拖动调宽"></div>
+<div class="right"><div class="tip">左栏＝图/动画（点标签切换；右上「⧉ 单独打开这张」可在新页面独享打开，快捷键 <b>o</b>；<b>←</b> <b>→</b> 切换上一张/下一张）；右栏＝正文，出现<b>蓝框「对照左栏 ②」</b>就去左边看那一张，点蓝框会自动切过去。中间竖条可左右拖动。</div>
+<h1>GPU 入门：从一次 ReLU 到 FlashAttention</h1>
+<p>训练和运行大模型几乎全在 GPU 上。学过计组，你知道 CPU 怎样取指、执行、访存，知道 Cache、DRAM、流水线；可一打开显卡的资料，迎面就是 SM、warp、HBM、Tensor Core、FlashAttention 一串名词。这篇从一个具体的问题出发，把这些东西一样一样摆到一块真实的显卡上。</p>
+<p>先看一组让人意外的数。一块 NVIDIA H100 显卡，号称每秒能做约 989 万亿次运算（这个数指的是矩阵乘法，第 2.5 节会说明为什么要加这个限定）。可是让它对一个 64 MB 的数组做最简单的操作——把每个负数换成 0——实际只跑出每秒 0.44 万亿次，不到号称的两千分之一。换成两个 4096×4096 的矩阵相乘，它又能跑到接近号称的速度。同一块显卡，为什么有的活快得惊人，有的活慢得出奇？这篇就是要回答这个问题。回答的过程中，GPU 的各个部件会依次出场；最后用学到的东西读懂 FlashAttention，一个让大模型里“注意力”计算快了好几倍的方法。</p>
+<p>内容展开的是 Stanford CS336《Language Modeling from Scratch》（2026 春季）<strong>第 5 讲《GPUs》</strong>（Tatsu Hashimoto 主讲），并吸收了<strong>第 6 讲</strong>开头对 GPU 硬件和编程模型的回顾。课程的顺序是：GPU 怎么工作 → 什么决定快慢 → 用这些知识读懂 FlashAttention，本文也按这个顺序。计组里讲过的东西（Cache、DRAM 的突发传输、流水线、寄存器）直接拿来用；计组以外的东西，第一次出现时都会先交代。</p>
+<p><strong>几个先说清楚的词。</strong></p>
+<ul>
+<li><strong>浮点运算次数（FLOP）</strong>：一次浮点加法或乘法算一次。<strong>TFLOP/s</strong> 是每秒一万亿次浮点运算，衡量算得多快。989 TFLOP/s 就是每秒 989 万亿次。</li>
+<li><strong>张量</strong>：深度学习里对多维数组的叫法。一个 4096×4096 的矩阵就是一个二维张量。</li>
+<li><strong>PyTorch</strong>：最常用的深度学习库，用 Python 写。<code>torch.relu(x)</code> 是它的一个函数；<code>x</code> 放在显卡上时，计算由显卡完成。</li>
+<li><strong>ReLU</strong>：神经网络里最常见的一步运算，把每个负数换成 0、正数不变：<span class="math inline">\(\mathrm{relu}(v) = \max(v, 0)\)</span>。</li>
+<li><strong>float32、bf16</strong>：float32 是计组里讲过的 32 位单精度浮点数，每个占 4 字节；bf16 是一种 16 位浮点格式，每个占 2 字节，深度学习里常用（第 6.2 节细讲）。</li>
+</ul>
+<p>全文用同一台机器、同一个例子：</p>
+<ul>
+<li>机器：一块 NVIDIA <strong>H100 SXM</strong> 显卡，时钟约 1.98 GHz，1 个周期约 0.5 ns。</li>
+<li>数据：一个 4096×4096 的 float32 矩阵 <code>x</code>，共 16 777 216 个数、64 MB，已经放在显卡自己的内存（显存）里。</li>
+<li>第一件事：<code>y = torch.relu(x)</code>。后面还会用到矩阵乘法 <code>x @ W</code>（神经网络里每一层的主要计算）和注意力里的 softmax。</li>
+</ul>
+<h2>1. 为什么要有 GPU：同样多的晶体管，花在哪</h2>
+<h3>1.1 CPU 变快的老路走到了头</h3>
+<p>从 1980 年代到 2000 年代前期，晶体管越做越小，同样的功耗下主频越来越高（这叫 Dennard 缩放），同一个程序不用改就自动变快。大约 2005 年以后这条路走到头：晶体管还在变多，主频却停在 4–5 GHz 附近，再往上，功耗和发热就压不住了。多出来的晶体管不能再用来“把一件事做得更快”，只能用来“同时做更多件事”。</p>
+<p>GPU 就是把这条路走到底的芯片。CS336 引用 NVIDIA 首席科学家 Bill Dally 的数据：单芯片的推理性能（推理指用训练好的模型算结果），从 2012 年的 K20X 约 4 TOPS 到 2023 年的 H100 约 4000 TOPS（TOPS 是每秒万亿次运算，这里以 8 位整数运算计），十年涨了约一千倍。他把这一千倍拆开算过：数值格式从 32 位降到 16 位再到 8 位，贡献约 16 倍；“复杂指令”——一条指令完成一个点积或一小块矩阵乘加——约 12.5 倍；制程从 28 nm 到 5 nm 约 2.5 倍；稀疏化（权重里大量为 0 的部分跳过不算）约 2 倍；模型本身的效率也在提高。制程只占很小一份，大头是“用更少的位数”和“一条指令干更多活”，也就是后面要讲的低精度（第 6.2 节）和 Tensor Core（第 2 节）。</p>
+<p>为什么大家要不停地堆算力？CS336 开头放了 Kaplan 等人的扩展律曲线：语言模型的验证损失（衡量模型在没见过的文字上猜得有多不准，越低越好）随训练算力 <span class="math inline">\(C\)</span> 按 <span class="math inline">\(L \approx 2.57\,C^{-0.048}\)</span> 平稳下降，算力多一个数量级，损失就可预期地降一截。</p>
+<h3>1.2 CPU 的核心和 GPU 的 SM 长得不一样</h3>
+<div class="ref" onclick="pick(0)">🖼 <span class="go">请对照左栏 ①</span>：CPU 核心与 SM：晶体管花在哪（可交互）<a class="open" href="../GPU-1-CPU核心与SM.html" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>同样是一大块晶体管，CPU 和 GPU 花的地方很不一样。拿 ReLU 来比：盯住 <code>x</code> 开头的四个数 −3、2、−1、5，要把它们变成 0、2、0、5。</p>
+<p>先看 CPU 的一个核心（左栏 ① 第一步）。现代 CPU 也能一次算好几个数：它有<strong>向量寄存器</strong>，一个能装 16 个 float32；还有<strong>向量运算单元</strong>，一条指令把 16 个数同时算完。四个数从内存经三级缓存进入向量寄存器 v1，一条 <code>max</code> 指令就得到 0、2、0、5。可是在核心里，向量运算单元只占一小块。占地方的是另外三样东西：</p>
+<ul>
+<li><strong>分支预测器</strong>：程序里有大量 if 和循环，CPU 要提前猜下一条指令在哪，好提前取指。图里那张表记着每条分支指令最近几次跳没跳，按此预测下一次。</li>
+<li><strong>乱序执行窗口</strong>：同时盯着几百条指令。图里第 1 条 <code>ld</code>（从内存读数）在等数据，第 2、3 条和它无关，就先执行完了，不必干等。</li>
+<li><strong>大缓存</strong>：L1、L2，再加上十几个核心共用的 L3，让多数读取不必等到主内存。</li>
+</ul>
+<p>这三样东西都是为了一件事：让<strong>同一条线程</strong>少停顿、早点算出结果。这对一般程序很要紧——你点一下按钮，希望马上有反应。可如果缓存没命中、乱序窗口里也找不到别的事可做，这条线程照样只能停下等内存。</p>
+<p>再看 GPU 里的一个 <strong>SM</strong>（Streaming Multiprocessor，流式多处理器）。它是 GPU 里的一组运算通道，连同指挥它们的电路；H100 有 132 个 SM，第 2 节会看到它们怎样排在芯片上。左栏 ① 第二步放大了 SM 的四分之一，叫一个<strong>分区</strong>，四个分区一模一样。分区里最多的是两样东西：</p>
+<ul>
+<li><strong>32 条 FP32 运算通道</strong>：每条通道每个周期能做一次 float32 运算。</li>
+<li><strong>寄存器堆</strong>：64 KB，16 384 个 32 位寄存器。</li>
+</ul>
+<p>调度器每个周期发出<strong>一条</strong>指令，这条指令同时送到 32 条通道，32 条通道各算各的数。比如 <code>r2 ← max(r1, 0)</code>，32 个线程各用自己寄存器 r1 里的数，各写各的 r2。这里的<strong>线程</strong>是 GPU 程序里的一条执行流，每个线程负责一份数据（这里一个线程管一个数），和操作系统里的线程不是一回事。同时接受同一条指令的 32 个线程编成一组，叫一个 <strong>warp</strong>。</p>
+<p>为什么要 32 个一组？因为这样 32 条通道只需要一份取指、调度的电路。CPU 每个核心都要一整套分支预测、乱序执行电路；SM 把这些省掉，省下的面积全用来放运算通道和寄存器。整块 H100 有 132 × 4 × 32 = 16 896 条 FP32 通道，做 float32 运算约 67 TFLOP/s；一台桌面 CPU 约 2 TFLOP/s。</p>
+<h3>1.3 等内存的时候，两边怎么办</h3>
+<p>省掉乱序执行，GPU 等内存的时候怎么办？从显存读一次数据要约 350 ns，也就是约 700 个周期。</p>
+<p>左栏 ① 第三步把两边放在同一条时间轴上（中间断开，省略了 10–350 ns 这一段等待）。CPU 线程发出读请求后，缓存没命中、又没有别的事可做，就停着，一直等到 350 ns 数据回来。</p>
+<p>SM 的办法是<strong>让很多组线程同时住在 SM 上，轮流用通道</strong>。一个 SM 最多同时住 2048 个线程，也就是 64 个 warp，每个分区 16 个。W0 发出读请求后要等 350 ns，下一个周期调度器就给 W1 发指令，再下一个给 W2……这样 0.5 ns 换一个，16 个 warp 在 8 ns 内都发出了读请求。数据回来以后，再一个个算。</p>
+<p>关键在于<strong>换 warp 不用保存任何东西</strong>。操作系统切换进程，要把 CPU 寄存器存到内存、再把另一个进程的读进来；SM 上 64 个 warp 的寄存器本来就同时放在寄存器堆里（这就是寄存器堆要 256 KB 那么大的原因），调度器只是改选下一个“数据已到”的 warp。</p>
+<p>所以两边的思路不同：CPU 花大量电路让<strong>一条线程</strong>尽快完成；GPU 用大量常驻线程把等待的时间填满，追求的是<strong>单位时间完成的总计算量</strong>。这也说明了 GPU 的前提：要有成千上万份互不依赖的活。对 1678 万个数各自做 ReLU，正好如此。</p>
+<p>不过左栏 ① 第三步也透露了 ReLU 的问题：16 个 warp 全在等，每个 warp 拿到数据后只做一次比较就完了，通道大部分时间闲着。这是本文开头那个“只跑出两千分之一”的伏笔，第 3、5 节会算清楚。</p>
+<h2>2. 一块 H100 里有什么</h2>
+<h3>2.1 芯片平面：132 个 SM 和中间的 L2</h3>
+<div class="ref" onclick="pick(1)">🖼 <span class="go">请对照左栏 ②</span>：一块 H100：芯片平面、数据的路、HBM 侧视（可交互）<a class="open" href="../GPU-2-一块H100.html" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>现在把一个个 SM 放回整颗芯片上（左栏 ② 第一步，按 NVIDIA 公布的结构重画，位置为示意，数量是实数）。</p>
+<ul>
+<li><strong>SM</strong>：每个小方格一个。完整的 GH100 芯片有 144 个 SM，每 18 个编成一组，叫 <strong>GPC</strong>（Graphics Processing Cluster），共 8 组。这只是物理上的分组，写程序时不用管。芯片做出来总有少数 SM 有缺陷，卖出去的 H100 SXM 屏蔽掉 12 个（灰色），只启用 132 个；不这样做，一颗芯片只要有一个坏 SM 就得报废，能卖的芯片会少很多。</li>
+<li><strong>L2 缓存</strong>：中间两条，共 50 MB，所有 SM 共用，作用和计组里的缓存一样。它分成左右两半，SM 读自己这一半快，读另一半要绕过去，大约慢一倍。</li>
+<li><strong>内存控制器和 HBM</strong>：芯片左右两侧的竖条是内存控制器，连着芯片旁边的 <strong>HBM</strong>（High Bandwidth Memory，高带宽内存），也就是显存。</li>
+<li><strong>PCIe 接口和 GigaThread 引擎</strong>：上面一条。PCIe 是显卡和 CPU 之间的连接；GigaThread 引擎负责把一个 GPU 程序的工作分给各个 SM（第 3 节会看到它怎么分）。</li>
+<li><strong>NVLink</strong>：下面一条，连到同一台服务器里其他 GPU 的高速链路（CS336 第 7 讲讲多卡并行时才用到）。</li>
+</ul>
+<h3>2.2 数据的路：从主机内存到 SM</h3>
+<p>左栏 ② 第二步画了数据走的路。张量一开始在主机内存（CPU 那边的内存条）里，要先由 CPU 经 <strong>PCIe</strong> 搬进显卡的 HBM：PyTorch 里写 <code>x.to(&quot;cuda&quot;)</code> 就是这一步，PCIe 5.0 ×16 每个方向约 64 GB/s，64 MB 约 1 ms。之后 GPU 程序运行时，SM 需要的数从 HBM 经内存控制器、L2 送到 SM，HBM 的带宽是 3.35 TB/s，是 PCIe 的约 50 倍。</p>
+<p>所以训练时数据一旦搬进显存，就尽量留在那里反复用；每一步都在主机和显卡之间来回搬，PCIe 会成为瓶颈。</p>
+<h3>2.3 HBM：DRAM 叠起来，贴在芯片旁边</h3>
+<p>HBM 为什么能比普通内存快那么多？左栏 ② 第三步从侧面剖开看。HBM 就是计组里的 DRAM，只是做法不同：</p>
+<ul>
+<li>8 层左右的 DRAM 芯片叠成一摞，用穿透每层硅片的竖直导线（TSV）连通，叫一个<strong>堆栈</strong>，每个 16 GB。</li>
+<li>堆栈和 GPU 芯片并排放在同一块<strong>硅转接板</strong>上，中间只隔几毫米，转接板上刻着上千根细导线，所以每个堆栈能拉出 1024 根数据线。</li>
+</ul>
+<p>H100 SXM 用 5 个堆栈，共 80 GB，合计 5120 根数据线，带宽 3.35 TB/s。对照 CPU 的内存条：插在主板插槽里，离 CPU 十几厘米，每条通道只有 64 根数据线，带宽几十 GB/s。DRAM 还是那种 DRAM，快在接口极宽、离芯片极近。</p>
+<h3>2.4 NVIDIA 的原图</h3>
+<div class="ref" onclick="pick(2)">🖼 <span class="go">请对照左栏 ③</span>：H100 整颗芯片（NVIDIA 原图）<a class="open" href="../images/nvidia-h100-full-gpu.png" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ③ 是 NVIDIA 官方的 GH100 芯片结构图（深灰底、绿色块那张），引自 NVIDIA 技术博客《NVIDIA Hopper Architecture In-Depth》，这张图在讲 GPU 的地方随处可见。对照左栏 ② 看：最上面一条是 <strong>PCI Express 5.0 Host Interface</strong> 和 <strong>GigaThread Engine</strong>；8 个大框是 GPC，每个 GPC 里有 9 个 <strong>TPC</strong>（每个 TPC 是两个 SM 的组合）；中间两条浅蓝色带子是 <strong>L2 Cache</strong>；两侧是 <strong>Memory Controller</strong> 和 <strong>HBM3</strong>；最下面一排是 <strong>NVLink</strong>。</p>
+<div class="ref" onclick="pick(3)">🖼 <span class="go">请对照左栏 ④</span>：一个 SM 的内部（NVIDIA 原图）<a class="open" href="../images/nvidia-h100-sm.png" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ④ 是同一篇博客里一个 SM 的内部图。4 个相同的分区，每个分区从上到下是：</p>
+<ul>
+<li><strong>L0 Instruction Cache / Warp Scheduler (32 thread/clk) / Dispatch Unit</strong>：指令缓存、warp 调度器和分发单元。“32 thread/clk”就是每个周期给一个 warp 的 32 个线程发一条指令。</li>
+<li><strong>Register File (16,384 × 32-bit)</strong>：寄存器堆，16 384 个 32 位寄存器，64 KB。</li>
+<li><strong>INT32 ×16、FP32 ×32、FP64 ×16</strong>：整数、单精度浮点、双精度浮点的运算通道。32 条 FP32 通道正好让一个 warp 的 32 个线程一个周期各做一次 float32 运算。</li>
+<li><strong>Tensor Core（第 4 代）</strong>：专门做矩阵乘的电路，下面单独讲。</li>
+<li><strong>LD/ST ×8</strong>：读写单元，负责发出访存请求。<strong>SFU</strong>：特殊函数单元，算 sin、cos、exp、倒数平方根这类函数。</li>
+</ul>
+<p>4 个分区下面是全 SM 共用的部分：</p>
+<ul>
+<li><strong>Tensor Memory Accelerator（TMA）</strong>：专门在 HBM 和共享内存之间成块搬数据的硬件，Hopper 这一代新加的。</li>
+<li><strong>256 KB L1 Data Cache / Shared Memory</strong>：一块 256 KB 的 SRAM，一部分当 L1 缓存（硬件自动管理，和 CPU 的 L1 一样），一部分当<strong>共享内存</strong>——程序自己决定往里放什么，同一组线程（第 3 节的“线程块”）可以通过它交换数据。</li>
+<li><strong>Tex</strong>：纹理单元，画图形用，训练模型时用不到。</li>
+</ul>
+<h3>2.5 Tensor Core：矩阵乘法有专门的电路</h3>
+<p>普通运算通道一条指令只做一次乘加。可神经网络里绝大部分计算是矩阵乘法，于是 NVIDIA 在每个分区里放了一个 <strong>Tensor Core</strong>：一条指令完成一个小矩阵的乘加 <span class="math inline">\(D = A\times B + C\)</span>（例如一块 16×16 乘 16×16）。一个小矩阵乘加包含几千次乘法和加法，一条指令全做完，省下了逐条发指令的开销。</p>
+<p>结果是两种运算的速度差得很远。H100 每个 Tensor Core 每周期大约能做 1024 次 bf16 浮点运算，而一个分区的 32 条 FP32 通道合起来每周期只做 64 次（32 次乘加）。所以 H100 用 Tensor Core 做 bf16 矩阵乘能到约 989 TFLOP/s，用普通通道做 float32 运算只有约 67 TFLOP/s：<strong>矩阵乘法比其他运算快十几倍</strong>。开头那个 989，指的就是这个；后面所有优化思路都从这里出发——尽量把计算变成矩阵乘，让 Tensor Core 有活干。</p>
+<p>用显卡做矩阵乘由来已久：2001 年 Larsen 和 McAllister 的论文《Fast Matrix Multiplies using Graphics Hardware》就把矩阵存成纹理，借当时只能画图的可编程着色器算矩阵乘。真正的分岔出现在 2017 年的 V100：CS336 有一张图，从 K80、M60 到 P100，矩阵乘和其他运算的算力几乎一样（都在 10 TFLOP/s 上下）；V100 引入 Tensor Core 后，矩阵乘一下跳到约 125 TFLOP/s，其他运算约 15；A100 是 312 对 19.5；H100 是 989 对 67。</p>
+<h2>3. 一个 GPU 程序是怎么跑起来的</h2>
+<p>硬件看完了，现在看软件怎样用它。用 <code>y = torch.relu(x)</code> 从头走一遍：从 Python 里一行代码，到 GPU 上 1678 万个数全部处理完。</p>
+<div class="ref" onclick="pick(4)">🖼 <span class="go">请对照左栏 ⑤</span>：一次 ReLU kernel（可交互）<a class="open" href="../GPU-3-一次ReLU-kernel.html" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑤ 是交互演示，分四幕。</p>
+<h3>3.1 启动：CPU 下命令，GPU 分块</h3>
+<p><strong>kernel。</strong> PyTorch 发现 <code>x</code> 在 GPU 上，就挑出一个事先写好、编译好的 GPU 程序来算。在 GPU 上运行的函数叫 <strong>kernel</strong>。kernel 的写法和普通程序不同：它写的是“<strong>一个线程</strong>做什么”（左栏 ⑤ 第一幕第 1 步，左边的代码）：</p>
+<pre><code>i = blockIdx * 256 + threadIdx   // 我负责第几个数
+v = x[i]
+y[i] = max(v, 0)
+</code></pre>
+<p>要处理 16 777 216 个数，就开 16 777 216 个线程，每个线程用自己的编号 i 处理一个数。为什么这样写？因为 GPU 要的就是成千上万份独立的活（第 1.3 节），按线程来写，硬件怎样把线程分给通道就不必程序员操心。</p>
+<p><strong>命令和异步。</strong> CPU 这边，CUDA 驱动（CUDA 是 NVIDIA 的 GPU 编程平台；驱动是显卡的驱动程序，在 CPU 上运行）把“跑哪个 kernel、开多少线程、x 和 y 在显存里的地址”写成一条命令，放进命令队列，通知 GPU（第 2 步）。Python 并不等 GPU 算完，<code>torch.relu</code> 立刻就返回了，接着执行下一行，这叫<strong>异步执行</strong>。准备这条命令约 2–5 µs。只有当 Python 真正要用 y 的值（打印、<code>.item()</code>、搬回 CPU）时，CPU 才停下来等 GPU 算完。</p>
+<p><strong>线程块和 grid。</strong> 1678 万个线程不会直接扔给硬件，而是每 256 个编成一组，叫一个<strong>线程块</strong>（block）。块 b 负责 x[256b] 到 x[256b+255]，代码里的 <code>blockIdx</code> 就是块号，<code>threadIdx</code> 是块内第几个线程（0–255）。<span class="math inline">\(16\,777\,216 \div 256 = 65\,536\)</span> 个块，全部块合起来叫一个 <strong>grid</strong>（第 3 步）。</p>
+<p>为什么要有“块”这一层？因为一个块从头到尾只在一个 SM 上运行，块里的线程能通过这个 SM 的共享内存交换数据、互相等待（第 6.6 节分块矩阵乘就靠这一点）；不同块之间做不到。ReLU 用不上这个能力，但写法是一样的。</p>
+<p><strong>分给 SM。</strong> GPU 上的 GigaThread 引擎拿到命令后，把块分给各个 SM（第 4 步）。一个 SM 最多同时住 2048 个线程，也就是 8 个这样的块。132 个 SM 先各拿 8 个：SM 0 拿到块 0、132、264……，共 1056 个块上了 SM，其余 64 480 个排队。</p>
+<h3>3.2 一个 warp 怎样执行</h3>
+<p>第二幕把镜头拉近到 SM 0，时间单位换成纳秒。</p>
+<p>块到了 SM 上，再按线程号每 32 个切成一个 <strong>warp</strong>：线程 0–31 是 warp 0，32–63 是 warp 1……一个块 8 个 warp，分到 4 个分区；分区 0 拿到每个块的第 0 号和第 4 号 warp，8 个块共 16 个，演示里叫 W0–W15（第 1 步）。W0 是块 0 的线程 0–31，负责 x[0..31]。</p>
+<p>调度器挑中 W0，发出“算下标”这条指令（第 2 步）：32 个线程同时执行同一条指令，但每个线程用的是自己寄存器里的线程号，算出 0、1、2……31 各不相同。一条指令、32 个线程、各自的数据，这种执行方式叫 <strong>SIMT</strong>（Single Instruction, Multiple Threads，单指令多线程）。</p>
+<p>接着 W0 发出“读 x[i]”（第 3 步）。32 个线程要读的地址是 0x7000_0000、0x7000_0004……0x7000_007C，正好连续 128 字节。读写单元把它们<strong>合并</strong>成一次 128 字节的请求（为什么这很重要，第 6.5 节讲）。L1 没有，L2 也没有，请求发到 HBM。约 350 ns 后才有回音，W0 只能等。</p>
+<p>下一个周期调度器就换 W1 发指令，再下一个换 W2……（第 4 步）。大约 8 ns 后，16 个 warp 全发出了读请求，全在等。ReLU 每个元素只做一次比较，没有别的活可干——这个 kernel 的时间注定大部分花在等内存上。</p>
+<p>约 350 ns 后数据到了，32 个数分别落进 W0 的 32 个线程的寄存器 r1，W0 重新就绪（第 5 步）。一条“取较大值”指令，32 条通道一个周期算完：−3、2、−1、5 变成 0、2、0、5（第 6 步）。然后写回 y[i]，地址同样连续，合并成一次 128 字节的写（第 7 步）。</p>
+<h3>3.3 分支发散：if/else 在 warp 里怎么走</h3>
+<p>第三幕看一种常见的写法问题。如果 kernel 写成 <code>if (x &lt; 0) y = 0; else y = x;</code>，同一个 warp 里，x 为负的线程要走 if，其余的走 else。可一个 warp 一次只能执行一条指令，怎么办？</p>
+<p>硬件用一个 32 位的<strong>活动掩码</strong>，一位对应一个线程。先把 x&lt;0 的线程对应的位置 1，执行 <code>y = 0</code>，掩码为 0 的通道空转；再把掩码取反，执行 <code>y = x</code>，这回刚才干活的空转。两条路的时间加在一起，这叫<strong>分支发散</strong>（control divergence）。CS336 的例子是 <code>if (threadIdx.x &lt; 4) { A; B; } else { X; Y; } Z;</code>：线程 0–3 执行 A、B 时，其余 28 个线程空等；28 个线程执行 X、Y 时，线程 0–3 空等；到 Z 才重新一起走。</p>
+<p>它不会算错，只是比在 CPU 上代价大；能写成 <code>max</code>、<code>select</code> 这类没有分支的形式更好，或者让同一个 warp 的线程走同一条路。</p>
+<h3>3.4 全部跑完：时间花在哪</h3>
+<p>第四幕。一个块的 8 个 warp 都结束后，SM 空出位置，GigaThread 引擎立刻补上队首的块 1056。65 536 个块，每轮约 1056 个，大约轮 62 次。</p>
+<p>现在可以算账了。读 x 64 MB、写 y 64 MB，共 128 MB，HBM 每秒最多搬 3.35 TB：</p>
+<div class="math block">
+\[t \ge \frac{128\ \text{MB}}{3.35\ \text{TB/s}} \approx 38\ \mu\text{s}\]
+</div>
+<p>38 µs 里只做了 1678 万次比较，折合 0.44 TFLOP/s，而 FP32 通道的峰值是 67 TFLOP/s：运算通道 99% 以上的时间在等数据。这就是开头那个问题的答案：<strong>ReLU 的速度由 HBM 带宽决定，和有多少运算通道无关</strong>。同样 128 MB 在内存带宽约 90 GB/s 的 CPU 上要约 1.4 ms，GPU 快约 37 倍，正好是两边内存带宽之比。</p>
+<p>反过来，张量很小时，GPU 几微秒就算完，时间全花在每次 2–5 µs 的启动开销上——由很多小运算组成的模型在 GPU 上跑不快，原因就在这里。</p>
+<p><strong>占用率。</strong> 第三步还交代了一个限制。每个线程最多能用 255 个寄存器，用得越多，一个 SM 能同时住的线程就越少。CS336 第 6 讲的例子：一个块 64 个线程，每个线程用 160 个寄存器，一个 SM 的寄存器堆有 65 536 个寄存器，那么最多住 <span class="math inline">\(\lfloor 65\,536 \div (64\times160) \rfloor = 6\)</span> 个块、384 个线程，只有满额 2048 个的不到五分之一。实际住的 warp 数占满额的比例叫<strong>占用率</strong>。住的 warp 少了，等内存时可换的就少，通道更容易闲着。占用率低也不一定坏：如果每个线程多处理几个元素（叫 thread coarsening，例如用 Triton——一种写 kernel 的语言，见现状更新——编出的 GeLU 每个线程一次处理 8 个元素；GeLU 是和 ReLU 类似的另一种激活函数），线程少一些也能把通道喂饱。</p>
+<h2>4. 存储层次：数据离运算通道有多远</h2>
+<p>第 3 节看到，一次 HBM 访问要约 700 个周期，ReLU 的时间几乎全耗在这上面。GPU 和 CPU 一样有一整层存储，越靠近运算通道越快、越小。想让程序快，就得知道每一层在哪、多大、多快、谁能用。</p>
+<div class="ref" onclick="pick(5)">🖼 <span class="go">请对照左栏 ⑥</span>：存储层次（可交互）<a class="open" href="../GPU-5-存储层次.html" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑥ 把 H100 的五层存储排成五行，左边小图标出它在芯片上的位置，右边三根条用对数刻度画容量、读一次的延迟和全芯片带宽：</p>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>在哪</th>
+<th>容量</th>
+<th>读一次</th>
+<th>谁能看见</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>寄存器</td>
+<td>每个 SM 的寄存器堆</td>
+<td>每 SM 256 KB</td>
+<td>1 个周期</td>
+<td>只有这个线程</td>
+</tr>
+<tr>
+<td>共享内存 / L1</td>
+<td>每个 SM 里的 SRAM</td>
+<td>每 SM 256 KB</td>
+<td>约 30 个周期（≈15 ns）</td>
+<td>同一个线程块的线程</td>
+</tr>
+<tr>
+<td>L2 缓存</td>
+<td>芯片中间</td>
+<td>50 MB</td>
+<td>约 300–600 个周期</td>
+<td>所有线程</td>
+</tr>
+<tr>
+<td>HBM</td>
+<td>芯片旁边的 5 个堆栈</td>
+<td>80 GB</td>
+<td>约 700 个周期（≈350 ns）</td>
+<td>所有线程</td>
+</tr>
+<tr>
+<td>主机内存</td>
+<td>主板上，经 PCIe</td>
+<td>几百 GB</td>
+<td>微秒级</td>
+<td>要先搬进 HBM</td>
+</tr>
+</tbody>
+</table>
+<p>带宽差得同样悬殊：整颗芯片的寄存器合计约 400 TB/s，共享内存合计约 33 TB/s，L2 约 12 TB/s，HBM 3.35 TB/s，PCIe 每个方向约 64 GB/s。为什么不把 HBM 都换成快的 SRAM？CS336 第 5 讲给的对比是：SRAM（共享内存、缓存用的那种存储）比 DRAM（HBM）每字节贵约 100 倍，快约 8 倍。所以只能在近处放一点贵而快的，远处放大量便宜而慢的，和计组里 Cache—主存的道理一样。</p>
+<p><strong>“谁能看见”这一列最要紧</strong>（左栏 ⑥ 第二步）。同一个线程块的线程在同一个 SM 上，可以通过共享内存交换数据，也可以互相等待（同步）；不同线程块可能在不同 SM 上，它们之间交换数据只能写到 L2/HBM 再读出来，慢得多。第 6.6 节的分块、第 7 节的 FlashAttention，都是在利用“块内共享内存”这一层。</p>
+<p>CUDA 编程手册的内存模型里还有两种名字容易误导的存储。<strong>local memory</strong>（局部内存）是每个线程私有的，但它其实放在 HBM 里：线程要用的寄存器太多、塞不下时，编译器把一部分变量“溢出”到这里，所以它一点也不快。<strong>constant memory</strong>（常量内存）是整个 grid 只读的一小块（64 KB），也在 HBM 里，但有专门的缓存，一个 warp 的线程读同一个地址时很快。CPU 上的程序能直接碰到的只有 global memory（就是 HBM）和 constant memory：把数据搬进、搬出它们。</p>
+<p>延迟的具体数字，不同测法相差不小。CS336 第 5 讲用的是一张 A100（H100 的上一代）的实测表（单位是周期）：global memory 约 290、L2 约 200、L1 约 33、共享内存读约 23、写约 19。上表 H100 的 HBM 约 700 个周期，来自 Chips and Cheese 用一长串前后依赖的读取测出的结果，包含了地址翻译等开销。两组数字的量级关系一样：共享内存和 L1 比 HBM 快一个数量级。同一页还放了 A100 的芯片照片（Locuza 标注）：完整的 GA100 有 128 个 SM、8192 条 FP32 通道、48 MB L2（分成两个 24 MB 的分区，正是左栏 ③ 里那两条浅蓝带子的位置），四周是 6144 位宽的 HBM2(e) 接口，芯片面积约 826 mm²。</p>
+<h2>5. 快慢由什么决定</h2>
+<h3>5.1 算力涨得比内存带宽快</h3>
+<p>ReLU 慢在搬数据，这不是特例。CS336 第 5 讲的一张图（引自 Gholami 等人的《AI and Memory Wall》）显示：过去二十年，硬件的峰值算力涨了约 6 万倍（每两年 3.0 倍），DRAM 带宽只涨了约 100 倍（每两年 1.6 倍），芯片之间的互连带宽约 30 倍（每两年 1.4 倍），差距越拉越大。H100 上，Tensor Core 每秒能做 989 万亿次 bf16 运算，HBM 每秒只能送 3.35 万亿字节。</p>
+<p>所以一个 kernel 跑得慢，先要问慢在哪。它的时间可以拆成三份（Horace He《Making Deep Learning Go Brrrr》的说法）：真正做运算的时间、在 HBM 和 SM 之间搬数据的时间，以及其他一切开销（Python 解释、PyTorch 分派、每次几微秒的启动）。哪一份最大，就该优化哪一份：搬数据最慢时，再快的 Tensor Core 也帮不上忙；开销最大时，改算法也没用。</p>
+<h3>5.2 屋顶线：一眼看出卡在算还是卡在搬</h3>
+<p>怎样判断一个运算卡在哪？看它的<strong>算术强度</strong>：每从 HBM 搬 1 字节，做几次浮点运算（单位 FLOP/字节）。ReLU 每读 4 字节、写 4 字节，只做 1 次比较，强度是 <span class="math inline">\(1/8\)</span>。</p>
+<div class="ref" onclick="pick(6)">🖼 <span class="go">请对照左栏 ⑦</span>：屋顶线<a class="open" href="../images/gpu-roofline.svg" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑦ 是 H100 的<strong>屋顶线</strong>图，横轴是算术强度，纵轴是能达到的速度，两个轴都是对数刻度。一个 kernel 的速度受两样东西限制：HBM 每秒只能送 3.35 TB，按强度换算成运算就是一条斜线；Tensor Core 最多 989 TFLOP/s，是一条平线。实际速度不超过两条线中较低的那条：</p>
+<div class="math block">
+\[\text{速度} \le \min\left(\underbrace{3.35\ \text{TB/s} \times \text{算术强度}}_{\text{斜线：HBM 能喂多快}},\ \underbrace{989\ \text{TFLOP/s}}_{\text{平线：Tensor Core 峰值}}\right)\]
+</div>
+<p>两条线在 <span class="math inline">\(989 \div 3.35 \approx 295\)</span> FLOP/字节处相交，这是<strong>拐点</strong>：每搬 1 字节至少要做 295 次运算，Tensor Core 才可能被喂饱。图中绿色虚线是不用 Tensor Core 的 FP32 峰值 67 TFLOP/s。</p>
+<p>图上的点就是本文的几个例子（紫色的两个 sin²+cos² 点在第 6.3 节讲）：</p>
+<ul>
+<li>ReLU（float32）：强度 <span class="math inline">\(1/8\)</span>，最多 <span class="math inline">\(3.35 \times 1/8 \approx 0.42\)</span> TFLOP/s——就是第 3 节算出的那个数。</li>
+<li>矩阵乘 <span class="math inline">\(N\times N\)</span>（bf16）：做 <span class="math inline">\(2N^3\)</span> 次运算（<span class="math inline">\(N^2\)</span> 个输出，每个是 <span class="math inline">\(N\)</span> 次乘加），最少搬 <span class="math inline">\(3N^2\)</span> 个数（读两个输入、写一个输出），每个 2 字节，强度 <span class="math inline">\(\dfrac{2N^3}{6N^2} = N/3\)</span>。<span class="math inline">\(N = 128\)</span> 时只有 43，仍在斜线下；<span class="math inline">\(N = 4096\)</span> 时是 1365，顶到平线。所以<strong>大矩阵乘是 GPU 上少数能跑满算力的运算</strong>，矩阵太小反而受带宽限制。这回答了开头的第二个问题。</li>
+</ul>
+<p>点落在斜线段，叫<strong>受内存带宽限制</strong>（memory-bound），想快只能少搬字节；落在平线段，叫<strong>受算力限制</strong>（compute-bound）。</p>
+<p>CS336 的屋顶线图上还有几条更高的斜线：数据已经在共享内存里时，上限是 33 TB/s × 强度；在寄存器里时约 400 TB/s × 强度（左栏 ⑦ 的蓝、紫虚线）。数据离运算通道越近，同样的强度能跑得越快，拐点也越靠左——第 6.6 节的分块就是把数据挪到这几条线上。灰虚线是一台桌面 CPU（内存约 90 GB/s、约 2 TFLOP/s，估算），整体低一到两个数量级。CS336 图上还标了稠密和稀疏两类矩阵乘：稀疏矩阵乘要额外搬下标、每个数被复用的次数少，强度低，落在斜线段。</p>
+<p>下面六个办法，第一个和内存无关，后五个都是在少搬字节，或者把数据留在离通道更近的那一层。</p>
+<h2>6. 让它快起来的办法</h2>
+<h3>6.1 避免分支发散</h3>
+<p>第 3.3 节已经看过：一个 warp 里的线程走不同的分支，就要分几遍执行。办法是尽量写成没有分支的形式，或者让同一个 warp 的线程走同一条路。</p>
+<h3>6.2 低精度：每个数少占几个字节</h3>
+<p>ReLU 卡在搬字节上。最直接的办法是让每个数少占几个字节。同一个 ReLU 改用 bf16（每个数 2 字节）：读 2 字节、写 2 字节，强度从 <span class="math inline">\(1/8\)</span> 变成 <span class="math inline">\(1/4\)</span>，左栏 ⑦ 上的点右移一倍，时间减半。代价是每个数能表示的精度和范围变小，所以要知道各种格式丢了什么。</p>
+<div class="ref" onclick="pick(7)">🖼 <span class="go">请对照左栏 ⑧</span>：低精度<a class="open" href="../images/gpu-precision.svg" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑧ 最上面把同一个数 3.14159 存进六种格式，每格是一位：红色是符号位，蓝色是阶码（管能表示多大多小），绿色是尾数（管精度）。这和计组里 IEEE 754 的结构一样，只是位数不同。</p>
+<ul>
+<li>FP32（1+8+23 位）存成 3.1415901；BF16（1+8+7）和 FP16（1+5+10）都存成 3.140625。BF16 的阶码和 FP32 一样宽，所以范围相同、精度差；FP16 尾数多一些，但阶码只有 5 位，最大只能表示 65504，训练中大一点的梯度会溢出（<strong>梯度</strong>：训练时算出的“每个参数该往哪个方向改、改多少”，第 6.4 节有例子）。训练里现在多用 BF16。</li>
+<li>8 位浮点有两种：E4M3（4 位阶码、3 位尾数）把 3.14159 存成 3.25，最大 448；E5M2 存成 3.0，范围更大、更粗。</li>
+<li>4 位的 E2M1 一共只有 0、±0.5、±1、±1.5、±2、±3、±4、±6 这 15 个值（+0、−0 各占一个码，共 16 个码），3.14159 只能存成 3。</li>
+</ul>
+<p>精度丢了，算出来的结果还能用吗？左下是 Tensor Core 的做法：两个 bf16 输入相乘，乘积不舍入，加进一个 FP32 的累加器，最后输出 FP32。输入用 16 位是为了搬得少；累加用 32 位，是因为一次矩阵乘要把几千个乘积加在一起，16 位的累加器会把小的乘积舍掉。</p>
+<p>哪些运算能放心用 16 位？右下是 CS336 引用的 NVIDIA 混合精度教程的分类：矩阵乘和大多数逐元素运算（relu、tanh、加减乘）可以用 16 位存；“把小数加进大和”的运算要 FP32 的精度，比如求和、softmax 的分母、各种归一化；输出远大于输入的运算（exp、log、pow）和损失函数要 FP32 的范围。</p>
+<p>位数再少，一个格式的范围就不够用了。办法是让一小组数共用一个缩放因子：存的是“缩放因子 × 元素”。Blackwell（H100 的下一代）支持的 <strong>MXFP8</strong> 是每 32 个 E4M3 数共用一个 E8M0 缩放因子（只有 8 位阶码，就是一个 2 的幂次），左栏 ⑧ 最下面画了三组，各自乘 <span class="math inline">\(2^{-3}\)</span>、<span class="math inline">\(2^{5}\)</span>、<span class="math inline">\(2^{0}\)</span>。一组里的数大小差不多，共用一个幂次就够，不同组可以差很远。因为有了缩放因子，元素就选精度更好的 E4M3，而不用范围更大的 E5M2。NVIDIA 的 NVFP4 走得更远：每 16 个 E2M1 数配一个 E4M3 缩放因子。</p>
+<p>CS336 引的 MXFP8 训练论文（arXiv 2506.08027）给出了实际流程。先交代几个训练的词：模型里要学的参数矩阵叫<strong>权重</strong>（就是 <code>x @ W</code> 里的 W）；每一层算出来、传给下一层的数叫<strong>激活值</strong>；训练一步先做<strong>前向传播</strong>（从输入一层层算到损失），再做<strong>反向传播</strong>（从损失往回，算出每个权重的梯度），最后由<strong>优化器</strong>按梯度更新权重。训练一步要做三类矩阵乘：前向传播算输出（FPROP），反向传播求输入的梯度（DGRAD）和求权重的梯度（WGRAD）。权重和梯度的“主副本”仍用 BF16/FP32 保存；FPROP 把权重和激活值量化成 MXFP8 再算；DGRAD、WGRAD 也用 MXFP8，但它们要用到矩阵的转置，转置后“32 个一组”的方向变了，所以要从 BF16 重新量化一份转置，不能直接把量化好的矩阵转过来；DGRAD 的结果以 BF16 传给前一层，WGRAD 的结果以 FP32 交给优化器去更新主副本。也不是所有运算都量化：一个 Transformer 块（大语言模型的基本组成单元）里只有 QKV 投影、输出投影和前馈层的两个全连接（FC1、FC2）这几个带权重的矩阵乘用 MXFP8；注意力内部的两次矩阵乘（<span class="math inline">\(QK^\top\)</span> 和乘 <span class="math inline">\(V\)</span>，第 7 节）、softmax、LayerNorm（一种归一化）、残差相加仍用 BF16。这些名字不必都记住，要点是：带权重的大矩阵乘用 8 位，其余对精度敏感的部分保留 16 位。H100 上 bf16 约 989 TFLOP/s，FP8 约 2000 TFLOP/s。</p>
+<h3>6.3 算子融合：中间结果不回 HBM</h3>
+<div class="ref" onclick="pick(8)">🖼 <span class="go">请对照左栏 ⑨</span>：融合与重算<a class="open" href="../images/gpu-fusion.svg" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>看一个比 ReLU 稍复杂的例子（左栏 ⑨ 上半，CS336 的例子）：<span class="math inline">\(y = \sin^2 x + \cos^2 x\)</span>。按 PyTorch 一个函数一个函数地执行，要启动 5 个 kernel：sin、cos、平方、平方、相加。每个 kernel 都从 HBM 读输入、把结果写回 HBM，下一个再读回来。x 是 64 MB 的 float32 时，一共读写 11 个 64 MB 的张量 = 704 MB，约 210 µs，加上 5 次启动约 225 µs。</p>
+<p>问题出在中间结果：sin x 算出来，写进 HBM，紧接着又被读出来平方。如果把 5 步写进同一个 kernel（<strong>融合</strong>）：每个线程读一次 x[i]，在自己的寄存器里算 sin、cos、平方、相加，写一次 y[i]。只搬 128 MB，约 38 µs，加一次启动约 41 µs，快 5 倍多，结果一字不差。中间值从不进 HBM。图上时间轴里，每条前面的空隙是启动开销，条的长度是搬数据的时间——运算本身快到可以忽略。左栏 ⑦ 上，两个紫点就是融合前后：融合后强度变高，点沿斜线右移。</p>
+<p>这种逐元素的融合编译器能自动做，<code>torch.compile</code>（PyTorch 把一段 Python 代码编译成 GPU kernel 的功能）生成的就是融合好的 kernel（CS336 第 6 讲用性能分析工具看到：手写的 GeLU 启动了好几个 kernel，内置版和编译版都只有一个）。所以融合之后，gelu 和 relu 耗时几乎一样——都是读一次、写一次。</p>
+<h3>6.4 重算：宁可多算，也不多搬</h3>
+<p>左栏 ⑨ 下半先要说明：训练时反向传播为什么要用前向的中间结果。CS336 借用 CS221 的例子：<span class="math inline">\(\text{Loss}(x,y,w) = (w\cdot\phi(x) - y)^2\)</span>（<span class="math inline">\(w\)</span> 是权重，<span class="math inline">\(\phi(x)\)</span> 是输入 <span class="math inline">\(x\)</span> 的特征向量，<span class="math inline">\(y\)</span> 是正确答案，Loss 是平方误差），取 <span class="math inline">\(w = [3,1]\)</span>，<span class="math inline">\(\phi(x) = [1,2]\)</span>，<span class="math inline">\(y = 2\)</span>。前向从叶子往根算：<span class="math inline">\(\text{score} = w\cdot\phi(x) = 5\)</span>，<span class="math inline">\(\text{residual} = 5 - 2 = 3\)</span>，<span class="math inline">\(\text{loss} = 3^2 = 9\)</span>。反向从根往叶子算：<span class="math inline">\(\partial\,\text{loss}/\partial\,\text{residual} = 2\times3 = 6\)</span>，<span class="math inline">\(\nabla_w \text{Loss} = 6\,\phi(x) = [6, 12]\)</span>。反向用到了前向算出的 residual = 3 和 <span class="math inline">\(\phi(x)\)</span>，所以前向的中间值要么存着，要么到时候重算。</p>
+<p>存着就要搬数据。把三个 sigmoid 叠在一起，旧做法是前向时把中间结果 s1、s2 写进 HBM 存着：前向读 x、写 s2、s1、out，反向读 s2、s1、dout、写 dx，共 8 次 HBM 读写（dout 是损失对输出 out 的梯度，从后一层传来；dx 是要算出的、损失对输入 x 的梯度）。</p>
+<p>新做法是前向时不存中间结果，反向时从 x 重新算一遍 sigmoid：前向读 x、写 out，反向读 x、dout、写 dx，共 5 次，访存只剩 5/8。多出来的 3 次 sigmoid 在寄存器里算，几乎不花时间。在受带宽限制的地方，<strong>多算一点换少搬一点</strong>是划算的。“激活检查点”（activation checkpointing）用的是同一个思路，主要目的是省显存。</p>
+<h3>6.5 合并访存与 bank 冲突：每次搬运别浪费</h3>
+<div class="ref" onclick="pick(9)">🖼 <span class="go">请对照左栏 ⑩</span>：合并访存与 bank 冲突<a class="open" href="../images/gpu-coalesce.svg" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>第 3.2 节说过，W0 的 32 个地址连续，读写单元把它们合并成一次 128 字节的请求。为什么这很重要？左栏 ⑩ 上半回到“读 x”这个动作。HBM 是 DRAM，计组讲过：DRAM 读一行要先激活整行到灵敏放大器里，所以一次读给的是连续的一大段（突发传输）。GPU 上，一个 warp 的 32 个线程同时访存，地址落在同一个 128 字节段里，就合成一次传输；散在 32 个段里，就要 32 次传输，每段 128 字节只用 4 字节，有效带宽剩 1/32。x 按行存，第 i 行第 j 列的地址是起点 + (i×4096 + j)×4：</p>
+<ul>
+<li>线程 k 读 <code>x[0][k]</code>：32 个地址连续，1 次传输，这就是<strong>合并访存</strong>（coalesced）。</li>
+<li>线程 k 读 <code>x[k][0]</code>：相邻线程的地址差一整行 <span class="math inline">\(4096\times4 = 16\)</span> KB，32 次传输。</li>
+</ul>
+<p>32 个线程 × 4 字节正好 128 字节，warp 是 32 个线程不是偶然。CS336 用一个 16 字节的玩具地址空间说明突发：每 4 字节一个突发段，访问第 0 号字节，0–3 号会一起送来；一个 warp 的访问全落在同一个段里，DRAM 只需一次请求。</p>
+<p>矩阵乘里就会撞上这个问题。算 <span class="math inline">\(P = MN\)</span>（都按行存）时，如果让线程 <span class="math inline">\(i\)</span> 负责输出的第 <span class="math inline">\(i\)</span> 行，第 <span class="math inline">\(k\)</span> 步线程 <span class="math inline">\(i\)</span> 读 <span class="math inline">\(M[i][k]\)</span>：相邻线程读的是相邻行的同一列，地址差一整行，不合并。如果让线程 <span class="math inline">\(j\)</span> 负责第 <span class="math inline">\(j\)</span> 列，第 <span class="math inline">\(k\)</span> 步读 <span class="math inline">\(N[k][j]\)</span>：相邻线程读同一行相邻的数，合并。所以要让相邻线程负责输出的相邻列，或者先把整块数据搬进共享内存（第 6.6 节）。</p>
+<p>共享内存也有自己的规矩（左栏 ⑩ 下半，CS336 第 6 讲）。它分成 32 个 <strong>bank</strong>（存储体），每个 4 字节宽，连续的 4 字节字依次落在 bank 0、1、2……31、0、1……同一个周期里，每个 bank 只能给一个地址供数。一块 32×32 的 float32 放进去，第 r 行第 c 列落在 bank <span class="math inline">\(c\)</span>：读一行，32 个线程落在 32 个 bank，一个周期读完；读第 0 列，32 个线程全落在 bank 0，只能排队读 32 次——“32 路 bank 冲突”。办法是每行多留一个空位（存成 33 列，第 r 行第 0 列就落在 bank r），或者按“行号异或列号”重新排列（swizzling）。矩阵乘里一个矩阵按行读、另一个按列读，躲不开这个问题，所以高性能 kernel 都会处理它。</p>
+<h3>6.6 分块：把数据留在共享内存里反复用</h3>
+<p>这是 CS336 说的“最重要的一招”，也是矩阵乘能跑到屋顶线平线上的原因。</p>
+<p>先看不分块的矩阵乘有什么问题。算 <span class="math inline">\(C = AB\)</span> 时，C 的每个元素是 A 的一行和 B 的一列的点积。C 的第 0 行有 <span class="math inline">\(N\)</span> 个元素，每个都要用 A 的第 0 行，于是 A 的第 0 行被读了 <span class="math inline">\(N\)</span> 遍；如果每次都去 HBM 读，搬运量就是理论最少的 <span class="math inline">\(N\)</span> 倍。</p>
+<div class="ref" onclick="pick(10)">🖼 <span class="go">请对照左栏 ⑪</span>：分块矩阵乘（可交互）<a class="open" href="../GPU-分块矩阵乘-交互演示.html" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑪ 是交互演示，用 4×4 的小矩阵算 <span class="math inline">\(C = AB\)</span>，只看负责 C 左上角 2×2 的那个线程块，它有 4 个线程，每个线程算 C 的一个元素，累加值放在自己的寄存器 acc 里。右上角一直数着“这个块从 HBM 读了几个数”。</p>
+<p><strong>第 ① 幕：不分块。</strong> 每个线程自己算一个点积，要哪个数就去 HBM 读：线程 (0,0) 依次读 A[0][k] 和 B[k][0]（k = 0…3），acc 从 1 加到 4，读了 8 次。4 个线程一共读 32 次，可涉及的不同数字只有 16 个——A 的第 0 行被线程 (0,0) 和 (0,1) 各读了一遍，B 的第 0 列被 (0,0) 和 (1,0) 各读了一遍。推广到 <span class="math inline">\(N\times N\)</span>：A 的每个数会被读 <span class="math inline">\(N\)</span> 次。</p>
+<p><strong>第 ② 幕：分块。</strong> 把 k 方向切成长度 <span class="math inline">\(T = 2\)</span> 的两段。第一段：4 个线程每人从 HBM 搬 A、B 各一个数，凑成 A[0..1][0..1]、B[0..1][0..1] 两个 2×2 小块，写进共享内存（8 次 HBM 读）；然后用 <code>__syncthreads()</code> 同步，等 4 个线程都搬完，否则有的线程会读到还没写进去的数——同步只能在一个线程块内部做，这正是“块”这一层存在的理由（第 3.1 节）。接着每个线程只读共享内存，做两次乘加，得到部分和 1、2、5、6。第二段再搬 A[0..1][2..3]、B[2..3][0..1]（又 8 次），算完得到 C = 4、5、12、13，和不分块完全一样。</p>
+<p>HBM 读取从 32 次降到 16 次，正好少了 <span class="math inline">\(T\)</span> 倍：每个数只从 HBM 搬进来一次，之后在共享内存里被需要它的线程反复用。一般地：</p>
+<div class="math block">
+\[\text{每个输入从 HBM 读的次数：}\quad \underbrace{N}_{\text{不分块}} \;\longrightarrow\; \underbrace{N/T}_{\text{分块}}\]
+</div>
+<p><span class="math inline">\(N = 4096\)</span>、<span class="math inline">\(T = 128\)</span> 时，从 4096 次降到 32 次。而且搬小块时相邻线程读相邻地址，访存也是合并的。真实的矩阵乘 kernel 块边长取 64、128 或更大，块内的乘加交给 Tensor Core。块边长受几样东西制约：共享内存的大小（一个 SM 只有 256 KB）、合并访存的要求，以及矩阵边长能不能被块边长整除——最后这一条带来下一节的麻烦。</p>
+<h3>6.7 分块的麻烦：对齐、tile 量化、wave 量化</h3>
+<p>分块以后，矩阵的边长如果不是块边长的整数倍，会怎样？CS336 用 Horace He 的一组测量回答。</p>
+<div class="ref" onclick="pick(11)">🖼 <span class="go">请对照左栏 ⑫</span>：实测：方阵乘法的速度（原图）<a class="open" href="../images/thonking-matmul-shapes.png" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑫ 是他文章里的原图（引自 <a href="http://thonking.ai">thonking.ai</a>《What Shapes Do Matrix Multiplications Like?》，A100 上 bf16 方阵乘法）。左图：横轴是边长 N，纵轴是达到的 TFLOP/s。速度总体随 N 上升（算术强度 N/3 变大，第 5.2 节），但点分成好几条带子，还有周期性的锯齿；他用手写字标出了三个原因：Compute Intensity（算术强度）、Tiling（分块带来的对齐问题）、Wave Quantization（wave 量化）。右图把点按“N 能被几整除”着色：N 是 32 的倍数的点在最上面那条带子，只能被 2 整除的在最下面，同样大小的矩阵速度能差一倍多。</p>
+<div class="ref" onclick="pick(12)">🖼 <span class="go">请对照左栏 ⑬</span>：对齐、tile 与 wave 量化<a class="open" href="../images/gpu-waves.svg" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑬ 把三个原因画成具体的块：</p>
+<ul>
+<li><strong>wave 量化</strong>（上半）：块大小 256×128，A100 有 108 个 SM，每个 SM 一次算一块。1792×1792 的输出切成 <span class="math inline">\(7\times14 = 98\)</span> 块，98 ≤ 108，一轮跑完；1793×1793 要切成 <span class="math inline">\(8\times15 = 120\)</span> 块（多出来的最后一行块只有 1 行、最后一列块只有 1 列），第一轮跑 108 块，第二轮只有 12 块，其余 96 个 SM 闲着。工作量只多了 0.1%，实测速度从约 60 TFLOP/s 掉到约 43 TFLOP/s——左图里的锯齿就是这个。H100 有 132 个 SM，道理相同；CS336 第 6 讲给的办法是让块数能被 SM 数整除。</li>
+<li><strong>tile 量化</strong>（左下）：用 128×128 的块铺输出矩阵。256×256 正好 4 块，全满；256×257 要 <span class="math inline">\(2\times3 = 6\)</span> 块，多出的 1 列就要再开 2 个块，这 2 块只有 1/128 有用，却和满块一样占一个 SM 算完整一轮（NVIDIA 矩阵乘性能指南里的例子）。</li>
+<li><strong>对齐</strong>（右下）：每行 2048 个 float32 时，第 1 行从第 8192 字节开始，正好是一个 128 字节段的开头，一个 warp 读这一行前 64 个数（256 字节）正好 2 段、2 次传输；每行 2047 个时，第 1 行从第 8188 字节开始，落在上一段的末尾，同样 256 字节跨 3 段、3 次传输，而且以后每一行的起点都错开不同的量。</li>
+</ul>
+<p>所以训练时常把维度凑成 64、128 的倍数，必要时补零（padding）。Karpathy 在 2023 年 2 月发过一条：把 nanoGPT 的词表从 50257 补到 50304（最近的 64 的倍数），整体提速约 25%，是当时最显著的一次优化——补出来的那几十个“词”从不使用，却让矩阵乘换上了快得多的 kernel。</p>
+<h2>7. FlashAttention：把前面的办法用在注意力上</h2>
+<h3>7.1 注意力是什么，慢在哪</h3>
+<p>大语言模型处理一段文字时，先把它切成 <span class="math inline">\(N\)</span> 个词元（token，大致是一个词或一个字），每个词元表示成一个 <span class="math inline">\(d\)</span> 维向量。<strong>注意力</strong>这一步让每个词元去“看”其他所有词元：对第 <span class="math inline">\(i\)</span> 个词元，用它的查询向量 <span class="math inline">\(q_i\)</span> 和每个词元的键向量 <span class="math inline">\(k_j\)</span> 做点积，得到 <span class="math inline">\(N\)</span> 个分数，分数越大表示越相关；用 softmax 把分数变成加起来等于 1 的权重；再用这些权重对所有词元的值向量 <span class="math inline">\(v_j\)</span> 加权平均，得到输出。所有词元一起写成矩阵就是</p>
+<div class="math block">
+\[O = \mathrm{softmax}\!\left(QK^\top/\sqrt d\right)V\]
+</div>
+<p>其中 <span class="math inline">\(Q\)</span>、<span class="math inline">\(K\)</span>、<span class="math inline">\(V\)</span> 都是 <span class="math inline">\(N\times d\)</span> 的矩阵，每行是一个词元的查询、键、值。三次运算：两次矩阵乘中间夹一个 softmax。softmax 对一行分数 <span class="math inline">\(s_1,\dots,s_N\)</span> 算 <span class="math inline">\(e^{s_i}/\sum_j e^{s_j}\)</span>。</p>
+<p>问题出在中间：分数矩阵 <span class="math inline">\(S = QK^\top/\sqrt d\)</span> 和概率矩阵 <span class="math inline">\(P = \mathrm{softmax}(S)\)</span> 都是 <span class="math inline">\(N\times N\)</span> 的。标准做法把它们写进 HBM 再读出来，<span class="math inline">\(N\)</span> 翻倍，这部分的搬运量就变 4 倍；而 softmax 本身是逐元素运算，强度很低，落在屋顶线的斜线段。FlashAttention（Dao 等，2022）让注意力快了好几倍，用的正是第 6 节的分块、融合和重算。</p>
+<h3>7.2 论文里的图</h3>
+<div class="ref" onclick="pick(13)">🖼 <span class="go">请对照左栏 ⑭</span>：FlashAttention 论文图 1（原图）<a class="open" href="../images/flashattention-fig1.jpg" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑭ 是论文的图 1（原图，引自 Dao 等《FlashAttention》，GitHub 仓库 Dao-AILab/flash-attention）。左边是 A100 的存储层次：片上 SRAM（各 SM 的共享内存合计）约 20 MB、19 TB/s；HBM 40 GB、1.5 TB/s；CPU 内存超过 1 TB，但只有 12.8 GB/s。中间是算法：外层循环把 <span class="math inline">\(K^\top\)</span>、<span class="math inline">\(V\)</span> 按块搬进 SRAM（橙色小块），内层循环把 <span class="math inline">\(Q\)</span> 的块搬进来，在 SRAM 里算出这一块的 <span class="math inline">\(QK^\top\)</span>，处理完把输出写回 HBM，<span class="math inline">\(N\times N\)</span> 的大矩阵（虚线框）从不完整地出现。右边是 GPT-2 上一次注意力的耗时：PyTorch 的做法约 17 ms，其中两次矩阵乘只占一小部分，dropout（训练时随机把一部分值置零）、softmax、mask（把不该看的位置，比如后面的词，屏蔽掉）这些逐元素运算各占好几毫秒——它们都受内存带宽限制；FlashAttention 把这些融合成一个 kernel，约 2 ms。</p>
+<p>论文里的另一组数字（GPT-2 medium，A100）：标准注意力做 66.6 GFLOP、读写 HBM 40.3 GB、用时 41.7 ms；FlashAttention 做 75.2 GFLOP——反而多了，因为反向时要重算——但只读写 4.4 GB，用时 7.3 ms。块越大，读写 HBM 的量越少，用时随之下降，块边长到 256 左右以后就降不太动了。运算多了 13%，搬的字节少了 9 倍，时间少了 5.7 倍：这就是第 5.2 节屋顶线的意思。</p>
+<h3>7.3 一行注意力，一步步算</h3>
+<div class="ref" onclick="pick(14)">🖼 <span class="go">请对照左栏 ⑮</span>：FlashAttention（可交互）<a class="open" href="../GPU-FlashAttention-在线softmax-交互演示.html" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑮ 只看一个查询 q 那一行：它对 4 个键的分数是 2、1、3、0，值只看一维，是 10、20、30、40。</p>
+<p><strong>第 ① 幕：标准做法，3 个 kernel。</strong> kernel 1 算出整张 S 写进 HBM；kernel 2 读 S，按行做 softmax：先找最大值 <span class="math inline">\(m = 3\)</span>（减掉它是为了 <span class="math inline">\(e^x\)</span> 不溢出，结果不变），算 <span class="math inline">\(e^{s-m} = 0.3679,\ 0.1353,\ 1,\ 0.0498\)</span>，求和 1.5530，相除得 P = 0.2369、0.0871、0.6439、0.0321，写回 HBM；kernel 3 读 P 和 V，算出输出 24.71。<span class="math inline">\(N = 4096\)</span>、bf16、一个注意力头时（模型把注意力分成几十份并行计算，每份叫一个头，各有自己的 Q、K、V），S 和 P 各 32 MB，在 HBM 里进出 4 趟（写 S、读 S、写 P、读 P），共 128 MB，H100 上约 38 µs，还占 64 MB 显存；每一层、每个头都来一遍。</p>
+<p><strong>第 ② 幕：FlashAttention。</strong> 键和值每次只搬 2 个进共享内存，分数只在寄存器里待一下。难点在 softmax：它要先知道一整行的最大值和总和，可分块时一次只看见一部分，后面的块里可能冒出更大的分数。解决办法是<strong>在线 softmax</strong>（Milakov 与 Gimelshein，2018）。普通的“安全 softmax”要扫三遍：第一遍找最大值 <span class="math inline">\(m\)</span>，第二遍求 <span class="math inline">\(d = \sum_j e^{x_j - m}\)</span>，第三遍算每个 <span class="math inline">\(e^{x_i - m}/d\)</span>。在线版本把前两遍合成一遍，每读一个新数 <span class="math inline">\(x_j\)</span> 就更新：</p>
+<div class="math block">
+\[m_j = \max(m_{j-1},\, x_j),\qquad d_j = d_{j-1}\, e^{m_{j-1} - m_j} + e^{x_j - m_j}\]
+</div>
+<p>最大值变了，就把旧的和乘一个 <span class="math inline">\(e^{m_{j-1}-m_j}\)</span> 换到新基准上——这些因子一路相乘、相消（课上叫 telescoping sum）。FlashAttention 一次读一块而不是一个数，并顺带维护输出的累加值。具体维护三个数：目前见过的最大分数 <span class="math inline">\(m\)</span>、<span class="math inline">\(l = \sum e^{s-m}\)</span>、<span class="math inline">\(acc = \sum e^{s-m}\,v\)</span>。</p>
+<ul>
+<li>第 1 块（分数 2、1）：<span class="math inline">\(m = 2\)</span>，<span class="math inline">\(l = e^0 + e^{-1} = 1.3679\)</span>，<span class="math inline">\(acc = 1\times10 + 0.3679\times20 = 17.358\)</span>。</li>
+<li>第 2 块（分数 3、0）：出现更大的 3。前面的和都是按“减 2”算的，因为 <span class="math inline">\(e^{s-2}\times e^{2-3} = e^{s-3}\)</span>，把旧的 <span class="math inline">\(l\)</span> 和 <span class="math inline">\(acc\)</span> 各乘一次 <span class="math inline">\(e^{2-3} = 0.3679\)</span>，就换成了“减 3”的基准：<span class="math inline">\(l = 0.5032\)</span>，<span class="math inline">\(acc = 6.386\)</span>。再加上新块：<span class="math inline">\(l = 0.5032 + 1 + 0.0498 = 1.5530\)</span>，<span class="math inline">\(acc = 6.386 + 30 + 1.991 = 38.377\)</span>。</li>
+<li>最后除一次：<span class="math inline">\(38.377 \div 1.5530 = 24.71\)</span>，和标准做法逐位相同。</li>
+</ul>
+<p>整个过程是一个 kernel：<span class="math inline">\(QK^\top\)</span> 的分块乘法、exp、求和、再乘 V 全部融合，HBM 里只出现输入 Q、K、V 和输出 O，<span class="math inline">\(N\times N\)</span> 的 S 和 P 一次也没写进去。反向传播时，FlashAttention 也不存 P，而是按块重算——就是第 6.4 节的重算。</p>
+<h2>8. 回过头来看</h2>
+<div class="ref" onclick="pick(15)">🖼 <span class="go">请对照左栏 ⑯</span>：回过头来看（可交互）<a class="open" href="../GPU-9-回过头来看.html" target="_blank" onclick="event.stopPropagation()">⧉ 单独打开</a></div>
+<p>左栏 ⑯ 从外往里放大，把程序里的每一层放回它运行的硬件里：</p>
+<ul>
+<li>一个 kernel 占用整块 GPU，输入输出在 HBM 里，启动一次约 2–5 µs。</li>
+<li>grid 的 65 536 个线程块，由 132 个 SM 轮流接手；块之间只能经 L2/HBM 交换数据。</li>
+<li>一个线程块住在一个 SM 上（同时最多 8 个），块内的线程共用共享内存、可以同步。</li>
+<li>一个 warp 的 32 个线程由一个分区的调度器带着，同一时刻执行同一条指令。</li>
+<li>一个线程在第（线程号 mod 32）条通道上算，用寄存器堆里自己的一份寄存器。</li>
+</ul>
+<p>性能问题大多归结为：数据有没有放在离运算通道足够近的那一层。分块把数据从 HBM 提到共享内存，融合把中间结果留在寄存器里，低精度和重算减少要搬的字节，合并访存让每次搬运不浪费。CS336 第 5 讲的结论是：现在的 GPU 让人必须同时想着两件事——尽量把活变成矩阵乘，以及数据怎么搬。</p>
+<p><strong>和 TPU 比一比。</strong> CS336 第 5 讲也顺带比较了 Google 的 TPU（Google 自己设计的、专做神经网络计算的芯片）：高层结构和 GPU 相似——控制逻辑简单、有很大的矩阵乘单元、有快速的片上存储；不同在于 TPU 的核心数少而每个更大，没有 warp 这一层（只有块），以及多芯片之间的连法（第 7 讲）。一个 TPU 核心里，标量单元（Scalar Unit）像 CPU 一样取指、给其他单元派活，向量单元（VPU）做逐元素运算，矩阵乘单元（MXU）做矩阵乘，向量存储（VMEM）是片上的快速存储。课上引用 JAX《How to Scale Your Model》的对照表：</p>
+<table>
+<thead>
+<tr>
+<th>GPU 的部件</th>
+<th>TPU 里对应的</th>
+<th>H100 的数量</th>
+<th>TPU v5p 的数量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SM</td>
+<td>TensorCore（一个核心）</td>
+<td>132</td>
+<td>2</td>
+</tr>
+<tr>
+<td>warp 调度器</td>
+<td>VPU 的槽</td>
+<td>528</td>
+<td>8</td>
+</tr>
+<tr>
+<td>共享内存 / L1</td>
+<td>VMEM</td>
+<td>共 32 MB</td>
+<td>128 MB</td>
+</tr>
+<tr>
+<td>寄存器</td>
+<td>向量寄存器</td>
+<td>共 32 MB</td>
+<td>256 KB</td>
+</tr>
+<tr>
+<td>Tensor Core</td>
+<td>MXU</td>
+<td>528</td>
+<td>8</td>
+</tr>
+<tr>
+<td>HBM</td>
+<td>HBM</td>
+<td>80 GB</td>
+<td>95 GB</td>
+</tr>
+</tbody>
+</table>
+<p>两者矩阵乘的算力相近，差别在于把它切成很多小核心（GPU）还是少数几个大核心（TPU）：小核心更容易处理矩阵乘以外的零碎运算，大核心做矩阵乘更省控制逻辑。AMD GPU 对应 warp 的单位叫 wavefront，传统上是 64 个线程。</p>
+<h2>现状更新</h2>
+<ul>
+<li><strong>Blackwell（B200）</strong>：2025 年起大量部署。148 个 SM，每个 SM 的结构和 H100 类似；HBM3e 192 GB，带宽约 8 TB/s；bf16 稠密约 2250 TFLOP/s，拐点约 281 FLOP/字节，和 H100 差不多——算力和带宽一起涨了约 2.3 倍。新增了专给 Tensor Core 用的 <strong>Tensor Memory（TMEM）</strong>，位于寄存器和共享内存之间；硬件支持 MXFP8、MXFP4/NVFP4 这些带分组缩放的低精度格式（第 6.2 节）。L2 增大到约 126 MB。数据见 JAX《How to Scale Your Model》GPU 一章与 CS336 第 6 讲。</li>
+<li><strong>Rubin</strong>：NVIDIA 技术博客给出的参数是：两颗达到光刻尺寸上限的计算裸片拼成一颗 GPU，共 3360 亿个晶体管、224 个 SM、896 个 Tensor Core，HBM4 最多 288 GB、峰值带宽约 22 TB/s（Blackwell 的约 2.8 倍），NVFP4 算力最高 50 PFLOP/s，NVLink 6 每颗 GPU 3.6 TB/s。NVIDIA 于 2026 年 6 月在台北的 GTC 大会上宣布 Vera Rubin 平台全面投产，据报道 2026 年第三季度开始出货。</li>
+<li><strong>FlashAttention</strong> 从 2022 年的第一版起持续改写：第二版（2023）调整了线程块之间的分工，第三版（2024）专门利用 Hopper 的 TMA 和异步执行，此后又有针对 Blackwell 的版本；思路始终是本文第 7 节的分块 + 在线 softmax。</li>
+<li>编写 kernel 的门槛在降低：OpenAI 的 <strong>Triton</strong> 让人按“线程块”而不是按单个线程写 kernel（读进共享内存、算、写回），CS336 第 6 讲用它写了 GeLU、softmax 和矩阵乘；<code>torch.compile</code> 生成的融合 kernel 也是 Triton。</li>
+</ul>
+<h2>参考</h2>
+<ul>
+<li>Stanford CS336 课程讲义（第 5、6 讲）：<a href="https://github.com/stanford-cs336/lectures">https://github.com/stanford-cs336/lectures</a></li>
+<li>NVIDIA，《NVIDIA Hopper Architecture In-Depth》（左栏 ③④ 原图出处）：<a href="https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/">https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/</a></li>
+<li>NVIDIA，《Inside NVIDIA Rubin GPU Architecture》：<a href="https://developer.nvidia.com/blog/inside-nvidia-rubin-gpu-architecture-powering-the-era-of-agentic-ai/">https://developer.nvidia.com/blog/inside-nvidia-rubin-gpu-architecture-powering-the-era-of-agentic-ai/</a></li>
+<li>Horace He，《Making Deep Learning Go Brrrr From First Principles》：<a href="https://horace.io/brrr_intro.html">https://horace.io/brrr_intro.html</a></li>
+<li>Horace He，《What Shapes Do Matrix Multiplications Like?》（左栏 ⑫ 原图出处）：<a href="https://www.thonking.ai/p/what-shapes-do-matrix-multiplications">https://www.thonking.ai/p/what-shapes-do-matrix-multiplications</a></li>
+<li>JAX 团队，《How to Scale Your Model》GPU 一章：<a href="https://jax-ml.github.io/scaling-book/gpus/">https://jax-ml.github.io/scaling-book/gpus/</a></li>
+<li>Modal，《GPU Glossary》：<a href="https://modal.com/gpu-glossary">https://modal.com/gpu-glossary</a></li>
+<li>Chips and Cheese，《Nvidia's H100: Funny L2, and Tons of Bandwidth》（延迟实测）：<a href="https://chipsandcheese.com/p/nvidias-h100-funny-l2-and-tons-of-bandwidth">https://chipsandcheese.com/p/nvidias-h100-funny-l2-and-tons-of-bandwidth</a></li>
+<li>PyTorch dev-discuss，min-cut 重算（三个 sigmoid 的例子）：<a href="https://dev-discuss.pytorch.org/t/min-cut-optimal-recomputation-i-e-activation-checkpointing-with-aotautograd/467">https://dev-discuss.pytorch.org/t/min-cut-optimal-recomputation-i-e-activation-checkpointing-with-aotautograd/467</a></li>
+<li>Dao 等，《FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness》（2022，左栏 ⑭ 原图出处）：<a href="https://arxiv.org/abs/2205.14135">https://arxiv.org/abs/2205.14135</a> ；代码仓库：<a href="https://github.com/Dao-AILab/flash-attention">https://github.com/Dao-AILab/flash-attention</a></li>
+<li>Milakov 与 Gimelshein，《Online normalizer calculation for softmax》（2018）：<a href="https://arxiv.org/abs/1805.02867">https://arxiv.org/abs/1805.02867</a></li>
+<li>Mishra 等，《Recipes for Pre-training LLMs with MXFP8》：<a href="https://arxiv.org/abs/2506.08027">https://arxiv.org/abs/2506.08027</a></li>
+<li>NVIDIA，《Matrix Multiplication Background User's Guide》（tile 量化、wave 量化）：<a href="https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html">https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html</a></li>
+<li>Gholami 等，《AI and Memory Wall》：<a href="https://arxiv.org/abs/2403.14123">https://arxiv.org/abs/2403.14123</a></li>
+<li>Adam Majmudar，tiny-gpu（一个用 Verilog 写的最小 GPU，适合想看硬件实现的读者）：<a href="https://github.com/adam-maj/tiny-gpu">https://github.com/adam-maj/tiny-gpu</a></li>
+</ul>
+</div>
+</div>
+<script>var NAMES=["① CPU 核心与 SM：晶体管花在哪（可交互）", "② 一块 H100：芯片平面、数据的路、HBM 侧视（可交互）", "③ H100 整颗芯片（NVIDIA 原图）", "④ 一个 SM 的内部（NVIDIA 原图）", "⑤ 一次 ReLU kernel（可交互）", "⑥ 存储层次（可交互）", "⑦ 屋顶线", "⑧ 低精度", "⑨ 融合与重算", "⑩ 合并访存与 bank 冲突", "⑪ 分块矩阵乘（可交互）", "⑫ 实测：方阵乘法的速度（原图）", "⑬ 对齐、tile 与 wave 量化", "⑭ FlashAttention 论文图 1（原图）", "⑮ FlashAttention（可交互）", "⑯ 回过头来看（可交互）"];var SRCS=["../GPU-1-CPU核心与SM.html", "../GPU-2-一块H100.html", "../images/nvidia-h100-full-gpu.png", "../images/nvidia-h100-sm.png", "../GPU-3-一次ReLU-kernel.html", "../GPU-5-存储层次.html", "../images/gpu-roofline.svg", "../images/gpu-precision.svg", "../images/gpu-fusion.svg", "../images/gpu-coalesce.svg", "../GPU-分块矩阵乘-交互演示.html", "../images/thonking-matmul-shapes.png", "../images/gpu-waves.svg", "../images/flashattention-fig1.jpg", "../GPU-FlashAttention-在线softmax-交互演示.html", "../GPU-9-回过头来看.html"];var NFIG=16;
+var CUR=0,IMG_MODE='area',IMG_SCALE=1,PICKED=false;
+var IMG_STATES=Array.from({length:NFIG},function(){return {mode:document.body.dataset.figureDefault||'area',scale:1,x:0,y:0};});
+function fitImage(){var f=document.getElementById('f'+CUR),stage=document.querySelector('.stage'),z=document.getElementById('figzoom');
+ if(!f||f.tagName!=='IMG'){z.hidden=true;stage.style.overflow='hidden';return;}
+ z.hidden=false;stage.style.overflow='auto';
+ document.getElementById('fitarea').classList.toggle('cur',IMG_MODE==='area');
+ document.getElementById('fitwidth').classList.toggle('cur',IMG_MODE==='width');
+ if(!f.naturalWidth||!f.naturalHeight)return;
+ var aw=Math.max(1,stage.clientWidth-2),ah=Math.max(1,stage.clientHeight-2),
+     area=Math.min(aw,ah*f.naturalWidth/f.naturalHeight),
+     width=IMG_MODE==='area'?area:IMG_MODE==='width'?aw:area*IMG_SCALE;
+ f.style.position='relative';f.style.left='auto';f.style.right='auto';f.style.width=width+'px';
+ f.style.height='auto';f.style.maxWidth='none';f.style.maxHeight='none';f.style.objectFit='fill';
+ f.style.margin='0 auto';document.getElementById('zoompercent').value=Math.round(width/area*100)+'%';}
+function imageMode(mode){IMG_MODE=mode;IMG_SCALE=1;IMG_STATES[CUR].mode=mode;IMG_STATES[CUR].scale=1;fitImage();document.querySelector('.stage').scrollTo(0,0);}
+function imageZoom(dir){var f=document.getElementById('f'+CUR),stage=document.querySelector('.stage');if(!f||f.tagName!=='IMG'||!f.naturalWidth)return;
+ var area=Math.min(Math.max(1,stage.clientWidth-2),Math.max(1,stage.clientHeight-2)*f.naturalWidth/f.naturalHeight);
+ IMG_SCALE=Math.max(.2,Math.min(6,(f.getBoundingClientRect().width/area)*(dir>0?1.25:.8)));
+ IMG_MODE='manual';IMG_STATES[CUR].mode='manual';IMG_STATES[CUR].scale=IMG_SCALE;fitImage();}
+function pick(i){var stage=document.querySelector('.stage');
+ if(PICKED){IMG_STATES[CUR].x=stage.scrollLeft;IMG_STATES[CUR].y=stage.scrollTop;}
+ CUR=i;PICKED=true;IMG_MODE=IMG_STATES[i].mode;IMG_SCALE=IMG_STATES[i].scale;
+ for(var k=0;k<NFIG;k++){var f=document.getElementById('f'+k),b=document.getElementById('b'+k);
+ if(f)f.style.display=(k==i)?'block':'none'; if(b)b.className='tb'+(k==i?' cur':'');}
+ document.getElementById('figname').textContent=NAMES[i];
+ document.getElementById('figopen').href=SRCS[i];
+ fitImage();stage.scrollTo(IMG_STATES[i].x,IMG_STATES[i].y);
+ if(window.matchMedia('(max-width:1000px)').matches)document.getElementById('L').scrollIntoView({block:'start'});}
+var L=document.getElementById('L'),bar=document.getElementById('bar'),root=document.body;
+var W=window.innerWidth,bw=0,lw=0,pid=null;
+(function(){try{var s=localStorage.getItem('twopane-lw');if(s)root.style.setProperty('--lw',s);}catch(x){}})();
+function setW(px){px=Math.max(240,Math.min(W-320,px));root.style.setProperty('--lw',px+'px');try{localStorage.setItem('twopane-lw',px+'px');}catch(x){}}
+function endDrag(){bar.classList.remove('drag');if(pid!==null){try{bar.releasePointerCapture(pid)}catch(x){}pid=null;}}
+bar.addEventListener('pointerdown',function(e){e.preventDefault();bw=bar.getBoundingClientRect().left;lw=L.getBoundingClientRect().width;bar.classList.add('drag');pid=e.pointerId;try{bar.setPointerCapture(e.pointerId)}catch(x){}});
+bar.addEventListener('pointermove',function(e){if(!bar.classList.contains('drag'))return;if(pid!==null&&e.pointerId!==pid)return;setW(lw+(e.clientX-bw));});
+['pointerup','pointercancel','lostpointercapture'].forEach(function(t){bar.addEventListener(t,endDrag);});
+window.addEventListener('pointerup',endDrag,true);window.addEventListener('pointercancel',endDrag,true);window.addEventListener('blur',endDrag);
+document.addEventListener('dragstart',function(e){e.preventDefault();});
+/* 在网站里打开时：图的地址带上站点版本号（version.txt），避免浏览器拿旧缓存；站点重建后自动刷新本页 */
+(function(){var v0=null;
+function load(v){for(var k=0;k<NFIG;k++){var f=document.getElementById('f'+k);if(!f)continue;var s=SRCS[k],h='',j=s.indexOf('#');
+ if(j>=0){h=s.slice(j);s=s.slice(0,j);}var q=[];if(v)q.push('v='+encodeURIComponent(v.trim()));
+ if(f.tagName==='IFRAME'&&document.body.dataset.figureDefault==='width')q.push('fit=width');
+ f.src=s+(q.length?'?'+q.join('&'):'')+h;}}
+if(location.protocol.indexOf('http')!==0){load('');return;}
+function ver(){return fetch('/version.txt?'+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():'';});}
+ver().then(function(v){v0=v;load(v);},function(){load('');});
+setInterval(function(){ver().then(function(v){if(v0!==null&&v&&v!==v0)location.reload();},function(){});},2000);})();
+window.addEventListener('resize',function(){W=window.innerWidth;fitImage();});
+new ResizeObserver(function(){fitImage();}).observe(document.querySelector('.stage'));
+for(var j=0;j<NFIG;j++){var fi=document.getElementById('f'+j);if(fi&&fi.tagName==='IMG')fi.addEventListener('load',function(){if(this.id==='f'+CUR)fitImage();});}
+document.querySelector('.stage').addEventListener('scroll',function(){IMG_STATES[CUR].x=this.scrollLeft;IMG_STATES[CUR].y=this.scrollTop;});
+document.addEventListener('keydown',function(e){if(e.target.closest&&e.target.closest('input,textarea'))return;if(e.key=='o'||e.key=='O'){window.open(document.getElementById('figopen').href,'_blank');}
+ if(e.key=='ArrowLeft'&&CUR>0){e.preventDefault();pick(CUR-1);}
+ if(e.key=='ArrowRight'&&CUR<NFIG-1){e.preventDefault();pick(CUR+1);}});
+pick(0);
+</script></body></html>
