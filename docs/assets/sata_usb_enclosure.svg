@@ -2,8 +2,8 @@
 <title id="title">SATA 硬盘装进 USB 硬盘盒后，数据与供电各走哪条路</title>
 <desc id="desc">盒内 SATA 硬盘的 7 针数据口连接 USB-SATA 桥接芯片，15 针电源口连接供电电路。盒外 USB 线把数据接到电脑 USB 主机控制器，并可向供电电路供电；需要更多功率时可用独立电源。SATA 的数据协议不会未经转换直接走 USB 线。</desc>
 <defs>
-<marker id="dataArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#2778a6"/></marker>
-<marker id="powerArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#c46a21"/></marker>
+<marker id="dataArrow" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#2778a6"/></marker>
+<marker id="powerArrow" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#c46a21"/></marker>
 <style>
 text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#24354a}
 .h{font-size:24px;font-weight:700}.t{font-size:18px;font-weight:700}.s{font-size:15px}.m{font-size:14px}
@@ -54,8 +54,8 @@ text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#24354a}
 <text x="660" y="462" text-anchor="middle" class="m">例：USB 3 Micro-B</text>
 <text x="660" y="485" text-anchor="middle" class="m">也可采用 USB-C</text>
 
-<path d="M221 271H250" class="data"/><path d="M362 271H399" class="data"/><path d="M577 279H613" class="data"/>
-<path d="M613 384H577" class="power"/><path d="M399 394H362" class="power"/><path d="M250 394H221" class="power"/>
+<path d="M221 288H250" class="data"/><path d="M362 288H399" class="data"/><path d="M577 288H613" class="data"/>
+<path d="M613 392H577" class="power"/><path d="M399 392H362" class="power"/><path d="M250 392H221" class="power"/>
 
 <rect x="767" y="172" width="211" height="276" rx="16" fill="#f4f7fb" stroke="#9cb1c8" stroke-width="2"/>
 <text x="872" y="205" text-anchor="middle" class="t">电脑</text>
@@ -64,8 +64,8 @@ text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#24354a}
 <text x="873" y="295" text-anchor="middle" class="s">接收数据并交给系统</text>
 <rect x="790" y="352" width="166" height="64" rx="11" fill="#fff0dd" stroke="#c58a4f" stroke-width="2"/>
 <text x="873" y="389" text-anchor="middle" class="s">USB 端口供电</text>
-<path d="M707 281H790" class="data"/>
-<path d="M790 384H707" class="power"/>
+<path d="M707 288H790" class="data"/>
+<path d="M790 392H707" class="power"/>
 <text x="769" y="151" class="s">盒外 USB 线</text>
 
 <rect x="38" y="530" width="295" height="91" rx="12" fill="#eaf3fb" stroke="#9abbd0"/>
