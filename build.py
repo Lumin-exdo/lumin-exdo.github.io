@@ -466,14 +466,14 @@ def copy_referenced_attachments(all_texts: list[str]):
                 is_os_figure = source.parent.name == 'OS'
                 standalone_text = source.read_text(encoding='utf-8')
                 # Relocated two-pane pages link to standalone figures at the site root.
-                shared_palette = '../images/course-figure-palette.js'
+                shared_palette = '../共用/course-figure-palette.js'
                 if shared_palette in standalone_text:
                     palette_source = (source.parent / shared_palette).resolve()
                     if palette_source.is_file():
-                        (OUT / 'images').mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(palette_source, OUT / 'images' / palette_source.name)
+                        (OUT / '共用').mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(palette_source, OUT / '共用' / palette_source.name)
                         (OUT / source.name).write_text(
-                            standalone_text.replace(shared_palette, 'images/course-figure-palette.js'),
+                            standalone_text.replace(shared_palette, '共用/course-figure-palette.js'),
                             encoding='utf-8',
                         )
                     else:

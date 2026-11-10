@@ -5,7 +5,7 @@ import shutil
 ROOT=Path(__file__).resolve().parents[1]
 BLOG=ROOT/'完整稿'/'计算机博客'
 OUT=ROOT/'site'
-PALETTE_TAG='../images/course-figure-palette.js'
+PALETTE_TAG='../共用/course-figure-palette.js'
 SINGLE_COPY_FIGURES={
     '真实软件里的进程与线程-交互演示.html',
     '调度程序内部-分派与公平-交互演示.html',
@@ -37,7 +37,7 @@ def copy_standalone_html(src,target):
     content=src.read_text(encoding='utf-8')
     if PALETTE_TAG not in content:
         return copy_new(src,target)
-    rendered=content.replace(PALETTE_TAG,'images/course-figure-palette.js')
+    rendered=content.replace(PALETTE_TAG,'共用/course-figure-palette.js')
     if target.exists() and target.read_text(encoding='utf-8')!=rendered:
         print(f'跳过（网站里已有同名文件，不覆盖）：{target.relative_to(OUT)} ← {src.name}')
         return 0
@@ -83,11 +83,6 @@ def sync():
         if p.suffix.lower() not in ['.svg','.png','.jpg','.jpeg','.webp']:continue
         target=OUT/'images'/p.name;target.parent.mkdir(parents=True,exist_ok=True)
         shutil.copy2(p,target)
-    palette=BLOG/'images'/'course-figure-palette.js'
-    if palette.is_file():
-        target=OUT/'images'/palette.name
-        target.parent.mkdir(parents=True,exist_ok=True)
-        shutil.copy2(palette,target)
     for p in (BLOG/'计组').iterdir():
         if p.suffix.lower() not in ['.svg','.png']:continue
         target=OUT/'计组'/p.name;target.parent.mkdir(parents=True,exist_ok=True)
