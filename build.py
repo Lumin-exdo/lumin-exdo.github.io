@@ -602,7 +602,7 @@ def section_for(source: str, path: Path, title: str) -> str:
 
 def display_title(filename_stem: str) -> str:
     """Show just chapter.section publicly; keep finer ordering in filenames."""
-    match = re.match(r'^(\d+)(?:\.(\d+))?[.\da-z-]*\s*[-—–]\s*(.+)$', filename_stem, flags=re.I)
+    match = re.match(r'^(\d+)(?:\.(\d+))?[.\da-z-]*\s*[-—–]\s*(?!\d)(.+)$', filename_stem, flags=re.I)
     if not match:
         return filename_stem
     number = match.group(1) + (f'.{match.group(2)}' if match.group(2) else '')
