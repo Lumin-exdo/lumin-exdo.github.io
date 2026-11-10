@@ -45,7 +45,11 @@ def copy_standalone_html(src,target):
     target.write_text(rendered,encoding='utf-8')
     return 1
 
-def sync():
+def sync(out=None):
+    """out：写到哪个站点目录（默认 site/；build.py 构建时传 site.building/，构建完再整体换上）。"""
+    global OUT
+    if out is not None:
+        OUT=out
     n=0
     for folder in ['OS','计组','计网','数据结构','AI']:
         if not (BLOG/folder).is_dir():

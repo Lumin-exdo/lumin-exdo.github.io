@@ -3,3 +3,5 @@ __pycache__/
 *.log
 vendor/
 site_daemon.log
+site.building/
+site.old/

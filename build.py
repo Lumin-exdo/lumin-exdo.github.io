@@ -32,7 +32,8 @@ ROOTS = [
     ("物理", HERE / '完整稿' / '物理博客'),
     ("工科数学复习", HERE / '完整稿' / '工科数学复习'),
 ]
-OUT = HERE / "site"
+FINAL_OUT = HERE / "site"          # 对外提供的站点（浏览器看到的）
+OUT = HERE / "site.building"      # 构建时写这里，全部完成后一次性换成 site/，刷新时不会看到半成品
 ATTACHMENTS = HERE / '完整稿' / '网站附件'
 DATE_TABLE = HERE / "date-table.json"
 IMAGE_MAP: dict[str, str] = {}
@@ -611,7 +612,7 @@ def display_title(filename_stem: str) -> str:
     return f'{number} · {match.group(3)}'
 
 def clear_out():
-    """清空 site/。Windows 上文件可能被浏览器、杀毒软件短暂占用（WinError 145/32），稍等重试。"""
+    """清空构建目录 site.building/（正在被浏览的 site/ 不动）。Windows 上文件可能被浏览器、杀毒软件短暂占用（WinError 145/32），稍等重试。"""
     for _ in range(10):
         try:
             if OUT.exists():
@@ -621,6 +622,23 @@ def clear_out():
             time.sleep(0.5)
     if OUT.exists():
         shutil.rmtree(OUT)
+
+def swap_out():
+    """构建完成后，把 site.building/ 换成 site/：先把旧的改名挪开再换上，中间只有一瞬间；Windows 上文件被占用时稍等重试。"""
+    old = HERE / 'site.old'
+    for _ in range(40):
+        try:
+            if old.exists():
+                shutil.rmtree(old)
+            if FINAL_OUT.exists():
+                FINAL_OUT.rename(old)
+            OUT.rename(FINAL_OUT)
+            break
+        except OSError:
+            time.sleep(0.5)
+    else:
+        raise RuntimeError('无法把 site.building 换成 site（文件被占用？）')
+    shutil.rmtree(old, ignore_errors=True)
 
 def normalize_os_paths():
     """Pages link to the OS folder as ../OS/ but the site folder is os/; hosts that are case-sensitive need the same spelling."""
@@ -825,7 +843,7 @@ def _main():
     (OUT/'search-index.json').write_text(json.dumps(search_entries, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     DATE_TABLE.write_text(json.dumps({'schema': 1, 'next_number': next_number, 'files': next_date_table}, ensure_ascii=False, indent=2), encoding='utf-8')
     from tools.sync_learning_pages import sync
-    sync()
+    sync(OUT)
     normalize_os_paths()
     # Readers reload on a new version. Publish it only after every page and asset exists.
     version_pending = OUT / '.version.txt.tmp'
@@ -833,7 +851,8 @@ def _main():
     version_pending.replace(OUT / 'version.txt')
     if PUBLIC_EDITION:
         publish_public_site()
-    print(f'Built {sum(len(x[1]) for x in groups)} articles in {OUT}')
+    swap_out()
+    print(f'Built {sum(len(x[1]) for x in groups)} articles in {FINAL_OUT}')
 
 def snapshot() -> tuple[tuple[str, int, int], ...]:
     watched = [p for _, root in ROOTS for p in root.rglob('*') if p.is_file()]
