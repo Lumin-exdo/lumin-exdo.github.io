@@ -81,6 +81,12 @@
     return frame;
   }
 
+  /* positioning: the two-pane page posts {net53step:[幕,步]} (or the page is opened with ?step=幕.步); jump(幕,步) is 1-based, missing = 1 */
+  function listen(jump) {
+    addEventListener('message', e => { const d = e.data && e.data.net53step; if (d) jump(d[0], d[1]); });
+    const q = /[?&]step=(\d+)(?:\.(\d+))?/.exec(location.search);
+    if (q) setTimeout(() => (q[2] ? jump(+q[1], +q[2]) : jump(null, +q[1])), 60);
+  }
   function start({ steps, draw }) {
     g = document.getElementById('draw');
     markers = new Set();
@@ -123,6 +129,7 @@
     const frame = prepareStepFit();
     render();
     if (window.FigureFit) FigureFit.mount(frame);
+    listen((sc, st) => { at = Math.max(0, Math.min(steps.length - 1, (st || sc || 1) - 1)); render(); });
   }
   /* static figure: draw once, no step buttons */
   function still(draw) {
@@ -177,6 +184,10 @@
     const frame = prepareStepFit();
     render();
     if (window.FigureFit) FigureFit.mount(frame);
+    listen((s1, k1) => {
+      si = Math.max(0, Math.min(scenes.length - 1, (s1 || 1) - 1));
+      k = Math.max(0, Math.min(scenes[si].steps.length - 1, (k1 || 1) - 1)); render();
+    });
   }
   window.SvgStep = { start, still, scenes, K };
 })();

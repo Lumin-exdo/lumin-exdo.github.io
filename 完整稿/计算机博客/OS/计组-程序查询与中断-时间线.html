@@ -2,7 +2,7 @@
 <header><h1>同一次外设工作，CPU 的时间花在哪里</h1><small>两行使用相同的横向时间刻度。外设都在 t₀ 接到命令，直到 t₁ 才准备好数据。</small></header>
 <div class="scroll"><svg viewBox="0 0 1060 660" role="img" aria-label="程序查询中 CPU 多次读取 READY 状态，程序中断中 CPU 先执行别的指令，外设就绪后发 IRQ，CPU 执行服务程序并恢复原程序"><g id="draw"></g></svg></div>
 <footer id="note"><b>差别在等待期间：</b>程序查询让 CPU 反复读状态寄存器；程序中断让 CPU 继续执行别的工作，设备就绪时再请求 CPU 处理。两种方式都需要 CPU 亲自读写接口的数据寄存器。</footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 SvgStep.still(K=>{
  const T=(x,y,s,c='')=>K.text(x,y,s,typeof c==='string'?{c}:c);
  const R=(x,y,w,h,f,s='#9daab0')=>K.rect(x,y,w,h,{f,s,sw:1.5,rx:7});

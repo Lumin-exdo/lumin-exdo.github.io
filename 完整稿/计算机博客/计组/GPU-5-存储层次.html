@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>H100 的存储层次</title></head><body>
 <header><h1>H100 的存储层次：离运算通道越近，越小、越快</h1><small>每一行是一层存储。左边画它在哪（同一块 H100 上的位置），中间三根条用对数刻度画容量、读一次要等多久、全芯片合计带宽。延迟按 1 个周期 ≈ 0.5 ns 换算，是实测量级。</small><nav id="steps"></nav></header>
 <div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 640" role="img" aria-label="寄存器、共享内存、L2、HBM、主机内存五层的位置、容量、延迟和带宽对数条形图"><g id="draw"></g></svg></div><footer id="note"></footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 const steps=[
  {b:'① 五层存储',t:'从寄存器到主机内存：每往外一层，大十几倍到上千倍，慢几倍到上千倍',n:'容量条：寄存器堆每个 SM 256 KB、132 个 SM 合计约 33 MB；共享内存/L1 也是每 SM 256 KB；L2 50 MB；HBM 80 GB；主机内存几百 GB。延迟条：寄存器 1 个周期，共享内存约 30 个周期，L2 约 300–600 个周期，HBM 约 700 个周期，主机内存经 PCIe 要微秒级。'},
  {b:'② 谁能看见',t:'谁能看见这一层：决定了线程之间怎样交换数据',n:'寄存器只属于一个线程；共享内存属于一个线程块（块里的线程都在同一个 SM 上）；L2 和 HBM 全部线程都能读写。所以同一个块里的线程可以通过共享内存交换数据、互相等待；不同块之间只能写进 L2/HBM 再读出来，慢得多。第 6.6 节的分块和第 7 节的 FlashAttention 都靠“块内共享内存”这一层。'}

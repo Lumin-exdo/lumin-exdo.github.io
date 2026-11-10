@@ -73,6 +73,12 @@ def sync():
             if p.suffix.lower() not in ['.svg','.png','.jpg','.jpeg','.webp']:continue
             for target in [OUT/p.name,OUT/folder/p.name]:
                 copy_new(p,target)
+    # 共用脚本（svgstep.js、figure-fit.js、svgsize.js）只在 完整稿/计算机博客/共用/ 放一份，站点里也只放一份 共用/；
+    # 各页写 ../共用/xxx.js，放在根目录、assets/、各课程目录里都解析到同一处
+    if (BLOG/'共用').is_dir():
+        for p in (BLOG/'共用').glob('*'):
+            if p.suffix.lower() in {'.js', '.css'}:
+                copy_new(p,OUT/'共用'/p.name)
     for p in (BLOG/'images').iterdir():
         if p.suffix.lower() not in ['.svg','.png','.jpg','.jpeg','.webp']:continue
         target=OUT/'images'/p.name;target.parent.mkdir(parents=True,exist_ok=True)

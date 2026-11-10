@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DMA 控制器：配置、取得总线、传送、完成</title></head><body>
 <header><h1>设备的 3 字节怎样经 DMA 写入主存</h1><small>经典共享总线的教学模型；每一步都可单独查看。</small><nav id="steps"></nav></header>
 <div class="scroll"><svg viewBox="0 0 1100 740" role="img" aria-label="CPU 配置 DMA 控制器，设备发请求，DMAC 借总线后把数据经缓冲寄存器直接写主存，计数归零后中断 CPU"><g id="draw"></g></svg></div><footer id="note"></footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 const B='#2374ad',O='#d37a1e',M='#a7b3b3';
 const steps=[
  {b:'① CPU 预处理',t:'写入首地址、数量与方向',n:'CPU 只配置这批任务的参数并启动设备：首地址 0x4000、3 个字节、设备 → 主存。随后 CPU 可以继续执行其他指令。'},

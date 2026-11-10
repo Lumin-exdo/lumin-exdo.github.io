@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一次 ReLU kernel</title><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body>
 <header><h1>y = torch.relu(x)：一行 Python 怎样变成 1678 万个线程</h1><small>x 是 4096×4096 的 float32（64 MB），已在 H100 的显存里。四幕：启动、一个 warp 怎样执行、分支发散、全部跑完。每个部件里画的是这一刻的实际内容；蓝色是这一步改变的值。</small><nav id="steps"></nav></header>
 <div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 690" role="img" aria-label="ReLU kernel 从 CPU 发出命令、GigaThread 分块到 132 个 SM，SM 分区里 warp 的执行、访存、分支掩码与总耗时"><g id="draw"></g></svg></div><footer id="note"></footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 const B='#1667c4',R='#b8473a';
 const scenes=[
  {b:'① 启动',h:690,steps:[
