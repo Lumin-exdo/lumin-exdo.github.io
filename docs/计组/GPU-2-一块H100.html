@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一块 H100</title><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body>
 <header><h1>一块 H100：SM 怎样排在芯片上，数据从哪来</h1><small>按 NVIDIA 公布的 GH100 结构重画（位置为示意，数量为实数）。第一步看芯片平面，第二步看数据从主机内存一路到 SM，第三步从侧面看 HBM 显存怎样贴在芯片旁边。</small><nav id="steps"></nav></header>
 <div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 680" role="img" aria-label="H100 芯片平面图：8 个 GPC 共 144 个 SM 方格、L2 两半、两侧 HBM 堆栈、PCIe 与 NVLink；数据路径；HBM 侧视剖面"><g id="draw"></g></svg></div><footer id="note"></footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 const steps=[
  {b:'① 芯片平面',t:'一颗 GH100 芯片：144 个 SM 分在 8 个 GPC 里，卖出的 H100 启用 132 个',n:'每个小方格是一个 SM（上一张图放大过的那种）。每 18 个 SM 编成一个 <b>GPC</b>，这只是物理上的分组，写程序时不用管。芯片做出来总有少数 SM 有缺陷，H100 SXM 屏蔽 12 个（灰色），启用 132 个，这样能卖的芯片更多。中间两条是 <b>L2 缓存</b>，共 50 MB，所有 SM 共用；分左右两半，SM 读自己这一半快，读另一半要绕过去，约慢一倍。'},
  {b:'② 数据从哪来',t:'数据的路：主机内存 → PCIe → HBM → L2 → SM',n:'张量先由 CPU 经 <b>PCIe</b> 搬进显卡的显存 <b>HBM</b>（<code>x.to("cuda")</code>，64 MB 约 1 ms）。之后 kernel 运行时，SM 需要的数从 HBM 经内存控制器、L2 送到 SM。<b>GigaThread 引擎</b>负责把一个 kernel 的工作切块分给各 SM（第 3 节）。NVLink 连同一台服务器里的其他 GPU。'},

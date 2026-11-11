@@ -2,7 +2,7 @@
 <header><h1>DMA 和 CPU 怎样轮流访问主存</h1><small>蓝格＝这段时间由 CPU 访存；橙格＝由 DMA 访存。①②每格是一个主存存取周期；③每格是预先划定的半个 CPU 工作周期。</small></header>
 <div class="scroll"><svg viewBox="0 0 1080 760" role="img" aria-label="三种 DMA 与 CPU 共享主存的时间安排：停止 CPU 访存连续占用，周期挪用每次借一个主存存取周期，固定交替则在 1.2 微秒 CPU 工作周期内各给 DMA 和 CPU 0.6 微秒"><g id="draw"></g></svg></div>
 <footer id="note"><b>先分清两种“周期”：</b>周期挪用借走的是一次主存存取周期，具体时长随机器而异；固定交替示例把一个 1.2 μs 的 CPU 工作周期切成两个 0.6 μs 时隙，主存单次访问须短于 0.6 μs。这里只画教材的经典共享总线模型。</footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 SvgStep.still(K=>{
  const T=(x,y,s,c='')=>K.text(x,y,s,{c});
  const R=(x,y,w,h,f,s)=>K.rect(x,y,w,h,{f,s,sw:1.5,rx:5});

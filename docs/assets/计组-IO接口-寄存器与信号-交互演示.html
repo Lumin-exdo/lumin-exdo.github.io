@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>I/O 接口：一次写出与一次键盘输入</title></head><body>
 <header><h1>CPU 与外设中间的接口：信号实际走哪里</h1><small>先看向输出设备发送字符，再看另一个键盘输入示例；两者共用抽象接口结构，不是同一次设备操作。</small><nav id="steps"></nav></header>
 <div class="scroll"><svg viewBox="0 0 1000 630" role="img" aria-label="CPU、接口内部地址译码与数据状态控制寄存器、设备、IRQ 与中断控制器的具体信号路径"><g id="draw"></g></svg></div><footer id="note"></footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 const BLUE='#1769aa',ORANGE='#c27420',INK='#304858',SOFT='#f7f3eb';
 const steps=[
  {b:'① 接口里有什么',t:'地址先选中接口，读写信号再选寄存器',n:'地址译码确定目标接口；寄存器访问控制逻辑结合端口地址和读写方向，放行对应寄存器。数据、状态、控制是不同用途，图中画在接口芯片内部。'},

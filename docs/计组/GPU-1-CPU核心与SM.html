@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CPU 核心与 SM</title><script>window.MathJax={tex:{inlineMath:[['$','$']]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script></head><body>
 <header><h1>CPU 核心和 GPU 的 SM：晶体管花在哪</h1><small>同一件事：对 x 做 ReLU（负数换成 0）。先盯住 x 开头的 −3、2、−1、5。每个部件里画的是它此刻装着的内容；部件大小为示意。</small><nav id="steps"></nav></header>
 <div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 680" role="img" aria-label="CPU 核心的分支预测表、乱序执行窗口、缓存行、向量寄存器与向量单元；H100 SM 分区的 warp 槽、寄存器堆、32 条通道；等内存时两边的时间线"><g id="draw"></g></svg></div><footer id="note"></footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 const steps=[
  {b:'① CPU 的一个核心',t:'CPU 核心：多数电路在帮一条线程少等',n:'x[0..15] 这一行已在 L1 缓存里，被装进向量寄存器 v1，向量单元一条 <code>max</code> 指令让 16 条通道同时算出结果（图里只写前 4 个）。核心的大部分电路是左上的<b>分支预测表</b>、右上的<b>乱序执行窗口</b>和中间的<b>缓存</b>：窗口里第 1 条指令在等内存，后面不依赖它的第 2、3 条已经先做完了。'},
  {b:'② GPU 的一个 SM',t:'SM 的一个分区：一条指令，32 条通道，16 个 warp 轮流',n:'H100 有 132 个 <b>SM</b>，每个 SM 有 4 个一样的分区。分区里的调度器每个周期从它的 warp 槽里挑一个“就绪”的 warp，发一条指令；这条指令同时送到 32 条通道，32 个线程各用自己寄存器里的数。一组同时接受同一条指令的 32 个线程叫 <b>warp</b>。寄存器堆里每个线程都有自己的一份寄存器（图里是 W0 的 32 个线程的 r0–r2）。'},

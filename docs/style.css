@@ -51,6 +51,51 @@ html:has(.article-layout),body:has(.article-layout){height:100%;overflow:hidden}
 @media(min-width:1251px){.article-layout:has(.diagram-reader){grid-template-columns:minmax(0,1fr) minmax(0,680px);gap:28px}}
 @media(max-width:1250px){.diagram-viewport{max-height:65dvh}.article-shell:has(.diagram-reader){max-width:1030px}}
 
+/* 阅读模式：双栏对开（默认，像电子书的对开页）/ 单栏 */
+.article-topbar{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.reading-tools{display:flex;align-items:center;gap:10px}
+.reading-page{font:12px "IBM Plex Mono",monospace;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+.reading-switch{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.reading-switch button{border:0;border-radius:999px;background:transparent;color:var(--muted);font:12px "IBM Plex Mono",monospace;letter-spacing:.04em;padding:4px 12px;cursor:pointer}
+.reading-switch button:hover{color:var(--blue)}
+.reading-switch button[aria-pressed="true"]{background:#e3ece5;color:var(--math);font-weight:500}
+html[data-reading="two"] .article-shell{max-width:1560px!important}
+html[data-reading="two"] .article-head{margin-inline:auto}
+html[data-reading="two"] .article{max-width:none}
+/* 栏内块：标题不落在栏底，表格和代码块保持完整 */
+html[data-reading="two"] .article>:is(h2,h3,h4){break-after:avoid;break-inside:avoid}
+html[data-reading="two"] .article>:is(table,pre,blockquote){break-inside:avoid}
+html[data-reading="two"] .article>:is(pre,table,figure,p:has(>img)){max-width:100%!important}
+/* 单块高过一栏时留在栏内滚动或缩到栏高，避免溢出到相邻栏 */
+html[data-reading="two"] .article pre,html[data-reading="two"] .article iframe{max-height:calc(100dvh - 250px)}
+html[data-reading="two"] .article img{max-height:calc(100dvh - 250px);width:auto}
+html[data-reading="two"] .article iframe{column-span:all;width:100%;max-width:100%!important}
+html[data-reading="two"] .article figure.wide-figure{width:100%!important;margin-inline:0!important}
+html[data-reading="two"] .article mjx-container[display="true"]{max-width:100%;overflow-x:auto;overflow-y:hidden}
+/* 宽屏：一屏正好两栏，左栏读到底直接接右栏顶部，再横向翻到下一屏 */
+@media(min-width:1201px){
+  html[data-reading="two"],html[data-reading="two"] body{height:100%;overflow:hidden}
+  html[data-reading="two"] .article-shell{height:100dvh;display:flex;flex-direction:column}
+  html[data-reading="two"] .article-head{flex:none;padding:30px 0 20px}
+  html[data-reading="two"] .article-head h1{font-size:clamp(23px,2.4vw,32px);margin-top:10px}
+  html[data-reading="two"] .article{flex:1;min-height:0;max-width:none;padding:20px 0 22px;column-count:2;column-gap:64px;column-fill:auto;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none}
+  html[data-reading="two"] .article::-webkit-scrollbar{height:0}
+  html[data-reading="two"] .foot{display:none}
+}
+html[data-reading="one"] .reading-page{display:none}
+@media(max-width:1200px){
+  html[data-reading="two"] .article-shell{max-width:1030px!important}
+  html[data-reading="two"] .article{max-width:var(--max);column-count:1}
+  .reading-switch,.reading-page{display:none}
+}
+@media print{
+  html[data-reading="two"],html[data-reading="two"] body{height:auto;overflow:visible}
+  html[data-reading="two"] .article-shell{display:block;height:auto;max-width:1030px!important}
+  html[data-reading="two"] .article{column-count:1;max-width:none;height:auto;overflow:visible}
+  html[data-reading="two"] .foot{display:block}
+  .reading-tools{display:none}
+}
+
 .side-gallery{height:100%;display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
 .sg-slide{margin:0;display:flex;flex-direction:column;gap:8px;min-height:0}
 .sg-slide[hidden]{display:none}

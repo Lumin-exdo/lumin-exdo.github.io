@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>回过头来看</title></head><body>
 <header><h1>回过头来看：程序的每一层住在芯片的哪一层</h1><small>以 relu(x) 为例。外框是硬件，框里紫色标签是程序里的东西；每一层旁边写着这一层能直接用的存储。点各步从外往里放大。</small><nav id="steps"></nav></header>
 <div class="scroll" data-default-fit="width"><svg viewBox="0 0 1000 640" role="img" aria-label="GPU 包含 SM，SM 包含分区，分区包含通道；kernel、线程块、warp、线程分别落在其中，对应 HBM/L2、共享内存、寄存器"><g id="draw"></g></svg></div><footer id="note"></footer>
-<script src="figure-fit.js"></script><script src="svgstep.js"></script><script>
+<script src="../共用/figure-fit.js"></script><script src="../共用/svgstep.js"></script><script>
 const steps=[
  {b:'① 整块 GPU',t:'一个 kernel 占用整块 GPU；它的 65 536 个线程块由 132 个 SM 轮流接手',n:'kernel 的输入 x 和输出 y 在 HBM 里，L2 是所有 SM 共用的缓存。不同线程块可能在不同 SM 上，它们之间交换数据只能经过 L2/HBM。'},
  {b:'② 一个 SM',t:'一个 SM 同时住最多 8 个 256 线程的块；块内线程共用共享内存',n:'同一个块的线程都在这个 SM 上，可以通过共享内存交换数据，也可以用 __syncthreads() 互相等待。这就是分块矩阵乘和 FlashAttention 要用“块”的原因。'},

@@ -100,6 +100,21 @@ def mathjax_renderer(content: str, options: dict[str, bool]) -> str:
     )
     return opening + html.escape(content) + closing
 
+def protect_table_math_pipes(text: str) -> str:
+    """表格单元格里的行内公式常写成 $|x|<1$，竖线会被表格语法当成列分隔；
+    只在这类公式内部把它换成等价的 \\vert，正文其余部分不动。"""
+    output: list[str] = []
+    for line in text.splitlines():
+        if line.lstrip().startswith('|'):
+            line = re.sub(
+                r'\$([^$\n]+)\$',
+                lambda m: '$' + re.sub(r'(?<!\\)\|', r'\\vert ', m.group(1)) + '$',
+                line,
+            )
+        output.append(line)
+    return '\n'.join(output)
+
+
 def prepare_display_math(text: str) -> str:
     """Give standalone single-line $$ formulas block spacing in every note."""
     output: list[str] = []
@@ -384,6 +399,96 @@ CSS += r'''
 '''
 
 
+CSS += r'''
+/* 阅读模式：双栏对开（默认，像电子书的对开页）/ 单栏 */
+.article-topbar{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.reading-tools{display:flex;align-items:center;gap:10px}
+.reading-page{font:12px "IBM Plex Mono",monospace;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+.reading-switch{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.reading-switch button{border:0;border-radius:999px;background:transparent;color:var(--muted);font:12px "IBM Plex Mono",monospace;letter-spacing:.04em;padding:4px 12px;cursor:pointer}
+.reading-switch button:hover{color:var(--blue)}
+.reading-switch button[aria-pressed="true"]{background:#e3ece5;color:var(--math);font-weight:500}
+html[data-reading="two"] .article-shell{max-width:1560px!important}
+html[data-reading="two"] .article-head{margin-inline:auto}
+html[data-reading="two"] .article{max-width:none}
+/* 栏内块：标题不落在栏底，表格和代码块保持完整 */
+html[data-reading="two"] .article>:is(h2,h3,h4){break-after:avoid;break-inside:avoid}
+html[data-reading="two"] .article>:is(table,pre,blockquote){break-inside:avoid}
+html[data-reading="two"] .article>:is(pre,table,figure,p:has(>img)){max-width:100%!important}
+/* 单块高过一栏时留在栏内滚动或缩到栏高，避免溢出到相邻栏 */
+html[data-reading="two"] .article pre,html[data-reading="two"] .article iframe{max-height:calc(100dvh - 250px)}
+html[data-reading="two"] .article img{max-height:calc(100dvh - 250px);width:auto}
+html[data-reading="two"] .article iframe{column-span:all;width:100%;max-width:100%!important}
+html[data-reading="two"] .article figure.wide-figure{width:100%!important;margin-inline:0!important}
+html[data-reading="two"] .article mjx-container[display="true"]{max-width:100%;overflow-x:auto;overflow-y:hidden}
+/* 宽屏：一屏正好两栏，左栏读到底直接接右栏顶部，再横向翻到下一屏 */
+@media(min-width:1201px){
+  html[data-reading="two"],html[data-reading="two"] body{height:100%;overflow:hidden}
+  html[data-reading="two"] .article-shell{height:100dvh;display:flex;flex-direction:column}
+  html[data-reading="two"] .article-head{flex:none;padding:30px 0 20px}
+  html[data-reading="two"] .article-head h1{font-size:clamp(23px,2.4vw,32px);margin-top:10px}
+  html[data-reading="two"] .article{flex:1;min-height:0;max-width:none;padding:20px 0 22px;column-count:2;column-gap:64px;column-fill:auto;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none}
+  html[data-reading="two"] .article::-webkit-scrollbar{height:0}
+  html[data-reading="two"] .foot{display:none}
+}
+html[data-reading="one"] .reading-page{display:none}
+@media(max-width:1200px){
+  html[data-reading="two"] .article-shell{max-width:1030px!important}
+  html[data-reading="two"] .article{max-width:var(--max);column-count:1}
+  .reading-switch,.reading-page{display:none}
+}
+@media print{
+  html[data-reading="two"],html[data-reading="two"] body{height:auto;overflow:visible}
+  html[data-reading="two"] .article-shell{display:block;height:auto;max-width:1030px!important}
+  html[data-reading="two"] .article{column-count:1;max-width:none;height:auto;overflow:visible}
+  html[data-reading="two"] .foot{display:block}
+  .reading-tools{display:none}
+}
+'''
+
+MODE_SCRIPT = r'''<script>(()=>{
+const root=document.documentElement;
+const btns=[...document.querySelectorAll('[data-reading-mode]')];
+const view=document.querySelector('.article');
+const stamp=document.getElementById('reading-page');
+if(!view)return;
+const wide=()=>matchMedia('(min-width:1201px)').matches;
+const gap=()=>parseFloat(getComputedStyle(view).columnGap)||0;
+const colW=()=>Math.max(1,(view.clientWidth-gap())/2);
+const step=()=>view.clientWidth+gap();
+const cols=()=>Math.max(1,Math.round((view.scrollWidth+gap())/(colW()+gap())));
+const total=()=>Math.max(1,Math.ceil(cols()/2));
+const maxLeft=()=>Math.max(0,view.scrollWidth-view.clientWidth);
+const leftOf=n=>Math.min(maxLeft(),Math.max(0,n*step()));
+const current=()=>Math.max(0,Math.min(total()-1,Math.round(view.scrollLeft/step())));
+let lock=false,acc=0;
+const paint=()=>{if(stamp)stamp.textContent=(current()+1)+' / '+total()};
+const go=n=>view.scrollTo({left:leftOf(Math.max(0,Math.min(total()-1,n))),behavior:'smooth'});
+const apply=m=>{root.dataset.reading=m;btns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.readingMode===m)));if(m==='one'){view.scrollLeft=0;setTimeout(paint,60)}};
+apply(root.dataset.reading||root.dataset.readingDefault||'two');
+btns.forEach(b=>b.addEventListener('click',()=>{const m=b.dataset.readingMode;apply(m);try{localStorage.setItem('reading-mode',m)}catch(e){}}));
+view.addEventListener('scroll',()=>{if(root.dataset.reading==='two'&&wide())paint()},{passive:true});
+view.addEventListener('wheel',e=>{
+if(root.dataset.reading!=='two'||!wide()||e.ctrlKey)return;
+if(document.querySelector('#search-panel:not([hidden])'))return;
+const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;
+if(!d)return;
+e.preventDefault();acc+=d;
+if(lock||Math.abs(acc)<30)return;
+acc=0;lock=true;go(current()+(d>0?1:-1));setTimeout(()=>{lock=false},460);
+},{passive:false});
+addEventListener('keydown',e=>{
+if(root.dataset.reading!=='two'||!wide())return;
+if(/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))return;
+const next=['ArrowRight','PageDown',' '].includes(e.key),prev=['ArrowLeft','PageUp'].includes(e.key);
+if(!next&&!prev)return;
+e.preventDefault();go(current()+(next?1:-1));
+});
+addEventListener('resize',()=>{if(root.dataset.reading==='two'&&wide()){const k=current();view.scrollLeft=leftOf(k);setTimeout(paint,80)}});
+setTimeout(paint,1200);setTimeout(paint,2600);
+if(window.MathJax&&MathJax.startup&&MathJax.startup.promise)MathJax.startup.promise.then(()=>setTimeout(paint,300));
+})();</script>'''
+
 CSS += side_gallery.CSS
 
 def page_base(title: str, body: str, article=False, published: str | None = None) -> str:
@@ -403,7 +508,15 @@ def page_base(title: str, body: str, article=False, published: str | None = None
             )
     elif article and side_gallery.MARK in body:
         body = side_gallery.wrap(body)
-    main = f'<main class="article-shell"><header class="article-head"><a class="crumb" href="index.html">← 知识合集</a><h1>{html.escape(title)}</h1>{date_line}</header><article class="article">{body}</article></main>' if article else body
+    # 标准文章页才有阅读模式；两栏交互页、图表阅读页保持原布局
+    reading = bool(article) and '<div class="article-layout">' not in body and 'diagram-reader' not in body
+    mode_switch = ('<div class="reading-tools"><span class="reading-page" id="reading-page"></span>'
+                   '<div class="reading-switch" role="group" aria-label="阅读模式">'
+                   '<button type="button" data-reading-mode="two" title="双栏对开：一屏看两倍内容">双栏</button>'
+                   '<button type="button" data-reading-mode="one" title="单栏：保持原来的一行到底">单栏</button>'
+                   '</div></div>') if reading else ''
+    topbar = f'<div class="article-topbar"><a class="crumb" href="index.html">← 知识合集</a>{mode_switch}</div>'
+    main = f'<main class="article-shell"><header class="article-head">{topbar}<h1>{html.escape(title)}</h1>{date_line}</header><article class="article">{body}</article></main>' if article else body
     live_reload = "<script>(async()=>{let v='';setInterval(async()=>{try{const n=await fetch('version.txt?'+Date.now(),{cache:'no-store'}).then(r=>r.text());if(v&&n!==v)location.reload();v=n}catch(e){}},2000)})()</script>"
     license = '<footer class="wrap foot">除非另有说明，本站内容采用 <a style="color:#80582d;font-weight:600;text-decoration-color:#b89a75;text-underline-offset:3px" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" rel="license">CC BY-NC-SA 4.0</a> 协议发布。</footer>'
     if '<div class="article-layout">' in body:
@@ -420,7 +533,12 @@ e.preventDefault();copy.scrollTop+=e.deltaY*(e.deltaMode===1?20:e.deltaMode===2?
         else:
             main = main.replace('</div></div></article>', license + '</div></div></article>')
         license = ''
-    return f'<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)} · 知识合集</title><link rel="stylesheet" href="style.css"><script>window.MathJax={{loader:{{load:["[tex]/colorv2"]}},tex:{{inlineMath:[["$","$"]],packages:{{"[-]":["textmacros"],"[+]":["colorv2"]}},autoload:{{color:[]}}}}}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/github-dark.min.css"><script defer src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script><script>addEventListener("DOMContentLoaded",function(){{if(window.hljs){{hljs.configure({{cssSelector:"pre code[class*=language-]"}});hljs.highlightAll();}}}});</script></head><body>{main}{license}{SEARCH_UI}{live_reload}{SEARCH_SCRIPT}</body></html>'
+    mode_default = ('one' if '<iframe' in body else 'two') if reading else ''
+    mode_head = (f"<script>try{{document.documentElement.dataset.reading=localStorage.getItem('reading-mode')||'{mode_default}'}}catch(e){{}}</script>"
+                 if reading else '')
+    mode_script = MODE_SCRIPT if reading else ''
+    html_open = f'<html lang="zh-CN" data-reading="{mode_default}" data-reading-default="{mode_default}">' if reading else '<html lang="zh-CN">'
+    return f'<!doctype html>{html_open}<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">{mode_head}<title>{html.escape(title)} · 知识合集</title><link rel="stylesheet" href="style.css"><script>window.MathJax={{loader:{{load:["[tex]/colorv2"]}},tex:{{inlineMath:[["$","$"]],packages:{{"[-]":["textmacros"],"[+]":["colorv2"]}},autoload:{{color:[]}}}}}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/styles/github-dark.min.css"><script defer src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script><script>addEventListener("DOMContentLoaded",function(){{if(window.hljs){{hljs.configure({{cssSelector:"pre code[class*=language-]"}});hljs.highlightAll();}}}});</script></head><body>{main}{license}{mode_script}{SEARCH_UI}{live_reload}{SEARCH_SCRIPT}</body></html>'
 
 def page(title: str, body: str, article=False, published: str | None = None) -> str:
     """Add both common TeX inline delimiters without touching note text."""
@@ -707,10 +825,10 @@ def _main():
         shutil.copy2(palette_review, OUT / palette_review.name)
     source_files = [(category, file) for category, folder in ROOTS for file in sorted(folder.rglob('*.md')) if _pub(file)]
     texts = {
-        file: prepare_display_math(side_gallery.inject(reorder_virtual_memory_note(
+        file: protect_table_math_pipes(prepare_display_math(side_gallery.inject(reorder_virtual_memory_note(
             file.read_text(encoding='utf-8-sig'),
             file,
-        ), file))
+        ), file)))
         for _, file in source_files
     }
     twopane_files = {}
