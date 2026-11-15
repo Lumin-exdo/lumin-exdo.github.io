@@ -23,7 +23,7 @@ new MutationObserver(function(ms){ms.forEach(function(m){var n=m.type==='charact
 <tr><td>插入、删除</td><td>插入后至多旋转一次（单旋或双旋）就全树恢复平衡；删除后可能要沿路连续旋转，最多 $O(\log n)$ 次，每次 $O(1)$</td><td>—</td></tr></table>
 </details>
 <details class="note" open><summary><h2>为什么插入失衡恰好分成四种</h2></summary>
-<p>算法实现时，结点可以只存自己的子树高度 <code>h</code>，空孩子的高度为 0。把新结点挂到空位后，递归调用返回，或沿搜索时保存的路径反向走：每到一个祖先，先读取左右孩子的 <code>h</code>，再写回 <code>h=1+max(左高,右高)</code>，并计算 <code>bf=左高−右高</code>。例如插入 10 到 30→20 左侧：先得 h(10)=1；更新 20 时读到 1 和 0，得 h(20)=2、bf=+1；更新 30 时读到 2 和 0，得 h(30)=3、bf=+2，于是在 30 旋转。也可以只存平衡因子，但必须另外利用插入发生在哪一侧、该孩子的高度是否增加来更新；并非每个结点都要同时保存左右高度。</p>
+<p>实现时结点可只存自己的子树高度 <code>h</code>；父结点读取两个孩子的高度，更新 <code>h=1+max(左高,右高)</code>，并计算 <code>bf=左高−右高</code>。空孩子高度为 0。下面的证明只关心高度怎样变化，不依赖结点具体存哪些字段。</p>
 <p>插入前整棵树已经平衡。新结点只会让它到根这条祖先路径上的子树高度变化；每层高度最多增加 1，其他分支完全不变。从新结点往上找第一个失衡的结点 z：它原来的平衡因子只能是 +1 或 −1，现在变成 +2 或 −2。若原来是 0，增加 1 后也仍平衡。</p>
 <p>把 z 变高的一侧孩子叫 y。插入前 z 的较高侧比另一侧高 1；插入后要使 z 失衡，y 的高度必须增加 1。由于 z 是自下往上遇到的第一个失衡结点，y 自己仍平衡。因此在<strong>插入</strong>这种情形，y 的较高孩子 x 必然在新结点所在的一侧，y 的平衡因子不会是 0。于是只需问两次二选一：从 z 去 y 是左还是右？从 y 去 x 是左还是右？2 × 2 = 4，分别是 LL、LR、RL、RR。新结点可以在 x 以下任意深处，不会出现第五个方向。</p>
 <p>旋转只改 z、y、x 附近的连接，夹在它们之间的整棵子树跟着原有大小区间搬动。中序遍历的关键字顺序保持不变。修复这个最低的失衡子树后，它的高度回到插入前，z 上方的祖先也就不再受这次插入影响。删除时仍用这四类单旋或双旋，但 y 的平衡因子可能为 0，也可能要继续向上修复；“恰好四种”的上述论证针对<strong>插入后的首次失衡</strong>。</p>
@@ -74,25 +74,26 @@ const ROTCODE={LL:['y = z.左;','z.左 = y.右;   // y 的右子树改挂到 z �
 const NAME={LL:'LL（左左）：右单旋',RR:'RR（右右）：左单旋',LR:'LR（左右）：先左旋再右旋',RL:'RL（右左）：先右旋再左旋'};
 const WHY={LL:'新结点落在 z 的左孩子的左边',RR:'新结点落在 z 的右孩子的右边',LR:'新结点落在 z 的左孩子的右边',RL:'新结点落在 z 的右孩子的左边'};
 // 两次转挂的前后图：同一个数在每幅图里的横坐标固定，蓝线是被搬动的 T2 子树。
-const RKEYS=[10,30,40,60,80];
-function miniTree(K,tree,ox,rot){const pos=DS.place(tree,{xOf:k=>ox+48+RKEYS.indexOf(k)*92,y0:190,dy:84});
- DS.tree(K,tree,{pos,r:22,fs:17,node:n=>n.k===(rot==='L'?30:60)?ST.hot:n.k===(rot==='L'?60:30)?ST.chg:n.k===40?ST.ok:{},edge:(p,c)=>({c:c.k===40?C.chg:C.line,w:c.k===40?3.5:2})});
- pos.forEach((q,n)=>{if(n.k===(rot==='L'?30:60)||n.k===(rot==='L'?60:30))K.text(q.x,q.y-33,n.k===(rot==='L'?30:60)?'z 原根':'y 孩子',{a:'middle',size:14,c:'b',fill:n.k===(rot==='L'?30:60)?C.hot:C.chg});});
- const q=[...pos].find(([n])=>n.k===40);if(q)K.text(q[1].x,q[1].y+49,'T₂',{a:'middle',size:16,c:'b',fill:C.chg});}
+const RKEYS=[5,10,30,35,40,50,60,80,90];
+function miniTree(K,tree,ox,rot){const pos=DS.place(tree,{xOf:k=>ox+34+RKEYS.indexOf(k)*56,y0:177,dy:75});
+ DS.tree(K,tree,{pos,r:18,fs:14,node:n=>n.k===(rot==='L'?30:60)?ST.hot:n.k===(rot==='L'?60:30)?ST.chg:[35,40,50].includes(n.k)?ST.ok:{},edge:(p,c)=>({c:[35,40,50].includes(c.k)?C.chg:C.line,w:[35,40,50].includes(c.k)?3.1:2})});
+ pos.forEach((q,n)=>{if(n.k===(rot==='L'?30:60)||n.k===(rot==='L'?60:30))K.text(q.x,q.y-27,n.k===(rot==='L'?30:60)?'z 原根':'y 孩子',{a:'middle',size:13,c:'b',fill:n.k===(rot==='L'?30:60)?C.hot:C.chg});});
+ K.text(ox+20,462,'T₂ 是整棵 {35, 40, 50}，不是一个叶子',{size:14,c:'b',fill:C.chg});}
 const ROTINTRO=[
- {t:'左旋之前：原根 z 的右下边 ↘',n:'“旋转”是对局部父子关系变化的形象命名，并非让结点绕圈运动。左旋前，原根 z = 30 指向右孩子 y = 60，是右下边 ↘；T₂ = 40 是 y 的左子树。',dir:'L'},
+ {t:'左旋之前：原根 z 的右下边 ↘',n:'“旋转”是对局部父子关系变化的形象命名，并非让结点绕圈运动。左旋前，原根 z = 30 指向右孩子 y = 60，是右下边 ↘；以 40 为根、含 35 和 50 的整棵 T₂ 是 y 的左子树。',dir:'L'},
  {t:'左旋之后：原根 z 变成新根 y 的左孩子',n:'原来的 z→y 右下边 ↘，改成 y→z 左下边 ↙，因此称左旋。画面中数值横坐标固定，所以你看到的是上下移动和改接链接；真实算法也只修改链接。T₂ 同时改挂到 z 的右边。',dir:'L'},
- {t:'右旋之前：原根 z 的左下边 ↙',n:'右旋前，原根 z = 60 指向左孩子 y = 30，是左下边 ↙；T₂ = 40 是 y 的右子树。',dir:'R'},
+ {t:'右旋之前：原根 z 的左下边 ↙',n:'右旋前，原根 z = 60 指向左孩子 y = 30，是左下边 ↙；以 40 为根、含 35 和 50 的整棵 T₂ 是 y 的右子树。',dir:'R'},
  {t:'右旋之后：原根 z 变成新根 y 的右孩子',n:'原来的 z→y 左下边 ↙，改成 y→z 右下边 ↘，因此称右旋。画面固定数值横坐标；算法只修改链接。T₂ 同时改挂到 z 的左边。',dir:'R'}];
 function drawIntro(k,K){DS.view(1200,500);const s=ROTINTRO[k],left=s.dir==='L';
  DS.goal(K,'旋转是局部父子链接换向的名称','左旋：z→y 的右下边 ↘ 变成 y→z 的左下边 ↙；右旋反过来','结点没有绕圈转；数字横坐标固定，算法只改接指针');
  panel(K,34,96,520,390,left?'左旋 · 之前':'右旋 · 之前');panel(K,646,96,520,390,left?'左旋 · 之后':'右旋 · 之后');
  const a=k2=>({k:k2,l:null,r:null}),before=left?a(30):a(60),after=left?a(60):a(30);
- if(left){before.l=a(10);before.r=a(60);before.r.l=a(40);before.r.r=a(80);after.l=a(30);after.r=a(80);after.l.l=a(10);after.l.r=a(40);}
- else{before.l=a(30);before.r=a(80);before.l.l=a(10);before.l.r=a(40);after.l=a(10);after.r=a(60);after.r.l=a(40);after.r.r=a(80);}
+ const t2=()=>{const t=a(40);t.l=a(35);t.r=a(50);return t;},a1=()=>{const t=a(10);t.l=a(5);return t;},c1=()=>{const t=a(80);t.r=a(90);return t;};
+ if(left){before.l=a1();before.r=a(60);before.r.l=t2();before.r.r=c1();after.l=a(30);after.r=c1();after.l.l=a1();after.l.r=t2();}
+ else{before.l=a(30);before.r=c1();before.l.l=a1();before.l.r=t2();after.l=a1();after.r=a(60);after.r.l=t2();after.r.r=c1();}
  miniTree(K,before,34,s.dir);miniTree(K,after,646,s.dir);
  K.arrow('M566 266 L631 266',{c:C.chg,w:3});K.text(598,198,left?'对 z 左旋':'对 z 右旋',{a:'middle',size:15,c:'b',fill:C.bad});K.text(598,222,left?'↘ 变 ↙':'↙ 变 ↘',{a:'middle',size:17,c:'b',fill:C.bad});K.text(598,244,k%2?'y 升，z 降':'将改接',{a:'middle',size:15,c:'b',fill:C.chg});
- K.text(70,444,left?'30 < T₂=40 < 60':'30 < T₂=40 < 60',{size:17,c:'b mono'});K.text(681,444,'顺序不变，只有边改变',{size:17,c:'b',fill:C.ok});}
+ K.text(70,438,'30 < {35,40,50} < 60',{size:15,c:'b mono'});K.text(681,438,'子树整体改挂；中序顺序不变',{size:15,c:'b',fill:C.ok});}
 // ===== 幕 0：建树 =====
 const S0=[{t:'一图看全：10 个数依次插入后的平衡二叉树',n:'左边是最终树，右边逐项列出插入次序。点“下一步”从空树开始；每次先显示新结点落下，若失衡，再逐帧显示旋转。所有关键字的横坐标固定，越大的数越靠右。',o:0,phase:'overview',tree:FIN}];
 EV.forEach((e,i)=>{
@@ -133,9 +134,6 @@ const metaH=type=>ROTCODE[type].length>4?276:246;
 function find(t,k){let r=null;(function w(n){if(!n)return;if(n.k===k)r=n;w(n.l);w(n.r);})(t);return r;}
 const SC={};['LL','RR','LR','RL'].forEach(t=>{SC[t]=rotScene(t);});
 const PROOF=[
- {type:'CALC',calc:0,t:'算法先找到空位，把 10 挂在 20 左边',n:'搜索路径是 30 → 20 → 左空位。新结点 10 的左右孩子都是空，高度都是 0，所以 h(10)=1。记录刚才经过的 20、30，准备反向更新。'},
- {type:'CALC',calc:1,t:'回退到 20：先读孩子，再更新自己',n:'读左孩子 10 的 h=1，右孩子为空取 0；于是 h(20)=1+max(1,0)=2，bf(20)=1−0=+1。'},
- {type:'CALC',calc:2,t:'回退到 30：读到左孩子已更新为 2',n:'读左孩子 20 的 h=2，右孩子为空取 0；于是 h(30)=1+max(2,0)=3，bf(30)=2−0=+2。30 是从下往上遇到的第一个失衡结点，开始旋转。'},
  {type:'LL',pre:true,t:'抽象化：插入前 z 两侧只差 1，y 两侧等高',n:'下面的三角形代表任意形状、任意多个结点的整棵子树，只保留高度。插入前 y 的两侧都高 h，所以 y 高 h+1；z 另一侧高 h，z 仍平衡。'},
  {type:'LL',t:'z 向左，y 也向左：LL',n:'z 的左侧变高，y 的左侧又变高，走向是左→左。把 y 提上来，对 z 右旋。'},
  {type:'LR',t:'z 向左，y 向右：LR',n:'第一步左，第二步右，折线不能直接右旋；先对 y 左旋，把 x 提上来，再对 z 右旋。'},
@@ -148,13 +146,6 @@ function proofCircle(K,x,y,label,col){K.circle(x,y,24,{f:col===C.bad?C.badF:col=
 function proofTri(K,x,y,label,col=C.mut){K.el('polygon',{points:`${x},${y} ${x-48},${y+74} ${x+48},${y+74}`,fill:'#f7f0e4',stroke:col,'stroke-width':2});K.text(x,y+48,label,{a:'middle',c:'b mono',size:16,fill:col});}
 function proofLink(K,a,b,col=C.line,tri=false){K.line(`M${a[0]} ${a[1]+23} L${b[0]} ${b[1]-(tri?0:23)}`,{c:col,w:col===C.chg?3.5:2});}
 function drawProof(k,K){DS.view(1200,500);const s=PROOF[k],del=s.type==='DEL';
- if(s.type==='CALC'){DS.goal(K,'算法如何沿插入路径更新高度','从新叶子开始，按 10 → 20 → 30 的顺序回退','每个结点只存自己的子树高度；孩子给出左右高度，算出 bf');
-  panel(K,26,90,660,398,'实际操作：插入 10，逐层回退');
-  const p30=[525,170],p20=[370,270],p10=[215,370];proofLink(K,p30,p20);proofLink(K,p20,p10,C.chg);
-  [[p30,'30',s.calc===2?3:2,s.calc===2?'+2':'待更新'],[p20,'20',s.calc>=1?2:1,s.calc>=1?'+1':'待更新'],[p10,'10',1,'0']].forEach(([p,v,h,bf])=>{const hot=(v==='10'&&s.calc===0)||(v==='20'&&s.calc===1)||(v==='30'&&s.calc===2);K.circle(p[0],p[1],27,{f:hot?C.chgF:'#fff',s:hot?C.chgS:C.grid,sw:hot?3:2});K.text(p[0],p[1]+6,v,{a:'middle',c:'b mono',size:20});K.text(p[0]+35,p[1]-4,'h='+h,{size:16,c:'b mono',fill:hot?C.chg:C.mut});K.text(p[0]+35,p[1]+19,'bf='+bf,{size:15,c:'mono',fill:bf==='+2'?C.bad:C.mut});});
-  K.text(48,460,'右侧空孩子的高度都记为 0；只回算插入路径上的结点',{size:16,c:'b'});
-  panel(K,RXP,90,RW,398,'回退时真正执行的计算');
-  [['① 新结点 10','左=0，右=0','h=1，bf=0'],['② 回到 20','左=h(10)=1，右=0','h=2，bf=+1'],['③ 回到 30','左=h(20)=2，右=0','h=3，bf=+2'],['④ 检测与修复','|bf(30)|=2','以 30 为 z 旋转']].forEach(([a,b,c],i)=>{const yy=132+i*82;K.rect(RXP+15,yy,RW-30,72,{f:i===s.calc?C.chgF:'#faf5ea',s:i===s.calc?C.chgS:C.panelS,sw:i===s.calc?2.5:1,rx:8});K.text(RXP+29,yy+26,a,{size:17,c:'b'});K.text(RXP+29,yy+52,b,{size:15});K.text(RXP+245,yy+52,c,{size:15,c:'b',fill:i===s.calc?C.chg:C.mut});});return;}
  if(s.exhaust){DS.goal(K,'穷举证明：恰好 2 × 2 = 4','先排除 y 原先不等高的分支，再列两条边的方向','每个实际插入失衡都落在 LL、LR、RL、RR 之一');
   panel(K,26,90,660,398,'两次二选一：节点 z、y、x 都在图里');
   const z=[355,146],yl=[200,237],yr=[510,237],xs=[[98,355],[270,355],[440,355],[610,355]];
