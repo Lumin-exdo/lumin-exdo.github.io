@@ -1,3 +1,13 @@
+/* 自动加载同目录的 mathjax-auto.js（页面里有 TeX 公式时自动渲染）。 */
+(function () {
+  if (window.__mathjaxAutoLoader) return;
+  window.__mathjaxAutoLoader = true;
+  var cs = document.currentScript;
+  var base = cs && cs.src ? cs.src.replace(/[^\/]*$/, '') : '../共用/';
+  var s = document.createElement('script');
+  s.src = base + 'mathjax-auto.js';
+  (document.head || document.documentElement).appendChild(s);
+})();
 /* Shared zoom template for standalone figures.
    Include this script after header and .scroll/.viewport. A static SVG mounts
    automatically; dynamic SVG figures call FigureFit.svg(frame, svg, false,

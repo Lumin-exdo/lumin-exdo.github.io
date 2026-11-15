@@ -11,6 +11,15 @@
       "name": "gpu-intro-relu-flashattention",
       "slug": "ai/gpu-intro-relu-flashattention.html"
     },
+    "16209609752074389636:8725724279905073": {
+      "first_seen": "2026-11-15 23:19:08",
+      "source": "计算机",
+      "path": "数据结构\\AVL为什么只有四种旋转.md",
+      "title": "AVL为什么只有四种旋转",
+      "fingerprint": "f34990b4250461ee4aebf6cc8061d33bcd008b0df3484ff8614106e344144b48",
+      "name": "avl-four-rotation-proof",
+      "slug": "ds/avl-four-rotation-proof.html"
+    },
     "16209609752074389636:1125899908763069": {
       "first_seen": "2026-08-22 20:58:26",
       "source": "计算机",

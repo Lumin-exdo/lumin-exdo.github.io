@@ -1,3 +1,13 @@
+/* 自动加载同目录的 mathjax-auto.js（页面里有 TeX 公式时自动渲染）。 */
+(function () {
+  if (window.__mathjaxAutoLoader) return;
+  window.__mathjaxAutoLoader = true;
+  var cs = document.currentScript;
+  var base = cs && cs.src ? cs.src.replace(/[^\/]*$/, '') : '../共用/';
+  var s = document.createElement('script');
+  s.src = base + 'mathjax-auto.js';
+  (document.head || document.documentElement).appendChild(s);
+})();
 /* Shared step player and SVG drawing helpers for OS figures.
    Page skeleton: <header><h1/><small/><nav id="steps"></nav></header>
    <div class="scroll"><svg viewBox="0 0 W H"><g id="draw"></g></svg></div><footer id="note"></footer>
