@@ -3,6 +3,5 @@
   "math/cayley-hamilton.html",
   "net/channel-capacity.html",
   "ai/gpu-intro-relu-flashattention.html",
-  "coa/gpu-intro-relu-flashattention.html",
-  "ds/avl-four-rotation-proof.html"
+  "coa/gpu-intro-relu-flashattention.html"
 ]
